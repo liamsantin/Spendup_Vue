@@ -45,6 +45,11 @@ const AppRoutes: RouteRecordRaw = {
             component: () => import('@/views/app/finances/comptes/AppComptesPage.vue')
         },
         {
+            name: 'AppAccountDetail',
+            path: 'finances/comptes/:publicId',
+            component: () => import('@/views/app/finances/comptes/AppAccountDetailPage.vue')
+        },
+        {
             name: 'AppTransactions',
             path: 'finances/transactions',
             component: () => import('@/views/app/finances/transactions/AppTransactionsPage.vue')

@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
-import { DotsVerticalIcon, CreditCardIcon, FileDescriptionIcon, LockIcon, PaperclipIcon, Receipt2Icon, UsersIcon } from 'vue-tabler-icons';
+import { DotsVerticalIcon, LockIcon } from 'vue-tabler-icons';
 import { useDisplay } from 'vuetify';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
-import AppModalPanelScroll from '@/components/shared/modal/AppModalPanelScroll.vue';
-import AppModalTabs from '@/components/shared/modal/AppModalTabs.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { isAccountFieldHidden, isBalanceHidden, resolveAccountBalanceDisplay } from '@/features/accounts/format';
 import { isCipher } from '@/features/vault/crypto';
@@ -22,6 +20,7 @@ import {
     canWriteBalanceSnapshots,
     isPrimaryActionBlocked
 } from '@/features/accounts/rights';
+import { ACCOUNTS_BASE, type AccountDetailTab } from '@/features/accounts/paths';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { entityAttachmentSource } from '@/features/attachments/api';
 import EntityAttachmentsPanel from '@/features/attachments/components/EntityAttachmentsPanel.vue';
@@ -32,13 +31,16 @@ import { AccountPaymentMethodsPanel } from '@/features/payment-methods';
 import { recurringExpensesApi, recurringIncomesApi } from '@/features/recurring-payments/api';
 import { AccountLinkedSavingsGoalsModal, isLinkedSavingsGoalAccountError, useSavingsGoalsStore } from '@/features/savings-goals';
 
+defineOptions({ name: 'AccountDetail' });
+
 const props = defineProps<{
-    modelValue: boolean;
-    accountPublicId: string | null;
+    publicId: string;
+    tab: AccountDetailTab;
 }>();
 
 const emit = defineEmits<{
-    'update:modelValue': [value: boolean];
+    'not-found': [];
+    'select-tab': [tab: AccountDetailTab];
 }>();
 
 const { t, locale } = useI18n();
@@ -57,12 +59,6 @@ const linkedGoalsOpen = ref(false);
 const pendingAccountAction = ref<'archive' | 'delete' | null>(null);
 const localError = ref<string | null>(null);
 const linkedRecurrenceNames = ref<string[]>([]);
-const activeTab = ref<'details' | 'snapshots' | 'paymentMethods' | 'shares' | 'documents'>('details');
-
-const open = computed({
-    get: () => props.modelValue,
-    set: (value: boolean) => emit('update:modelValue', value)
-});
 
 const deleteMessage = computed(() => {
     const names = linkedRecurrenceNames.value;
@@ -109,41 +105,6 @@ const showAccountNumber = computed(() => {
     return !!account.value.accountNumber;
 });
 
-const detailTabs = computed(() => {
-    const current = account.value;
-    const canShares = !!current && canManageShares(current);
-    const canDocuments = !!current?.isOwned;
-    return [
-        { value: 'details' as const, label: t('comptesPage.detail.tabs.details'), icon: FileDescriptionIcon },
-        {
-            value: 'snapshots' as const,
-            label: t('comptesPage.detail.tabs.snapshots'),
-            icon: Receipt2Icon,
-            disabled: balanceHidden.value,
-            title: balanceHidden.value ? t('comptesPage.detail.snapshotsHiddenHint') : undefined
-        },
-        {
-            value: 'paymentMethods' as const,
-            label: t('comptesPage.detail.tabs.paymentMethods'),
-            icon: CreditCardIcon
-        },
-        {
-            value: 'shares' as const,
-            label: t('comptesPage.detail.tabs.shares'),
-            icon: UsersIcon,
-            disabled: !canShares,
-            title: !canShares ? t('comptesPage.detail.shareUnavailable') : undefined
-        },
-        {
-            value: 'documents' as const,
-            label: t('comptesPage.detail.tabs.documents'),
-            icon: PaperclipIcon,
-            disabled: !canDocuments,
-            title: !canDocuments ? t('comptesPage.detail.documentsUnavailable') : undefined
-        }
-    ];
-});
-
 const hasOverflowActions = computed(() => {
     const current = account.value;
     if (!current) return false;
@@ -156,60 +117,53 @@ const hasOverflowActions = computed(() => {
     );
 });
 
+function backToList() {
+    void router.push({ path: ACCOUNTS_BASE, query: { tab: 'Accounts' } });
+}
+
 watch(
-    () => [props.modelValue, props.accountPublicId] as const,
-    async ([isOpen, id]) => {
-        if (!isOpen || !id) return;
-        const requestedId = id;
-        activeTab.value = 'details';
+    () => props.publicId,
+    async (id) => {
+        if (!id) return;
         localError.value = null;
         store.clearError();
         try {
-            await store.loadAccountDetail(requestedId);
-            // Compte / modale changés pendant l’await : ignorer le résultat.
-            if (!props.modelValue || props.accountPublicId !== requestedId) return;
+            await store.loadAccountDetail(id);
         } catch (e: unknown) {
-            if (!props.modelValue || props.accountPublicId !== requestedId) return;
+            if (props.publicId !== id) return;
             const err = AppError.fromUnknown(e);
             localError.value = err.message;
             if (err.status === 404) {
                 store.clearSelected();
                 store.clearError();
-                open.value = false;
-                await router.replace({ path: '/app/finances/comptes', query: { tab: 'Accounts' } });
+                emit('not-found');
             }
         }
-    }
+    },
+    { immediate: true }
 );
 
-function onAfterLeave() {
-    if (props.modelValue) return;
+onBeforeUnmount(() => {
     store.clearSelected();
     store.clearError();
-    localError.value = null;
-}
-
-watch([balanceHidden, account], () => {
-    if (activeTab.value === 'snapshots' && balanceHidden.value) {
-        activeTab.value = 'details';
-    }
-    if (activeTab.value === 'shares' && account.value && !canManageShares(account.value)) {
-        activeTab.value = 'details';
-    }
-    if (activeTab.value === 'documents' && account.value && !account.value.isOwned) {
-        activeTab.value = 'details';
-    }
 });
 
-/** Ferme la modale si le compte a disparu de la liste (revoke / amitié rompue) après sync. */
+/** Replie sur Détails un onglet devenu indisponible (solde masqué, partage retiré…). */
+watch([balanceHidden, account], () => {
+    const current = account.value;
+    const unavailable =
+        (props.tab === 'snapshots' && balanceHidden.value) ||
+        (props.tab === 'shares' && !!current && !canManageShares(current)) ||
+        (props.tab === 'documents' && !!current && !current.isOwned);
+    if (unavailable) emit('select-tab', 'details');
+});
+
+/** Retour à la liste si le compte a disparu (revoke / amitié rompue) après sync. */
 watch(
-    () => [props.modelValue, props.accountPublicId, store.selectedAccount, store.loadingDetail, store.accounts] as const,
-    ([isOpen, id, selected, loadingDetail]) => {
-        if (!isOpen || !id || loadingDetail) return;
-        if (selected?.publicId === id) return;
-        if (!store.accounts.some((a) => a.publicId === id)) {
-            open.value = false;
-        }
+    () => [store.selectedAccount, store.loadingDetail, store.accounts] as const,
+    ([selected, loadingDetail]) => {
+        if (loadingDetail || selected?.publicId === props.publicId) return;
+        if (!store.accounts.some((a) => a.publicId === props.publicId)) emit('not-found');
     }
 );
 
@@ -317,7 +271,7 @@ async function confirmDelete() {
     try {
         await store.deleteAccount(account.value.publicId);
         deleteOpen.value = false;
-        open.value = false;
+        backToList();
     } catch (e: unknown) {
         const err = AppError.fromUnknown(e);
         localError.value = err.message;
@@ -337,31 +291,29 @@ async function confirmLeave() {
     try {
         await store.leaveShare(account.value.publicId);
         leaveOpen.value = false;
-        open.value = false;
+        backToList();
     } catch (e: unknown) {
         localError.value = getErrorMessage(e);
     }
 }
 
+const canEdit = computed(() => !!account.value && canEditAccount(account.value));
+
+function openEdit() {
+    if (canEdit.value) editOpen.value = true;
+}
+
+defineExpose({ openEdit, canEdit });
+
 function seeAllTransactions() {
     if (!account.value) return;
     const accountPublicId = account.value.publicId;
-    open.value = false;
     void router.push({ path: '/app/finances/transactions', query: { account: accountPublicId } });
 }
 </script>
 
 <template>
-    <AppModalTabs
-        v-model="open"
-        v-model:tab="activeTab"
-        :title="account?.name || t('comptesPage.detail.title')"
-        :subtitle="account ? t(`comptesPage.types.${account.type}`) : undefined"
-        :tabs="detailTabs"
-        :height="720"
-        :max-width="640"
-        @after-leave="onAfterLeave"
-    >
+    <div class="account-detail">
         <v-progress-linear v-if="store.loadingDetail && account" indeterminate color="primary" class="mb-3 flex-shrink-0" height="2" />
 
         <div v-if="store.loadingDetail && !account" class="su-loading">
@@ -381,8 +333,8 @@ function seeAllTransactions() {
             {{ localError || store.error }}
         </AppAlert>
 
-        <template v-if="account" #panel-details>
-            <AppModalPanelScroll>
+        <template v-if="account && tab === 'details'">
+            <div>
                 <!-- Soldes en chiffres clés, puis lignes libellé / valeur sur filets fins -->
                 <div class="su-figs account-detail__figs">
                     <div class="su-fig">
@@ -449,15 +401,6 @@ function seeAllTransactions() {
                 </div>
 
                 <div class="account-detail__actions">
-                    <button
-                        v-if="canEditAccount(account)"
-                        type="button"
-                        class="su-btn su-btn--ink"
-                        :disabled="store.acting"
-                        @click="editOpen = true"
-                    >
-                        {{ t('comptesPage.actions.edit') }}
-                    </button>
                     <button
                         v-if="canSetPrimaryAccount(account)"
                         type="button"
@@ -575,35 +518,31 @@ function seeAllTransactions() {
                         {{ t('comptesPage.detail.seeAllTransactions') }}
                     </button>
                 </div>
-            </AppModalPanelScroll>
+            </div>
         </template>
 
-        <template v-if="account" #panel-snapshots>
+        <template v-if="account && tab === 'snapshots'">
             <AccountBalanceSnapshotsPanel v-if="!balanceHidden" :account="account" :can-write="canWriteBalanceSnapshots(account)" />
         </template>
 
-        <template v-if="account" #panel-paymentMethods>
+        <template v-if="account && tab === 'paymentMethods'">
             <AccountPaymentMethodsPanel :account="account" />
         </template>
 
-        <template v-if="account" #panel-documents>
+        <template v-if="account && tab === 'documents'">
             <EntityAttachmentsPanel v-if="account.isOwned" :source="entityAttachmentSource('account', account.publicId)" />
             <div v-else class="su-empty">
                 {{ t('comptesPage.detail.documentsUnavailable') }}
             </div>
         </template>
 
-        <template v-if="account" #panel-shares>
+        <template v-if="account && tab === 'shares'">
             <AccountSharesPanel v-if="canManageShares(account)" :account-public-id="account.publicId" />
             <div v-else class="su-empty">
                 {{ t('comptesPage.detail.shareUnavailable') }}
             </div>
         </template>
-
-        <template #footer="{ close }">
-            <button type="button" class="su-btn su-btn--ink" @click="close">{{ t('common.close') }}</button>
-        </template>
-    </AppModalTabs>
+    </div>
 
     <AccountFormModal v-if="account" v-model="editOpen" :account="account" />
 

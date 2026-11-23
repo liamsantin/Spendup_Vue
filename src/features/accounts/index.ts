@@ -76,7 +76,15 @@ export { default as AccountsTab } from '@/features/accounts/components/tabs/Acco
 export { default as InvitationsTab } from '@/features/accounts/components/tabs/InvitationsTab.vue';
 export { default as AccountListItem } from '@/features/accounts/components/list/AccountListItem.vue';
 export { default as AccountFormModal } from '@/features/accounts/components/modals/AccountFormModal.vue';
-export { default as AccountDetailModal } from '@/features/accounts/components/modals/AccountDetailModal.vue';
 export { default as AccountSharesPanel } from '@/features/accounts/components/panels/AccountSharesPanel.vue';
 export { default as AccountBalanceSnapshotsPanel } from '@/features/accounts/components/panels/AccountBalanceSnapshotsPanel.vue';
 export { default as ShareInviteModal } from '@/features/accounts/components/modals/ShareInviteModal.vue';
+export { default as AccountDetail } from '@/features/accounts/components/AccountDetail.vue';
+export {
+    ACCOUNTS_BASE,
+    ACCOUNT_DETAIL_TABS,
+    accountDetailPath,
+    accountIdFromPath,
+    activeAccountDetailTab
+} from '@/features/accounts/paths';
+export type { AccountDetailTab } from '@/features/accounts/paths';

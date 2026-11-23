@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import { shouldVirtualize } from '@/utils/helpers/list-virtualization';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { isBalanceHidden, safeAccountColor } from '@/features/accounts/format';
+import { accountDetailPath } from '@/features/accounts/paths';
 import { canEditAccount } from '@/features/accounts/rights';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import type { Account } from '@/features/accounts/types';
-import AccountDetailModal from '@/features/accounts/components/modals/AccountDetailModal.vue';
 import AccountFormModal from '@/features/accounts/components/modals/AccountFormModal.vue';
 import AccountListItem from '@/features/accounts/components/list/AccountListItem.vue';
 
@@ -21,6 +22,7 @@ const FALLBACK_SEGMENT_COLORS = ['var(--blue)', 'var(--violet)', 'color-mix(in s
 
 const { t, locale } = useI18n();
 const { smAndDown } = useDisplay();
+const router = useRouter();
 const store = useAccountsStore();
 const settings = useUserSettingsStore();
 
@@ -31,8 +33,6 @@ function useVirtualList(length: number) {
 }
 
 const createOpen = ref(false);
-const detailOpen = ref(false);
-const detailAccountId = ref<string | null>(null);
 const editAccount = ref<Account | null>(null);
 
 /** Comptes actifs dont le solde est visible (propres + partagés). */
@@ -89,13 +89,11 @@ const segments = computed(() => {
 const showNetWorth = computed(() => store.initialized && netWorthAccounts.value.length > 0);
 
 function openDetail(account: Account) {
-    detailAccountId.value = account.publicId;
-    detailOpen.value = true;
+    void router.push(accountDetailPath(account.publicId));
 }
 
 function openEdit(account: Account) {
     if (!canEditAccount(account)) return;
-    detailOpen.value = false;
     editAccount.value = account;
 }
 
@@ -235,7 +233,6 @@ defineExpose({ openCreate });
 
         <AccountFormModal v-model="createOpen" />
         <AccountFormModal :model-value="!!editAccount" :account="editAccount" @update:model-value="setEditOpen" />
-        <AccountDetailModal v-model="detailOpen" :account-public-id="detailAccountId" />
     </div>
 </template>
 

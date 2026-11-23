@@ -7,6 +7,7 @@ const OPEN_DEMO_PATHS = new Set([
     'calendrier',
     'friends',
     'finances/comptes',
+    'finances/comptes/:publicId',
     'finances/transactions',
     'finances/mois',
     'planning/previsions',

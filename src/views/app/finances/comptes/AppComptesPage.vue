@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { BuildingBankIcon, BellPlusIcon, PlusIcon } from 'vue-tabler-icons';
 import AppTabsShell from '@/components/shared/tabs/AppTabsShell.vue';
-import { AccountsTab, InvitationsTab, useAccountsStore } from '@/features/accounts';
+import { AccountsTab, InvitationsTab, accountDetailPath, useAccountsStore } from '@/features/accounts';
 
 const ACCOUNT_TABS = ['Accounts', 'Invitations'] as const;
 type AccountTab = (typeof ACCOUNT_TABS)[number];
@@ -43,6 +43,10 @@ function resolveInitialTab(): AccountTab {
     if (accountFromQuery()) return 'Accounts';
     return tabFromQuery();
 }
+
+/** Ancien lien `?account=<id>` : ouvre directement la fiche du compte. */
+const legacyAccountId = accountFromQuery();
+if (legacyAccountId) void router.replace(accountDetailPath(legacyAccountId));
 
 const tab = ref<AccountTab>(resolveInitialTab());
 const syncingTabFromRoute = ref(false);

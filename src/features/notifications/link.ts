@@ -1,6 +1,8 @@
+import { accountDetailPath } from '@/features/accounts/paths';
 import { isSafeAppPath } from '@/features/auth/safe-return-url';
 import { BUDGETS_PATHS, budgetDetailPath } from '@/features/budgets/paths';
 import {
+    getAccountPublicId,
     getAccountSharePublicId,
     getBudgetPublicId,
     getFriendshipPublicId,
@@ -169,6 +171,12 @@ function resolveAccountsDeepLink(notification?: Pick<AppNotification, 'type' | '
     if (!notification) return null;
     const tab = accountsTabForType(notification.type);
     if (tab == null) return null;
+
+    // Compte toujours accessible : ouvrir sa fiche (pas après un retrait / départ du partage).
+    const account = getAccountPublicId(notification.metadata);
+    if (account && tab === 'Accounts' && notification.type !== 'accountShareRevoked' && notification.type !== 'accountShareLeft') {
+        return accountDetailPath(account);
+    }
 
     const params = new URLSearchParams();
     params.set('tab', tab);

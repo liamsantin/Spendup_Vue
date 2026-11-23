@@ -41,7 +41,7 @@ describe('tax paths', () => {
         ).toContain('/patrimoine/actifs/A2');
     });
 
-    it('ouvre la page des comptes avec le compte mis en avant pour un solde au 31.12', () => {
+    it('ouvre la fiche du compte pour un solde au 31.12', () => {
         expect(taxSuggestionPath({ code: 'asset.cashAndSecurities', source: 'account' })).toBe('/app/finances/comptes');
         const accounts = taxSuggestionTargets({
             code: 'asset.cashAndSecurities',
@@ -52,8 +52,8 @@ describe('tax paths', () => {
             ]
         });
         expect(accounts).toEqual([
-            { name: 'Compte courant', path: '/app/finances/comptes?account=ACC1' },
-            { name: 'Épargne', path: '/app/finances/comptes?account=ACC%202' }
+            { name: 'Compte courant', path: '/app/finances/comptes/ACC1' },
+            { name: 'Épargne', path: '/app/finances/comptes/ACC%202' }
         ]);
     });
 
