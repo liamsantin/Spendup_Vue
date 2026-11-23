@@ -60,9 +60,22 @@ describe('tier payload', () => {
                 person: null,
                 company: { legalName: 'Migros-Genossenschafts-Bund', vatNumber: 'CHE-105.821.212', companyRegistrationNumber: null },
                 organization: null,
-                bank: null
+                bank: null,
+                donationEligible: false
             });
         }
+    });
+
+    it('n’envoie l’éligibilité aux dons que pour une organisation', () => {
+        const org = fields({
+            nature: 'organization',
+            donationEligible: true,
+            organization: { officialName: 'Croix-Rouge', organizationType: 'association' }
+        });
+        const eligible = buildUpdateTierPayload(org, { now });
+        expect(eligible.ok && eligible.payload.donationEligible).toBe(true);
+        const company = buildUpdateTierPayload({ ...org, nature: 'company' }, { now });
+        expect(company.ok && company.payload.donationEligible).toBe(false);
     });
 
     it('ignore les volets non concernés par la nature et remet les champs vides à null', () => {

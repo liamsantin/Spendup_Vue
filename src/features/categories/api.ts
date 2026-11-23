@@ -13,6 +13,14 @@ export const taxNaturesApi = {
     suggest(categoryName: string, type: string) {
         const params = new URLSearchParams({ categoryName, type });
         return fetchWrapper.get(`/api/tax-natures/suggest?${params}`) as Promise<{ taxNature: string | null }>;
+    },
+    /** Nature suggérée d'après le tiers d'une transaction : « don » pour un organisme éligible, sinon la nature la plus confirmée sur ce tiers. */
+    suggestForTier(tierPublicId: string, type: string) {
+        const params = new URLSearchParams({ tierPublicId, type });
+        return fetchWrapper.get(`/api/tax-natures/suggest-for-tier?${params}`) as Promise<{
+            taxNature: string | null;
+            source: 'eligible' | 'history' | null;
+        }>;
     }
 };
 

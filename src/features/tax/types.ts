@@ -293,6 +293,12 @@ export interface TaxThemeTransaction {
     label: string;
     date: string;
     amount: number;
+    /** Organisme payé (dons), si la dépense est liée à un tiers. */
+    tierName?: string | null;
+    /** Enfant gardé (nature « garde »). */
+    beneficiary?: string | null;
+    /** Reçu attendu : organisme éligible dont les dons de l’année atteignent le seuil. */
+    receiptExpected?: boolean;
 }
 
 /** Un thème : sa nature, la ligne qu'il alimente, le total de l'année et la pièce attendue. */
@@ -302,6 +308,8 @@ export interface TaxTheme {
     total: number;
     transactions: TaxThemeTransaction[];
     documentExpected: string | null;
+    /** Totaux par enfant (garde seulement). */
+    beneficiaries?: { name: string | null; total: number }[] | null;
 }
 
 /** Dons, garde, pensions, formation, transports et frais professionnels de l'année. */

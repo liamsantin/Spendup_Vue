@@ -368,7 +368,12 @@ export function createTransactionsCrud(state: TransactionsState) {
             const result = await transactionsApi.setTaxNature(txPublicId, body);
             const known = state.allKnownItems().find((item) => item.publicId === txPublicId);
             if (known) {
-                upsertItem({ ...known, taxNature: result.taxNature, taxNatureStatus: result.taxNatureStatus });
+                upsertItem({
+                    ...known,
+                    taxNature: result.taxNature,
+                    taxNatureStatus: result.taxNatureStatus,
+                    taxBeneficiary: result.beneficiary ?? null
+                });
             }
             return result;
         } catch (e: unknown) {

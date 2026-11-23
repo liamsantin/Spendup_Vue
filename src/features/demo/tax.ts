@@ -618,6 +618,34 @@ const THEME_LINES: Record<string, { line: string; document: string | null }> = {
     pillar2BuyIn: { line: 'deduction.pillar2BuyIn', document: 'Attestation de rachat dans le 2e pilier' }
 };
 
+/** Seuil annuel par organisme éligible à partir duquel un reçu est attendu (même repère que l'API : 100 CHF). */
+const DONATION_RECEIPT_THRESHOLD = 100;
+
+function tierOf(publicId: string | null | undefined) {
+    return publicId ? demoDb().tiers.find((row) => row.publicId === publicId) : undefined;
+}
+
+/** Vrai si le tiers est éligible aux dons et que ses dons de l'année (lignes données) atteignent le seuil. */
+function donationReceiptExpected(
+    rows: { tierPublicId?: string | null; taxNature?: string | null; amount?: number | null }[],
+    tierPublicId: string | null | undefined
+): boolean {
+    if (!tierPublicId || !tierOf(tierPublicId)?.donationEligible) return false;
+    const total = rows
+        .filter((item) => item.taxNature === 'donation' && item.tierPublicId === tierPublicId)
+        .reduce((sum, item) => sum + (item.amount ?? 0), 0);
+    return total >= DONATION_RECEIPT_THRESHOLD;
+}
+
+/** Garde de l'année par enfant : ordre alphabétique, dépenses sans enfant indiqué en dernier. */
+function childcareByBeneficiary(rows: { beneficiary?: string | null; amount: number }[]): { name: string | null; total: number }[] {
+    const totals = new Map<string | null, number>();
+    for (const row of rows) totals.set(row.beneficiary ?? null, (totals.get(row.beneficiary ?? null) ?? 0) + row.amount);
+    return [...totals.entries()]
+        .map(([name, total]) => ({ name, total }))
+        .sort((a, b) => (a.name === null ? 1 : b.name === null ? -1 : a.name.localeCompare(b.name)));
+}
+
 /** Thèmes de déduction de la démo : dépenses de l'année dont la nature est confirmée. */
 function buildThemes(tax: DemoTaxReturn): TaxThemes {
     const rows = demoDb().transactions.filter(
@@ -633,7 +661,10 @@ function buildThemes(tax: DemoTaxReturn): TaxThemes {
                     transactionPublicId: item.publicId,
                     label: item.label,
                     date: item.operationDate,
-                    amount: item.amount ?? 0
+                    amount: item.amount ?? 0,
+                    tierName: tierOf(item.tierPublicId)?.name ?? null,
+                    receiptExpected: nature === 'donation' && donationReceiptExpected(rows, item.tierPublicId),
+                    beneficiary: item.taxBeneficiary ?? null
                 }))
                 .sort((a, b) => a.date.localeCompare(b.date));
             return {
@@ -641,7 +672,8 @@ function buildThemes(tax: DemoTaxReturn): TaxThemes {
                 line: info.line,
                 total: transactions.reduce((sum, item) => sum + item.amount, 0),
                 transactions,
-                documentExpected: info.document
+                documentExpected: info.document,
+                beneficiaries: nature === 'childcare' ? childcareByBeneficiary(transactions) : null
             };
         })
     };

@@ -211,6 +211,7 @@ function transaction(input: {
     savingsGoalPublicId?: string | null;
     taxNature?: string | null;
     taxNatureStatus?: 'confirmee' | 'ecartee' | null;
+    taxBeneficiary?: string | null;
     files?: Transaction['files'];
 }): Transaction {
     const movements: TransactionMovement[] =

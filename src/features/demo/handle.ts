@@ -239,6 +239,8 @@ function dispatch(method: string, target: { path: string; query: URLSearchParams
     if (path.startsWith('/api/attachments/') && path.includes('/files')) throw new AppError('Les fichiers ne sont pas dans la démo.', 403);
 
     if (path === '/api/tax-natures/suggest' && method === 'GET') return ok({ taxNature: null });
+    if (path === '/api/tax-natures/suggest-for-tier' && method === 'GET')
+        return ok(demoTierNatureSuggestion(db, query.get('tierPublicId'), query.get('type')));
     if (path === '/api/insights/month' && method === 'GET')
         return ok(demoMonthInsights(db, query.get('month'), query.get('currency'), query.get('to')));
     if (path === '/api/forecasts/year' && method === 'GET') return ok(demoYearForecast(db, query.get('year'), query.get('currency')));
@@ -544,14 +546,17 @@ function setTransactionTaxNature(id: string, body: SetTransactionTaxNaturePayloa
     if (nature) {
         tx.taxNature = nature;
         tx.taxNatureStatus = 'confirmee';
+        tx.taxBeneficiary = nature === 'childcare' ? body.beneficiary?.trim() || null : null;
     } else if (body.dismissed) {
         tx.taxNature = null;
         tx.taxNatureStatus = 'ecartee';
+        tx.taxBeneficiary = null;
     } else {
         tx.taxNature = null;
         tx.taxNatureStatus = null;
+        tx.taxBeneficiary = null;
     }
-    return { publicId: tx.publicId, taxNature: tx.taxNature, taxNatureStatus: tx.taxNatureStatus };
+    return { publicId: tx.publicId, taxNature: tx.taxNature, taxNatureStatus: tx.taxNatureStatus, beneficiary: tx.taxBeneficiary ?? null };
 }
 
 function updateTransaction(id: string, body: UpdateTransactionPayload) {
@@ -1014,6 +1019,7 @@ function createTier(body: CreateTierPayload) {
         company: body.company,
         organization: body.organization,
         bank: bankFromPayload(body.bank),
+        donationEligible: body.donationEligible === true,
         createdAt: stamp(),
         updatedAt: null
     };
@@ -1033,6 +1039,7 @@ function updateTier(id: string, body: UpdateTierPayload) {
     item.person = body.person;
     item.company = body.company;
     item.organization = body.organization;
+    item.donationEligible = body.donationEligible ?? item.donationEligible ?? false;
     item.bank = bankFromPayload(body.bank);
     item.updatedAt = stamp();
     return item;
@@ -1704,4 +1711,24 @@ function findAsset(id: string) {
         };
     }
     return item;
+}
+
+/** Suggestion d'après le tiers : « don » pour un organisme éligible (dépense), sinon la nature la plus confirmée sur ce tiers. */
+function demoTierNatureSuggestion(db: ReturnType<typeof demoDb>, tierPublicId: string | null, type: string | null) {
+    const none = { taxNature: null, source: null };
+    const tier = tierPublicId ? db.tiers.find((row) => row.publicId === tierPublicId) : undefined;
+    if (!tier) return none;
+    const kind = type === 'revenu' ? 'revenu' : 'depense';
+    if (kind === 'depense' && tier.donationEligible) return { taxNature: 'donation', source: 'eligible' as const };
+    const counts = new Map<string, { count: number; last: string }>();
+    for (const tx of db.transactions) {
+        if (tx.tierPublicId !== tierPublicId || tx.type !== kind || tx.taxNatureStatus !== 'confirmee' || !tx.taxNature) continue;
+        const known = counts.get(tx.taxNature);
+        counts.set(tx.taxNature, {
+            count: (known?.count ?? 0) + 1,
+            last: known && known.last > tx.operationDate ? known.last : tx.operationDate
+        });
+    }
+    const best = [...counts.entries()].sort((a, b) => b[1].count - a[1].count || b[1].last.localeCompare(a[1].last))[0];
+    return best ? { taxNature: best[0], source: 'history' as const } : none;
 }

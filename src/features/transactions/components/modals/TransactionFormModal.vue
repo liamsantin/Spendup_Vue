@@ -799,6 +799,8 @@ function onOpenAttachment(file: TransactionFile) {
                     v-if="isEdit && liveTransaction && form.type !== 'transfert' && canSetTaxNature"
                     :tax-nature="liveTransaction.taxNature"
                     :tax-nature-status="liveTransaction.taxNatureStatus"
+                    :tax-beneficiary="liveTransaction.taxBeneficiary"
+                    :tier-public-id="liveTransaction.tierPublicId"
                     :category-nature="categoryTaxNature"
                     :transaction-type="form.type"
                     :disabled="store.acting || !canEditFiles"

@@ -2322,6 +2322,9 @@
                 "companyRegistrationNumber": "Company registration number",
                 "officialName": "Official name",
                 "organizationType": "Organization type",
+                "donationEligible": "Donations",
+                "donationEligibleLabel": "This organisation receives deductible donations",
+                "donationEligibleHint": "Your payments to this organisation are suggested as donations, and a receipt is expected from CHF 100 per year.",
                 "isBank": "This counterparty is a bank",
                 "bank": "Institution",
                 "bic": "BIC",
@@ -2611,6 +2614,13 @@
         },
         "taxNature": {
             "title": "Tax nature",
+            "beneficiary": "Child concerned",
+            "beneficiaryHint": "First name of the child",
+            "beneficiarySave": "Save child",
+            "tierSource": {
+                "eligible": "Suggestion: this organisation receives deductible donations.",
+                "history": "Suggestion: the nature you confirmed most often for this counterparty."
+            },
             "noneHint": "No nature. Optional: used to prepare your tax return.",
             "choose": "Choose a nature",
             "change": "Change",
@@ -5888,6 +5898,8 @@
         },
         "themes": {
             "title": "Totals for the year {year}",
+            "receiptExpected": "receipt expected",
+            "noBeneficiary": "No child specified",
             "hint": "For information only: canton limits are not applied. Only natures confirmed on a transaction count.",
             "total": "{amount}",
             "empty": "No confirmed expense for this theme.",

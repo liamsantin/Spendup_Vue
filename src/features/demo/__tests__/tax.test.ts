@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { handleDemoRequest } from '@/features/demo/handle';
-import { resetDemoDb } from '@/features/demo/db';
-import type { TaxReturn, TaxReturnListResult, TaxSuggestionList } from '@/features/tax/types';
+import { demoDb, resetDemoDb } from '@/features/demo/db';
+import type { TaxReturn, TaxReturnListResult, TaxSuggestionList, TaxThemes } from '@/features/tax/types';
 
 describe('démo : impôts', () => {
     beforeEach(() => {
@@ -249,3 +249,92 @@ describe('démo : impôts', () => {
         handleDemoRequest('PUT', `${base}/amounts/income.other`, { person: '1', competence: null, amount: 1 });
     });
 });
+
+describe('démo : thèmes (garde par enfant, reçu des dons)', () => {
+    beforeEach(() => {
+        resetDemoDb();
+    });
+
+    const give = (id: string, body: object) =>
+        handleDemoRequest('PUT', `/api/transactions/${id}/tax-nature`, body) as { beneficiary?: string | null };
+    const themes = () => handleDemoRequest('GET', '/api/tax-returns/TAX2026/themes') as TaxThemes;
+
+    it('totalise la garde par enfant et efface l’enfant avec la nature', () => {
+        expect(give('TXN0011', { taxNature: 'childcare', beneficiary: ' Léa ' }).beneficiary).toBe('Léa');
+        const care = themes().items.find((item) => item.nature === 'childcare');
+        expect(care?.beneficiaries?.find((entry) => entry.name === 'Léa')?.total).toBe(care?.total);
+        expect(give('TXN0011', { taxNature: 'medicalExpense', beneficiary: 'Léa' }).beneficiary).toBeNull();
+    });
+
+    it('garde l’éligibilité aux dons d’un tiers à la création et à la modification', () => {
+        const body = {
+            name: 'WWF',
+            nature: 'organization',
+            email: null,
+            phone: null,
+            website: null,
+            notes: null,
+            roles: [],
+            person: null,
+            company: null,
+            organization: null,
+            bank: null
+        };
+        const created = handleDemoRequest('POST', '/api/tiers', { ...body, donationEligible: true }) as {
+            publicId: string;
+            donationEligible: boolean;
+        };
+        expect(created.donationEligible).toBe(true);
+        const kept = handleDemoRequest('PUT', `/api/tiers/${created.publicId}`, body) as { donationEligible: boolean };
+        expect(kept.donationEligible).toBe(true);
+        const off = handleDemoRequest('PUT', `/api/tiers/${created.publicId}`, { ...body, donationEligible: false }) as {
+            donationEligible: boolean;
+        };
+        expect(off.donationEligible).toBe(false);
+    });
+});
+
+describe('démo : suggestion de nature d’après le tiers', () => {
+    beforeEach(() => {
+        resetDemoDb();
+    });
+
+    const suggest = (tier: string, type = 'depense') =>
+        handleDemoRequest('GET', `/api/tax-natures/suggest-for-tier?tierPublicId=${tier}&type=${type}`) as {
+            taxNature: string | null;
+            source: string | null;
+        };
+
+    it('propose « don » pour un organisme éligible, la nature la plus confirmée sinon, rien pour un inconnu', () => {
+        const tiers = (handleDemoRequest('GET', '/api/tiers') as { items: { publicId: string }[] }).items;
+        const body = {
+            name: 'WWF',
+            nature: 'organization',
+            email: null,
+            phone: null,
+            website: null,
+            notes: null,
+            roles: [],
+            person: null,
+            company: null,
+            organization: null,
+            bank: null
+        };
+        const wwf = handleDemoRequest('POST', '/api/tiers', { ...body, donationEligible: true }) as { publicId: string };
+        expect(suggest(wwf.publicId)).toEqual({ taxNature: 'donation', source: 'eligible' });
+        expect(suggest(wwf.publicId, 'revenu').taxNature).toBeNull();
+        expect(suggest('inconnu').taxNature).toBeNull();
+        expect(tiers.length).toBeGreaterThan(0);
+
+        const [first] = tiers;
+        const tx = demoDbTransactionWithTier(first.publicId);
+        if (tx) {
+            handleDemoRequest('PUT', `/api/transactions/${tx}/tax-nature`, { taxNature: 'medicalExpense' });
+            expect(suggest(first.publicId)).toEqual({ taxNature: 'medicalExpense', source: 'history' });
+        }
+    });
+});
+
+function demoDbTransactionWithTier(tierPublicId: string): string | null {
+    return demoDb().transactions.find((row) => row.tierPublicId === tierPublicId && row.type === 'depense')?.publicId ?? null;
+}

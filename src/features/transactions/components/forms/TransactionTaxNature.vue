@@ -4,9 +4,10 @@
  * ou nature choisie / écartée. Chaque geste est enregistré tout de suite (route dédiée), à part du
  * formulaire : il ne touche ni le montant ni les mouvements.
  */
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
+import { taxNaturesApi } from '@/features/categories/api';
 import { taxNatureCodesForType } from '@/features/categories/tax-natures';
 import { resolveTaxNature, type SetTransactionTaxNaturePayload, type TransactionTaxNatureStatus } from '@/features/transactions/tax-nature';
 import type { TransactionType } from '@/features/transactions/types';
@@ -14,8 +15,12 @@ import type { TransactionType } from '@/features/transactions/types';
 const props = defineProps<{
     taxNature: string | null | undefined;
     taxNatureStatus: TransactionTaxNatureStatus | null | undefined;
+    /** Enfant gardé déjà enregistré (nature « garde »). */
+    taxBeneficiary?: string | null;
     /** Nature par défaut de la catégorie choisie dans le formulaire. */
     categoryNature: string | null | undefined;
+    /** Tiers de la transaction : sert à suggérer une nature quand ni geste ni catégorie n'en donnent. */
+    tierPublicId?: string | null;
     transactionType: TransactionType;
     disabled?: boolean;
 }>();
@@ -27,10 +32,39 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const choosing = ref(false);
 const chosen = ref('');
+const beneficiary = ref(props.taxBeneficiary ?? '');
+watch(
+    () => props.taxBeneficiary,
+    (value) => {
+        beneficiary.value = value ?? '';
+    }
+);
+
+const tierSuggestion = ref<{ code: string; source: 'eligible' | 'history' } | null>(null);
 
 const effective = computed(() =>
     resolveTaxNature({ taxNature: props.taxNature, taxNatureStatus: props.taxNatureStatus }, props.categoryNature)
 );
+
+/** Suggestion du tiers : seulement sans nature ni suggestion de la catégorie ; une erreur réseau la laisse simplement absente. */
+watch(
+    () => [props.tierPublicId, props.transactionType, effective.value.state] as const,
+    async ([tierPublicId, type, state]) => {
+        tierSuggestion.value = null;
+        if (!tierPublicId || state !== 'none' || type === 'transfert') return;
+        try {
+            const result = await taxNaturesApi.suggestForTier(tierPublicId, type);
+            if (result.taxNature && result.source) tierSuggestion.value = { code: result.taxNature, source: result.source };
+        } catch {
+            tierSuggestion.value = null;
+        }
+    },
+    { immediate: true }
+);
+
+function confirmTierSuggestion() {
+    if (tierSuggestion.value) emit('change', { taxNature: tierSuggestion.value.code });
+}
 
 const label = computed(() => (effective.value.code ? t(`taxNatures.${effective.value.code}`) : null));
 
@@ -58,6 +92,12 @@ function pick(value: unknown) {
     choosing.value = false;
 }
 
+const isChildcare = computed(() => effective.value.state === 'confirmed' && effective.value.code === 'childcare');
+
+function saveBeneficiary() {
+    emit('change', { taxNature: 'childcare', beneficiary: beneficiary.value.trim() || null });
+}
+
 function dismiss() {
     emit('change', { taxNature: null, dismissed: true });
     choosing.value = false;
@@ -79,7 +119,36 @@ function reset() {
         </div>
 
         <p v-if="label" class="tx-tax-nature__value">{{ label }}</p>
+        <div v-else-if="tierSuggestion" class="tx-tax-nature__choose" data-test="tx-tax-tier-suggestion">
+            <p class="tx-tax-nature__value">{{ t(`taxNatures.${tierSuggestion.code}`) }}</p>
+            <p class="tx-tax-nature__hint">{{ t(`transactionsPage.taxNature.tierSource.${tierSuggestion.source}`) }}</p>
+            <div class="tx-tax-nature__actions">
+                <button type="button" class="su-btn su-btn--ink su-btn--sm" :disabled="disabled" @click="confirmTierSuggestion">
+                    {{ t('transactionsPage.taxNature.confirm') }}
+                </button>
+            </div>
+        </div>
         <p v-else class="tx-tax-nature__hint">{{ t('transactionsPage.taxNature.noneHint') }}</p>
+
+        <div v-if="isChildcare" class="tx-tax-nature__choose" data-test="tx-tax-beneficiary">
+            <v-text-field
+                v-model="beneficiary"
+                color="primary"
+                variant="outlined"
+                density="compact"
+                hide-details
+                maxlength="100"
+                :label="t('transactionsPage.taxNature.beneficiary')"
+                :placeholder="t('transactionsPage.taxNature.beneficiaryHint')"
+                :disabled="disabled"
+                @keydown.enter.prevent="saveBeneficiary"
+            />
+            <div class="tx-tax-nature__actions">
+                <button type="button" class="su-btn su-btn--ink su-btn--sm" :disabled="disabled" @click="saveBeneficiary">
+                    {{ t('transactionsPage.taxNature.beneficiarySave') }}
+                </button>
+            </div>
+        </div>
 
         <div v-if="choosing" class="tx-tax-nature__choose">
             <AppSelect

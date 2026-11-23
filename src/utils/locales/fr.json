@@ -2322,6 +2322,9 @@
                 "companyRegistrationNumber": "Numéro d’entreprise (IDE)",
                 "officialName": "Nom officiel",
                 "organizationType": "Type d’organisation",
+                "donationEligible": "Dons",
+                "donationEligibleLabel": "Cet organisme reçoit des dons déductibles",
+                "donationEligibleHint": "Vos paiements à cet organisme sont proposés comme dons, et un reçu est attendu dès 100 CHF par an.",
                 "isBank": "Ce tiers est une banque",
                 "bank": "Établissement",
                 "bic": "BIC",
@@ -2611,6 +2614,13 @@
         },
         "taxNature": {
             "title": "Nature fiscale",
+            "beneficiary": "Enfant concerné",
+            "beneficiaryHint": "Prénom de l’enfant gardé",
+            "beneficiarySave": "Enregistrer l’enfant",
+            "tierSource": {
+                "eligible": "Suggestion : cet organisme reçoit des dons déductibles.",
+                "history": "Suggestion : la nature que vous avez le plus souvent confirmée pour ce tiers."
+            },
             "noneHint": "Aucune nature. Facultatif : sert à préparer votre déclaration d’impôts.",
             "choose": "Choisir une nature",
             "change": "Changer",
@@ -5888,6 +5898,8 @@
         },
         "themes": {
             "title": "Totaux de l’année {year}",
+            "receiptExpected": "reçu attendu",
+            "noBeneficiary": "Sans enfant indiqué",
             "hint": "Information seulement : les plafonds du canton ne sont pas appliqués. Seules les natures confirmées sur une transaction comptent.",
             "total": "{amount}",
             "empty": "Aucune dépense confirmée pour ce thème.",

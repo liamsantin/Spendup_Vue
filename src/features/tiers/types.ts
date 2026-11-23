@@ -64,6 +64,8 @@ export type Tier = {
     organization: TierOrganizationPayload | null;
     /** `null` si le tier n’est pas une banque. Un tier banque porte toujours le rôle `banque`. */
     bank: TierBank | null;
+    /** Organisme qui reçoit des dons déductibles (choix de la personne). */
+    donationEligible?: boolean;
     createdAt: string;
     updatedAt: string | null;
 };
@@ -99,6 +101,8 @@ export type TierWritePayload = {
     organization: TierOrganizationPayload | null;
     /** PUT = état complet : `null` retire le volet (`400` si le tier est la banque d’un compte). */
     bank: TierBankPayload | null;
+    /** Organisme éligible aux dons (organisation seulement ; absent = inchangé). */
+    donationEligible?: boolean;
 };
 
 export type CreateTierPayload = TierWritePayload & {

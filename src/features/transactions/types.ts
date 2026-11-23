@@ -69,6 +69,8 @@ export type Transaction = {
     taxNature?: string | null;
     /** `confirmee`, `ecartee`, ou `null` : la suggestion de la catégorie s'applique. */
     taxNatureStatus?: TransactionTaxNatureStatus | null;
+    /** Enfant gardé, pour la nature « garde ». */
+    taxBeneficiary?: string | null;
 };
 
 export type TransactionList = {

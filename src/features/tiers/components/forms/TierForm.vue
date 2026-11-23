@@ -345,6 +345,20 @@ function toggleRole(role: TierRole) {
                         />
                     </div>
                 </div>
+                <div class="tier-form__row">
+                    <span class="tier-form__label">{{ t('tiersPage.form.fields.donationEligible') }}</span>
+                    <div class="tier-form__field">
+                        <v-checkbox
+                            v-model="form.donationEligible"
+                            color="primary"
+                            hide-details
+                            density="compact"
+                            :label="t('tiersPage.form.fields.donationEligibleLabel')"
+                            data-test="tier-donation-eligible"
+                        />
+                        <p class="tier-form__hint">{{ t('tiersPage.form.fields.donationEligibleHint') }}</p>
+                    </div>
+                </div>
             </template>
         </template>
 
@@ -462,7 +476,13 @@ function toggleRole(role: TierRole) {
     align-items: start;
 }
 
-.tier-form__row--top .tier-form__label {
+.tier-form__hint {
+    margin: 4px 0 0;
+    color: var(--ink-3, inherit);
+    font-size: 0.875rem;
+}
+
+.tier-form__label {
     padding-top: 10px;
 }
 

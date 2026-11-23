@@ -88,6 +88,7 @@ export type TierFormFields = {
     person: { firstName: string; lastName: string; birthDate: string | null };
     company: { legalName: string; vatNumber: string; companyRegistrationNumber: string };
     organization: { officialName: string; organizationType: string };
+    donationEligible: boolean;
     bank: TierBankFormFields;
 };
 
@@ -111,6 +112,7 @@ export function emptyTierFormFields(nature: TierNature = 'company'): TierFormFie
         person: { firstName: '', lastName: '', birthDate: null },
         company: { legalName: '', vatNumber: '', companyRegistrationNumber: '' },
         organization: { officialName: '', organizationType: '' },
+        donationEligible: false,
         bank: emptyTierBankFormFields()
     };
 }
@@ -155,6 +157,7 @@ export function tierToFormFields(tier: Tier): TierFormFields {
             officialName: tier.organization?.officialName ?? '',
             organizationType: tier.organization?.organizationType ?? ''
         },
+        donationEligible: tier.donationEligible === true,
         bank: tierBankToFormFields(tier)
     };
 }
@@ -291,6 +294,7 @@ export function buildTierPayload(fields: TierFormFields, context: TierPayloadCon
             person: panel.person,
             company: panel.company,
             organization: panel.organization,
+            donationEligible: fields.nature === 'organization' && fields.donationEligible,
             bank: bank.bank
         }
     };
@@ -334,6 +338,7 @@ export function isTierFormDirty(tier: Tier, fields: TierFormFields): boolean {
     const tierRoles = normalizeRoles(tier.roles);
     if (formRoles.length !== tierRoles.length || formRoles.some((role, i) => role !== tierRoles[i])) return true;
     if (isTierBankDirty(tier, fields.bank)) return true;
+    if ((tier.donationEligible === true) !== (fields.nature === 'organization' && fields.donationEligible)) return true;
     switch (fields.nature) {
         case 'person':
             return (

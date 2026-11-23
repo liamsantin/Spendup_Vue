@@ -25,9 +25,19 @@ const items = computed(() => props.data.items.filter((item) => props.lines.inclu
         <article v-for="item in items" :key="item.nature" class="tax-fiche" :data-test="`tax-theme-${item.nature}`">
             <p class="tax-fiche__title">{{ t(`taxPage.themes.natures.${item.nature}`) }} · {{ money(item.total) }}</p>
             <ul v-if="item.transactions.length" class="tax-pillar3a__list">
-                <li v-for="row in item.transactions" :key="row.transactionPublicId">{{ row.label }} · {{ money(row.amount) }}</li>
+                <li v-for="row in item.transactions" :key="row.transactionPublicId">
+                    {{ row.label }}<template v-if="row.tierName"> · {{ row.tierName }}</template> · {{ money(row.amount) }}
+                    <strong v-if="row.receiptExpected" data-test="tax-receipt-expected">
+                        · {{ t('taxPage.themes.receiptExpected') }}</strong
+                    >
+                </li>
             </ul>
             <p v-else class="tax-muted">{{ t('taxPage.themes.empty') }}</p>
+            <ul v-if="item.beneficiaries?.length" class="tax-pillar3a__list" data-test="tax-beneficiaries">
+                <li v-for="entry in item.beneficiaries" :key="entry.name ?? ''">
+                    {{ entry.name ?? t('taxPage.themes.noBeneficiary') }} · {{ money(entry.total) }}
+                </li>
+            </ul>
             <p v-if="item.documentExpected" class="tax-muted">{{ t('taxPage.themes.document', { label: item.documentExpected }) }}</p>
         </article>
     </section>

@@ -10,12 +10,17 @@ export type TaxNatureState = 'none' | 'suggested' | 'confirmed' | 'dismissed';
 export type EffectiveTaxNature = { code: string | null; state: TaxNatureState };
 
 /** Geste envoyé à `PUT /api/transactions/{id}/tax-nature`. */
-export type SetTransactionTaxNaturePayload = { taxNature: string | null; dismissed?: boolean };
+export type SetTransactionTaxNaturePayload = {
+    taxNature: string | null;
+    dismissed?: boolean;
+    /** Enfant gardé (nature « garde » seulement). */ beneficiary?: string | null;
+};
 
 export type TransactionTaxNatureResult = {
     publicId: string;
     taxNature: string | null;
     taxNatureStatus: TransactionTaxNatureStatus | null;
+    beneficiary?: string | null;
 };
 
 export function resolveTaxNature(
