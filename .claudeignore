@@ -1,0 +1,35 @@
+# Dépendances et build
+node_modules/
+dist/
+coverage/
+src-tauri/target/
+*.tsbuildinfo
+
+# Références locales (hors périmètre)
+_template/
+.private/
+.claude/worktrees/
+
+# Env locaux et secrets (garder .env.example)
+.env
+.env.local
+.env.production
+.env.*.local
+
+# Verrous (très volumineux, peu utiles à lire)
+package-lock.json
+
+# Logs et médias
+*.log
+*.mp4
+*.tiff
+*.avi
+*.flv
+*.mov
+*.wmv
+*.png
+*.jpg
+*.ico
+*.icns
+*.woff
+*.woff2
