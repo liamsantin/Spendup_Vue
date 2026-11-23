@@ -424,6 +424,69 @@ const AIDS_2026_BASE: AidEntry[] = [
         }
     },
 
+    {
+        id: 'vd-maintenance-advance',
+        theme: 'family',
+        scope: 'VD',
+        url: 'https://www.vd.ch/prestation/demander-des-avances-sur-pensions-alimentaires',
+        verifiedAt: V,
+        texts: {
+            fr: {
+                title: 'Avances sur pensions alimentaires',
+                summary:
+                    'Si une pension alimentaire n’est pas payée ou seulement en partie, le canton peut aider à la recouvrer et avancer tout ou partie des montants selon le revenu et la fortune.',
+                conditions: [
+                    'Être séparé·e ou divorcé·e, avec une pension fixée et non versée',
+                    'Être domicilié·e dans le canton de Vaud et avoir un titre de séjour',
+                    'L’avance ne porte que sur les pensions dues dès le mois du dépôt de la demande : agir sans attendre'
+                ],
+                organization: 'Bureau de recouvrement et d’avances sur pensions alimentaires (BRAPA)'
+            },
+            en: {
+                title: 'Maintenance advances',
+                summary:
+                    'If maintenance is unpaid or only partly paid, the canton can help recover it and advance all or part of it depending on income and assets.',
+                conditions: [
+                    'Be separated or divorced, with maintenance set but not paid',
+                    'Live in the canton of Vaud and hold a residence permit',
+                    'The advance covers only maintenance due from the month the application is filed: act without delay'
+                ],
+                organization: 'Maintenance recovery and advance office (BRAPA)'
+            }
+        }
+    },
+    {
+        id: 'vd-housing-aid',
+        theme: 'housing',
+        scope: 'VD',
+        url: 'https://www.vd.ch/aides-financieres-et-soutien-social/aides-financieres-et-comment-les-demander/aide-au-logement',
+        verifiedAt: V,
+        texts: {
+            fr: {
+                title: 'Aide individuelle au logement (AIL)',
+                summary:
+                    'Aide financière pour les familles locataires, calculée selon la situation familiale, le revenu et le loyer. Elle n’est octroyée que dans certaines communes vaudoises.',
+                conditions: [
+                    'Habiter une commune qui applique l’AIL : renseignez-vous auprès de la vôtre',
+                    'Ne pas toucher l’aide sociale ni de prestations complémentaires',
+                    'L’aide est accordée pour 12 mois renouvelables, sur décision de la municipalité'
+                ],
+                organization: 'Municipalité de votre commune, avec le canton de Vaud'
+            },
+            en: {
+                title: 'Individual housing aid (AIL)',
+                summary:
+                    'Financial aid for tenant families, based on family situation, income and rent. It is granted only in some Vaud municipalities.',
+                conditions: [
+                    'Live in a municipality that applies the AIL: ask yours',
+                    'Not receive social assistance or supplementary benefits',
+                    'The aid is granted for 12 renewable months, on the municipality’s decision'
+                ],
+                organization: 'Your municipality, with the canton of Vaud'
+            }
+        }
+    },
+
     /* ── Genève ── */
     {
         id: 'ge-premium-subsidy',
@@ -547,6 +610,98 @@ const AIDS_2026_BASE: AidEntry[] = [
         }
     },
 
+    {
+        id: 'ge-family-allowance',
+        theme: 'family',
+        scope: 'GE',
+        url: 'https://www.ge.ch/fonds-cantonal-compensation-allocations-familiales',
+        verifiedAt: V,
+        texts: {
+            fr: {
+                title: 'Allocations familiales genevoises',
+                summary:
+                    'Allocation pour enfant, allocation de formation et allocation de naissance ou d’adoption, au niveau fixé par le canton de Genève. Les montants figurent sur la page officielle.',
+                conditions: [
+                    'Être salarié·e, indépendant·e ou sans activité lucrative (sous conditions)',
+                    'Les salariés passent en général par leur employeur, les personnes sans activité par la caisse cantonale'
+                ],
+                organization: 'Fonds cantonal de compensation des allocations familiales'
+            },
+            en: {
+                title: 'Geneva family allowances',
+                summary:
+                    'A child allowance, a training allowance and a birth or adoption allowance, at the level set by the canton of Geneva. Amounts are on the official page.',
+                conditions: [
+                    'Be an employee, self-employed or without gainful activity (subject to conditions)',
+                    'Employees generally go through their employer, people without a job through the cantonal fund'
+                ],
+                organization: 'Cantonal family allowance compensation fund'
+            }
+        }
+    },
+    {
+        id: 'ge-maintenance-advance',
+        theme: 'family',
+        scope: 'GE',
+        url: 'https://www.ge.ch/pensions-alimentaires-impayees',
+        verifiedAt: V,
+        texts: {
+            fr: {
+                title: 'Avances et recouvrement de pensions alimentaires',
+                summary:
+                    'Le canton aide à récupérer une pension alimentaire impayée et peut verser des avances à la personne créancière, sous conditions de domicile et de revenu.',
+                conditions: [
+                    'Être domicilié·e à Genève depuis un certain temps (sauf si une avance était déjà versée par un autre canton)',
+                    'Avoir une pension fixée par un jugement ou une convention, non payée ou payée en partie',
+                    'Le revenu déterminant doit rester sous la limite fixée : voir la page officielle'
+                ],
+                organization: 'Service cantonal d’avance et de recouvrement des pensions alimentaires (SCARPA)'
+            },
+            en: {
+                title: 'Maintenance advances and recovery',
+                summary:
+                    'The canton helps recover unpaid maintenance and can pay advances to the creditor, subject to residence and income conditions.',
+                conditions: [
+                    'Have lived in Geneva for a given period (unless another canton was already paying advances)',
+                    'Have maintenance set by a judgment or agreement, unpaid or only partly paid',
+                    'Relevant income must stay under the set limit: see the official page'
+                ],
+                organization: 'Cantonal maintenance advance and recovery service (SCARPA)'
+            }
+        }
+    },
+    {
+        id: 'ge-housing-allowance',
+        theme: 'housing',
+        scope: 'GE',
+        url: 'https://www.ge.ch/allocation-logement',
+        verifiedAt: V,
+        texts: {
+            fr: {
+                title: 'Allocation de logement',
+                summary:
+                    'Aide personnelle pour les locataires dont le loyer pèse trop lourd dans le budget. Elle est plafonnée par pièce et par rapport au loyer effectif ; le détail est sur la page officielle.',
+                conditions: [
+                    'Être locataire et payer ses impôts à Genève',
+                    'Avoir habité le canton de façon continue pendant une durée minimale ces dernières années',
+                    'Déposer le formulaire de demande : le droit court dès le mois qui suit la décision'
+                ],
+                organization: 'Office cantonal du logement et de la planification foncière (OCLPF)'
+            },
+            en: {
+                title: 'Housing allowance',
+                summary:
+                    'Personal aid for tenants whose rent weighs too heavily on their budget. It is capped per room and against the actual rent; details are on the official page.',
+                conditions: [
+                    'Be a tenant and pay your taxes in Geneva',
+                    'Have lived in the canton continuously for a minimum period in recent years',
+                    'Submit the application form: the right starts the month after the decision'
+                ],
+                organization: 'Cantonal housing and land planning office (OCLPF)'
+            }
+        }
+    },
+
     /* ── Neuchâtel ── */
     {
         id: 'ne-premium-subsidy',
@@ -638,6 +793,36 @@ const AIDS_2026_BASE: AidEntry[] = [
                     'Fill in the single benefits application form'
                 ],
                 organization: 'Regional social counter (GSR) of your municipality'
+            }
+        }
+    },
+
+    {
+        id: 'ne-family-allowance',
+        theme: 'family',
+        scope: 'NE',
+        url: 'https://www.ne.ch/autorites/decs/secs/scaf',
+        verifiedAt: V,
+        texts: {
+            fr: {
+                title: 'Allocations familiales neuchâteloises',
+                summary:
+                    'Allocation pour enfant, allocation de formation et allocation de naissance ou d’adoption selon la loi neuchâteloise. Les montants sont sur la page officielle.',
+                conditions: [
+                    'Être salarié·e, indépendant·e ou sans activité lucrative (sous conditions)',
+                    'Les salariés passent en général par leur employeur, les personnes sans activité par la caisse cantonale'
+                ],
+                organization: 'Caisse cantonale de compensation pour allocations familiales (service SCAF)'
+            },
+            en: {
+                title: 'Neuchâtel family allowances',
+                summary:
+                    'A child allowance, a training allowance and a birth or adoption allowance under Neuchâtel law. Amounts are on the official page.',
+                conditions: [
+                    'Be an employee, self-employed or without gainful activity (subject to conditions)',
+                    'Employees generally go through their employer, people without a job through the cantonal fund'
+                ],
+                organization: 'Cantonal compensation fund for family allowances (SCAF service)'
             }
         }
     },

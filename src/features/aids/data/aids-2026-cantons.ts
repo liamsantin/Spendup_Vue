@@ -1365,5 +1365,114 @@ export const AIDS_2026_CANTONS: AidEntry[] = [
             ['Avoir épuisé les autres ressources et prestations', 'La page officielle précise la marche à suivre'],
             ['Have exhausted other resources and benefits', 'The official page gives the procedure']
         ]
+    }),
+
+    /* ── Compléments (2026-11-23) : Obwalden, Thurgau, Zoug, Bâle-Campagne ── */
+    aid({
+        scope: 'OW',
+        kind: 'premium',
+        language: 'de',
+        url: 'https://www.akow.ch/dienstleistungen/praemienverbilligung',
+        organization: 'Ausgleichskasse Obwalden (AKOW)',
+        summary: [
+            'Aide du canton d’Obwald pour les primes de l’assurance de base. L’exécution est confiée à la caisse de compensation cantonale.',
+            'Help from the canton of Obwalden with basic insurance premiums. Administration is entrusted to the cantonal compensation fund.'
+        ],
+        conditions: [
+            [
+                'Être domicilié dans le canton d’Obwald et assuré à la LAMal',
+                'Les conditions, les délais et le formulaire figurent sur la page officielle'
+            ],
+            ['Live in the canton of Obwalden and be insured under the LAMal', 'Conditions, deadlines and the form are on the official page']
+        ]
+    }),
+    aid({
+        scope: 'OW',
+        kind: 'family',
+        language: 'de',
+        url: 'https://www.akow.ch/dienstleistungen/familienzulagen',
+        organization: 'Ausgleichskasse Obwalden (AKOW)',
+        summary: [
+            'Allocations familiales d’Obwald : allocation pour enfant et allocation de formation. Les montants sont sur la page officielle.',
+            'Obwalden family allowances: a child allowance and a training allowance. Amounts are on the official page.'
+        ],
+        conditions: [
+            ['Être salarié·e, indépendant·e ou sans activité lucrative', 'Les salariés passent en général par leur employeur'],
+            ['Be an employee, self-employed or without gainful activity', 'Employees generally go through their employer']
+        ]
+    }),
+    aid({
+        scope: 'TG',
+        kind: 'premium',
+        language: 'de',
+        url: 'https://www.svztg.ch/dienstleistungen/praemienverbilligung-ipv',
+        organization: 'Sozialversicherungszentrum Thurgau (SVZ)',
+        summary: [
+            'Aide du canton de Thurgovie pour les primes de l’assurance de base, versée directement à l’assureur.',
+            'Help from the canton of Thurgau with basic insurance premiums, paid directly to the insurer.'
+        ],
+        conditions: [
+            [
+                'Avoir son domicile fiscal dans le canton de Thurgovie au 1er janvier',
+                'Selon la situation, une demande est nécessaire : voir la page officielle'
+            ],
+            [
+                'Have your tax residence in the canton of Thurgau on 1 January',
+                'Depending on the situation an application is needed: see the official page'
+            ]
+        ]
+    }),
+    aid({
+        scope: 'TG',
+        kind: 'family',
+        language: 'de',
+        url: 'https://www.svztg.ch/dienstleistungen/familienzulagen-famz-flg',
+        organization: 'Sozialversicherungszentrum Thurgau (SVZ)',
+        summary: [
+            'Allocations familiales de Thurgovie pour les salariés, les personnes sans activité lucrative et l’agriculture.',
+            'Thurgau family allowances for employees, people without gainful activity and agriculture.'
+        ],
+        conditions: [
+            ['Remplir le formulaire correspondant à votre statut', 'Les salariés passent en général par leur employeur'],
+            ['Fill in the form matching your status', 'Employees generally go through their employer']
+        ]
+    }),
+    aid({
+        scope: 'ZG',
+        kind: 'scholarship',
+        language: 'de',
+        url: 'https://zg.ch/de/bildung/bslb/ausbildungsbeitraege',
+        organization: 'Amt für Berufsberatung, Stipendienstelle des Kantons Zug',
+        summary: [
+            'Bourses non remboursables, prêts avec intérêts et bourses du marché du travail pour la formation continue. La loi a été entièrement révisée en septembre 2025.',
+            'Non-repayable grants, loans with interest and labour-market grants for further training. The law was fully revised in September 2025.'
+        ],
+        conditions: [
+            ['Avoir son domicile déterminant dans le canton de Zoug', 'Les conditions et les délais figurent sur la page officielle'],
+            ['Have your determining residence in the canton of Zug', 'Conditions and deadlines are on the official page']
+        ]
+    }),
+    aid({
+        scope: 'BL',
+        kind: 'scholarship',
+        language: 'de',
+        url: 'https://www.baselland.ch/politik-und-behorden/direktionen/bildungs-kultur-und-sportdirektion/berufsbildung-mittelschulen-und-hochschulen/hauptabteilung-berufsbildung/ausbildungsbeitraege',
+        organization: 'Ausbildungsbeiträge, Hauptabteilung Berufsbildung, Bildungs-, Kultur- und Sportdirektion BL',
+        summary: [
+            'Bourses et prêts d’études. La page propose un calculateur pour estimer une aide possible.',
+            'Study grants and loans. The page offers a calculator to estimate possible support.'
+        ],
+        conditions: [
+            [
+                'Avoir son domicile en matière de bourses dans le canton de Bâle-Campagne',
+                'Ne pas pouvoir financer la formation seul·e ou avec l’aide de ses proches',
+                'Déposer une nouvelle demande pour chaque année de formation'
+            ],
+            [
+                'Have your grant residence in the canton of Basel-Landschaft',
+                'Be unable to fund the training alone or with relatives’ help',
+                'Apply again for each year of training'
+            ]
+        ]
     })
 ];
