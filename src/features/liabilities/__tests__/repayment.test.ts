@@ -60,8 +60,9 @@ describe('navigation', () => {
         expect(idsFromPath('/demo/planning/simulateur-remboursement').activeId).toBe('repayment');
     });
 
-    it('ouvre la page dans la démo', () => {
+    it('verrouille la page dans la démo', () => {
         const page = (DemoRoutes.children ?? []).find((child) => child.path === 'planning/simulateur-remboursement');
         expect(page?.name).toBe('DemoAppRepaymentSimulator');
+        expect(String(page?.component)).toContain('DemoLockedPage');
     });
 });

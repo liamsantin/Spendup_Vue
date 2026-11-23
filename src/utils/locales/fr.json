@@ -1556,7 +1556,7 @@
         "formula": "Quote-part : {rate} % des frais au-delà de la franchise, plafonnée à {max} par an.",
         "howTitle": "Comment c'est calculé",
         "howCost": "Coût de l'année = 12 primes + vos frais jusqu'à la franchise + la quote-part. Le coût maximal suppose des frais très élevés.",
-        "howNotCounted": "Ne sont pas comptés : la contribution hospitalière (15 CHF par jour), la quote-part de 40 % de certains médicaments et les enfants.",
+        "howNotCounted": "Ne sont pas comptés : la contribution hospitalière journalière, la quote-part majorée de certains médicaments et les enfants.",
         "howQuotes": "Les primes sont celles de vos devis, que vous saisissez vous-même. Les franchises et la quote-part sont les montants légaux de l'année.",
         "howChange": "Spendup ne change rien chez votre assureur : annoncez-lui la nouvelle franchise, puis mettez à jour votre fiche d'assurance.",
         "estimateNote": "Estimation, non contractuelle : seuls votre assureur et vos devis font foi."

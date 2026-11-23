@@ -83,7 +83,7 @@ const AIDS_2026_BASE: AidEntry[] = [
             fr: {
                 title: 'Allocation de maternité',
                 summary:
-                    'Compensation du revenu après l’accouchement : 80 % du revenu moyen, plafonnée à 220 francs par jour, pendant 14 semaines (98 jours).',
+                    'Compensation du revenu après l’accouchement : une part du revenu moyen, plafonnée par jour, pendant 14 semaines (98 jours). Taux et plafond sur la page officielle.',
                 conditions: [
                     'Avoir été assurée à l’AVS pendant les 9 mois précédant l’accouchement',
                     'Avoir exercé une activité lucrative pendant au moins 5 mois durant cette période',
@@ -93,7 +93,8 @@ const AIDS_2026_BASE: AidEntry[] = [
             },
             en: {
                 title: 'Maternity allowance',
-                summary: 'Income compensation after childbirth: 80% of average income, capped at CHF 220 per day, for 14 weeks (98 days).',
+                summary:
+                    'Income compensation after childbirth: a share of average income, capped per day, for 14 weeks (98 days). Rate and cap are on the official page.',
                 conditions: [
                     'Have been insured with the AVS during the 9 months before the birth',
                     'Have worked for at least 5 months during that period',
@@ -113,7 +114,7 @@ const AIDS_2026_BASE: AidEntry[] = [
             fr: {
                 title: 'Indemnités de chômage',
                 summary:
-                    'Indemnités journalières pendant la recherche d’un emploi : en règle générale 70 % du gain assuré, 80 % dans certains cas (par exemple avec des enfants à charge ou un faible revenu).',
+                    'Indemnités journalières pendant la recherche d’un emploi : une part du gain assuré, plus élevée dans certains cas (par exemple avec des enfants à charge ou un faible revenu). Taux sur la page officielle.',
                 conditions: [
                     'Être domicilié en Suisse et apte au placement',
                     'Avoir cotisé au moins 12 mois durant les 2 années qui précèdent l’inscription, ou en être libéré',
@@ -125,7 +126,7 @@ const AIDS_2026_BASE: AidEntry[] = [
             en: {
                 title: 'Unemployment benefits',
                 summary:
-                    'Daily benefits while you look for work: generally 70% of insured earnings, 80% in some cases (for example with dependent children or a low income).',
+                    'Daily benefits while you look for work: a share of insured earnings, higher in some cases (for example with dependent children or a low income). Rates are on the official page.',
                 conditions: [
                     'Live in Switzerland and be fit for placement',
                     'Have paid contributions for at least 12 months in the 2 years before registering, or be exempted',

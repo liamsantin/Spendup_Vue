@@ -193,8 +193,9 @@ describe('navigation', () => {
         expect(idsFromPath('/demo/planning/interets-composes').activeId).toBe('compoundInterest');
     });
 
-    it('ouvre la page dans la démo', () => {
+    it('verrouille la page dans la démo', () => {
         const page = (DemoRoutes.children ?? []).find((child) => child.path === 'planning/interets-composes');
         expect(page?.name).toBe('DemoAppCompoundInterest');
+        expect(String(page?.component)).toContain('DemoLockedPage');
     });
 });

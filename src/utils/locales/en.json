@@ -1556,7 +1556,7 @@
         "formula": "Cost sharing: {rate}% of costs above the deductible, capped at {max} per year.",
         "howTitle": "How it is calculated",
         "howCost": "Cost for the year = 12 premiums + your costs up to the deductible + cost sharing. The maximum cost assumes very high costs.",
-        "howNotCounted": "Not counted: the hospital contribution (CHF 15 per day), the 40% cost sharing on some medicines and children.",
+        "howNotCounted": "Not counted: the daily hospital contribution, the higher cost sharing on some medicines and children.",
         "howQuotes": "Premiums are those of your quotes, entered by you. Deductibles and cost sharing are the legal amounts of the year.",
         "howChange": "Spendup changes nothing at your insurer: tell them the new deductible, then update your insurance record.",
         "estimateNote": "Estimate, not contractual: only your insurer and your quotes are binding."

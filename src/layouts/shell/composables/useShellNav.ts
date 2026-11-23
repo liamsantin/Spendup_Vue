@@ -2,6 +2,7 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import { useNotificationsStore } from '@/features/notifications';
+import { demoActive } from '@/features/demo/session';
 import { BUDGETS_PATHS } from '@/features/budgets/paths';
 import { IMPORTS_PATHS } from '@/features/imports/paths';
 import { SAVINGS_GOALS_PATHS } from '@/features/savings-goals/paths';
@@ -375,7 +376,9 @@ export function useShellNav() {
         ),
         section(SHELL_NAV_IDS.planning, t('nav.headers.planning'), PlanningNavIcon, planningLeaves.value, false, PlanningActiveNavIcon),
         section(SHELL_NAV_IDS.wealth, t('nav.headers.wealth'), WealthNavIcon, wealthLeaves.value, false, WealthActiveNavIcon),
-        section(SHELL_NAV_IDS.tools, t('nav.headers.tools'), ToolsNavIcon, toolsLeaves.value, false, ToolsActiveNavIcon),
+        ...(demoActive.value
+            ? []
+            : [section(SHELL_NAV_IDS.tools, t('nav.headers.tools'), ToolsNavIcon, toolsLeaves.value, false, ToolsActiveNavIcon)]),
         section(SHELL_NAV_IDS.gestion, t('nav.headers.gestion'), GestionNavIcon, gestionLeaves.value, false, GestionActiveNavIcon),
         section(SHELL_NAV_IDS.network, t('nav.headers.network'), NetworkNavIcon, networkLeaves.value, false, NetworkActiveNavIcon)
     ]);

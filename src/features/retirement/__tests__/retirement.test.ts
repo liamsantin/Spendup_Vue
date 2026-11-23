@@ -173,8 +173,9 @@ describe('navigation', () => {
         expect(idsFromPath('/demo/planning/retraite').activeId).toBe('retirement');
     });
 
-    it('ouvre la page dans la démo', () => {
+    it('verrouille la page dans la démo', () => {
         const page = (DemoRoutes.children ?? []).find((child) => child.path === 'planning/retraite');
         expect(page?.name).toBe('DemoAppRetirement');
+        expect(String(page?.component)).toContain('DemoLockedPage');
     });
 });

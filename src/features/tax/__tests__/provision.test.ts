@@ -108,9 +108,9 @@ describe('page Provision d’impôts', () => {
         expect(idsFromPath('/app/planning/impots').activeId).toBe('tax');
     });
 
-    it('ouvre la page dans la démo', () => {
+    it('verrouille la page dans la démo', () => {
         const page = (DemoRoutes.children ?? []).find((child) => child.path === 'planning/provision-impots');
         expect(page?.name).toBe('DemoAppTaxProvision');
-        expect(String(page?.component)).not.toContain('DemoLockedPage');
+        expect(String(page?.component)).toContain('DemoLockedPage');
     });
 });

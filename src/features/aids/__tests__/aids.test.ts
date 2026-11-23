@@ -189,8 +189,9 @@ describe('navigation', () => {
         expect(idsFromPath('/demo/planning/aides').activeId).toBe('aids');
     });
 
-    it('ouvre la page dans la démo', () => {
+    it('verrouille la page dans la démo', () => {
         const page = (DemoRoutes.children ?? []).find((child) => child.path === 'planning/aides');
         expect(page?.name).toBe('DemoAppAids');
+        expect(String(page?.component)).toContain('DemoLockedPage');
     });
 });

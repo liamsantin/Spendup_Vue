@@ -130,9 +130,9 @@ describe('page Comparateur LAMal', () => {
         expect(idsFromPath('/demo/planning/comparateur-lamal').activeId).toBe('lamal');
     });
 
-    it('ouvre la page dans la démo', () => {
+    it('verrouille la page dans la démo', () => {
         const page = (DemoRoutes.children ?? []).find((child) => child.path === 'planning/comparateur-lamal');
         expect(page?.name).toBe('DemoAppLamalComparison');
-        expect(String(page?.component)).not.toContain('DemoLockedPage');
+        expect(String(page?.component)).toContain('DemoLockedPage');
     });
 });

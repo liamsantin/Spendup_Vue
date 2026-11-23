@@ -11,6 +11,7 @@ import AppSelect from '@/components/shared/select/AppSelect.vue';
 import { formatAccountBalance } from '@/features/accounts/format';
 import type { Currency } from '@/features/accounts/types';
 import { DASHBOARD_MASKED_AMOUNT } from '@/features/dashboard/format';
+import { legalParametersApi as legalApi } from '@/features/aids/api';
 import { retirementApi } from '@/features/retirement/api';
 import { retirementInputIssue } from '@/features/retirement/calculator';
 import {
@@ -34,6 +35,7 @@ const lppMode = ref<'pension' | 'capital'>('pension');
 const lppPensionText = ref('');
 const lppCapitalText = ref('');
 const lppRateText = ref('');
+const lppRatePlaceholder = ref('');
 const pillar3aText = ref('');
 const spreadText = ref(String(RETIREMENT_DEFAULT_SPREAD_YEARS));
 const expensesText = ref('');
@@ -141,6 +143,16 @@ watch(
 onBeforeUnmount(() => clearTimeout(timer));
 
 onMounted(async () => {
+    /* Taux minimal légal LPP (M0) affiché en exemple dans le champ : jamais écrit en dur. */
+    legalApi
+        .get()
+        .then((legal) => {
+            const rate = legal.items.find((item) => item.key === 'lppMinConversionRate')?.value;
+            lppRatePlaceholder.value = rate == null ? '' : String(rate);
+        })
+        .catch(() => {
+            /* Sans paramètres légaux, le champ n'a pas d'exemple. */
+        });
     try {
         const profile = await retirementApi.getProfile();
         if (profile.input) {
@@ -290,7 +302,7 @@ const ageText = computed(() => {
                                 color="primary"
                                 variant="outlined"
                                 hide-details
-                                placeholder="6.8"
+                                :placeholder="lppRatePlaceholder"
                             />
                             <p class="retire__muted">{{ t('retirement.lppRateHint') }}</p>
                         </div>
