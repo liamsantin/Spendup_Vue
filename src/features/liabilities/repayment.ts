@@ -30,6 +30,44 @@ export interface RepaymentResult {
     totalPaid: number | null;
     totalInterest: number | null;
     lastPayment: number | null;
+    /** Tableau d'amortissement (une ligne par mois), `null` hors statut `repaid`. */
+    schedule: RepaymentScheduleRow[] | null;
+}
+
+/** Une échéance : intérêts du mois, part de capital remboursée, restant dû après l'échéance. */
+export interface RepaymentScheduleRow {
+    month: number;
+    payment: number;
+    interest: number;
+    principal: number;
+    balance: number;
+}
+
+/** Une année du tableau : sommes de l'année et restant dû à la fin de l'année (ou de la dernière échéance). */
+export interface RepaymentYearRow {
+    year: number;
+    payment: number;
+    interest: number;
+    principal: number;
+    balance: number;
+}
+
+/** Regroupe les échéances par année (mois 1 à 12 = année 1). */
+export function repaymentYears(schedule: RepaymentScheduleRow[]): RepaymentYearRow[] {
+    const years: RepaymentYearRow[] = [];
+    for (const row of schedule) {
+        const year = Math.ceil(row.month / 12);
+        let current = years[years.length - 1];
+        if (!current || current.year !== year) {
+            current = { year, payment: 0, interest: 0, principal: 0, balance: 0 };
+            years.push(current);
+        }
+        current.payment = Math.round((current.payment + row.payment) * 100) / 100;
+        current.interest = Math.round((current.interest + row.interest) * 100) / 100;
+        current.principal = Math.round((current.principal + row.principal) * 100) / 100;
+        current.balance = row.balance;
+    }
+    return years;
 }
 
 export const repaymentApi = {
@@ -57,7 +95,7 @@ export function simulateRepayment(request: RepaymentRequest): RepaymentResult {
         firstMonthInterest: fromCents(firstInterest),
         minimumPayment: fromCents(firstInterest + 1)
     };
-    const unresolved = { months: null, totalPaid: null, totalInterest: null, lastPayment: null };
+    const unresolved = { months: null, totalPaid: null, totalInterest: null, lastPayment: null, schedule: null };
 
     if (monthlyRate > 0 && payment <= firstInterest) return { ...base, ...unresolved, status: 'neverRepaid' };
 
@@ -65,13 +103,22 @@ export function simulateRepayment(request: RepaymentRequest): RepaymentResult {
     let months = 0;
     let totalPaid = 0;
     let last = 0;
+    const schedule: RepaymentScheduleRow[] = [];
     while (balance > 0) {
         if (months === REPAYMENT_MAX_MONTHS) return { ...base, ...unresolved, status: 'tooLong' };
-        const due = balance + interestOf(balance);
+        const interest = interestOf(balance);
+        const due = balance + interest;
         last = Math.min(payment, due);
         totalPaid += last;
         balance = due - last;
         months++;
+        schedule.push({
+            month: months,
+            payment: fromCents(last),
+            interest: fromCents(interest),
+            principal: fromCents(last - interest),
+            balance: fromCents(balance)
+        });
     }
     return {
         ...base,
@@ -79,6 +126,7 @@ export function simulateRepayment(request: RepaymentRequest): RepaymentResult {
         months,
         totalPaid: fromCents(totalPaid),
         totalInterest: fromCents(totalPaid - principal),
-        lastPayment: fromCents(last)
+        lastPayment: fromCents(last),
+        schedule
     };
 }

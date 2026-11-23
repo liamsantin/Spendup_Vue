@@ -2,6 +2,8 @@ import { fetchWrapper } from '@/utils/helpers/fetch-helpers';
 import type {
     CompoundCalculation,
     CompoundCalculationList,
+    CompoundInterestGoal,
+    CompoundInterestGoalRequest,
     CompoundInterestRequest,
     CompoundInterestResult,
     SaveCompoundCalculationPayload
@@ -13,6 +15,11 @@ export const compoundInterestApi = {
     /** Calcul sans rien enregistrer. */
     simulate(request: CompoundInterestRequest) {
         return fetchWrapper.post(`${BASE}/simulate`, request) as Promise<CompoundInterestResult>;
+    },
+
+    /** Calcul inverse : versement ou durée pour atteindre un montant visé. */
+    goal(request: CompoundInterestGoalRequest) {
+        return fetchWrapper.post(`${BASE}/goal`, request) as Promise<CompoundInterestGoal>;
     },
 
     list() {

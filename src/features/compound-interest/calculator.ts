@@ -64,7 +64,11 @@ interface YearEnd {
     value: number;
 }
 
-function run(input: CompoundInterestRequest, annualRatePercent: number, annualFeePercent: number): YearEnd[] {
+function* months(
+    input: CompoundInterestRequest,
+    annualRatePercent: number,
+    annualFeePercent: number
+): Generator<{ month: number; contributed: number; value: number }> {
     const net = Math.max(annualRatePercent - annualFeePercent, COMPOUND_RATE_MIN);
     const perYear = periodsPerYear(input.compounding);
     const monthlyFactor = Math.pow(1 + net / 100 / perYear, perYear / 12);
@@ -72,7 +76,6 @@ function run(input: CompoundInterestRequest, annualRatePercent: number, annualFe
 
     let value = input.initialAmount;
     let contributed = value;
-    const years: YearEnd[] = [];
 
     for (let month = 1; month <= input.years * 12; month += 1) {
         const year = Math.floor((month - 1) / 12) + 1;
@@ -84,9 +87,60 @@ function run(input: CompoundInterestRequest, annualRatePercent: number, annualFe
         if (!input.contributionAtStart) value += amount;
         contributed += amount;
 
-        if (month % 12 === 0) years.push({ year, contributed, value });
+        yield { month, contributed, value };
+    }
+}
+
+function run(input: CompoundInterestRequest, annualRatePercent: number, annualFeePercent: number): YearEnd[] {
+    const years: YearEnd[] = [];
+    for (const { month, contributed, value } of months(input, annualRatePercent, annualFeePercent)) {
+        if (month % 12 === 0) years.push({ year: month / 12, contributed, value });
     }
     return years;
+}
+
+export type CompoundGoalSolve = 'contribution' | 'years';
+
+export interface CompoundGoalSolution {
+    /** Versement trouvé (mode `contribution`), arrondi au centime supérieur. */
+    contribution: number | null;
+    /** Nombre de mois trouvé (mode `years`). */
+    months: number | null;
+}
+
+/**
+ * Calcul inverse, même méthode que l’API : versement qui atteint `target` au bout de `input.years`, ou durée (50 ans au plus,
+ * versement de `input`) qui l’atteint. `null` si les paramètres sont invalides ou le montant visé est hors limites ;
+ * `{ contribution: null, months: null }` si l’objectif est inatteignable.
+ */
+export function solveCompoundGoal(input: CompoundInterestRequest, target: number, solve: CompoundGoalSolve): CompoundGoalSolution | null {
+    if (!Number.isFinite(target) || target <= 0 || target > COMPOUND_AMOUNT_MAX) return null;
+    const solveContribution = solve === 'contribution';
+    const probe = solveContribution ? { ...input, contributionAmount: 1 } : { ...input, years: COMPOUND_MAX_YEARS };
+    if (compoundInputIssue(probe)) return null;
+
+    const rate = input.annualRatePercent;
+    const fee = input.annualFeePercent;
+    if (!solveContribution) {
+        for (const { month, value } of months(probe, rate, fee)) {
+            if (!Number.isFinite(value) || Math.abs(value) > VALUE_LIMIT) break;
+            if (value >= target) return { contribution: null, months: month };
+        }
+        return { contribution: null, months: null };
+    }
+
+    // Valeur finale linéaire en fonction du versement : valeur(c) = valeur(0) + c × (valeur(1) - valeur(0)).
+    const last = (request: CompoundInterestRequest): number => {
+        let value = 0;
+        for (const row of months(request, rate, fee)) value = row.value;
+        return value;
+    };
+    const zero = last({ ...input, contributionAmount: 0 });
+    if (zero >= target) return { contribution: 0, months: null };
+    const perUnit = last({ ...input, contributionAmount: 1 }) - zero;
+    if (!Number.isFinite(perUnit) || perUnit <= 1e-9) return { contribution: null, months: null };
+    const needed = Math.ceil(((target - zero) / perUnit) * 100) / 100;
+    return needed > COMPOUND_AMOUNT_MAX ? { contribution: null, months: null } : { contribution: needed, months: null };
 }
 
 /**

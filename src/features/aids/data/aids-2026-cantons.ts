@@ -1474,5 +1474,81 @@ export const AIDS_2026_CANTONS: AidEntry[] = [
                 'Apply again for each year of training'
             ]
         ]
+    }),
+
+    /* ── Compléments (2026-11-23, suite) : Schaffhouse, Uri, Nidwald, Bâle-Campagne ── */
+    aid({
+        scope: 'SH',
+        kind: 'scholarship',
+        language: 'de',
+        url: 'https://sh.ch/CMS/Webseite/Kanton-Schaffhausen/Beh-rde/Verwaltung/Erziehungsdepartement/Dienststelle-Mittelschul--und-Berufsbildung/Fachstelle-Ausbildungsbeitr-ge-185529-DE.html',
+        organization: 'Abteilung Ausbildungsbeiträge / Stipendienstelle, Erziehungsdepartement Schaffhausen',
+        summary: [
+            'Bourses non remboursables et prêts d’études pour une formation reconnue, quand les moyens de la personne en formation et de sa famille ne suffisent pas. Les bourses ne couvrent pas toutes les dépenses.',
+            'Non-repayable grants and study loans for a recognised training, when the means of the student and the family are not enough. Grants do not cover every expense.'
+        ],
+        conditions: [
+            [
+                'Suivre une formation reconnue et avoir son domicile déterminant dans le canton de Schaffhouse',
+                'Déposer la demande dans le délai indiqué après le début de l’année de formation ou du semestre',
+                'Les conditions et le dépôt de la demande figurent sur la page officielle'
+            ],
+            [
+                'Follow a recognised training and have your determining residence in the canton of Schaffhausen',
+                'Apply within the stated time after the start of the training year or semester',
+                'Conditions and how to apply are on the official page'
+            ]
+        ]
+    }),
+    aid({
+        scope: 'UR',
+        kind: 'social',
+        language: 'de',
+        url: 'https://www.ur.ch/familiesoziales/1157',
+        organization: 'Amt für Soziales des Kantons Uri',
+        summary: [
+            'À Uri, l’aide sociale est du ressort des communes. La page du Amt für Soziales renvoie aux services de conseil et aux organisations à contacter.',
+            'In Uri, social assistance is the responsibility of the municipalities. The Amt für Soziales page points to the advice services and organisations to contact.'
+        ],
+        conditions: [
+            ['S’adresser à sa commune de domicile ou à un service de conseil', 'Avoir épuisé les autres ressources et prestations'],
+            ['Contact your municipality of residence or an advice service', 'Have exhausted other resources and benefits']
+        ]
+    }),
+    aid({
+        scope: 'NW',
+        kind: 'social',
+        language: 'de',
+        url: 'https://www.nw.ch/sozialdienstdienste/1573',
+        organization: 'Sozialdienst, Gesundheits- und Sozialdirektion Nidwalden',
+        summary: [
+            'Aide financière pour les personnes qui ne peuvent pas couvrir leurs besoins vitaux. Le service social cantonal conseille et dépose la demande ; la commune décide.',
+            'Financial help for people who cannot cover their living costs. The cantonal social service advises and files the application; the municipality decides.'
+        ],
+        conditions: [
+            [
+                'Avoir épuisé les autres ressources, prestations et aides de ses proches',
+                'La demande passe par le service social, qui conseille gratuitement'
+            ],
+            [
+                'Have exhausted other resources, benefits and help from relatives',
+                'The application goes through the social service, which advises free of charge'
+            ]
+        ]
+    }),
+    aid({
+        scope: 'BL',
+        kind: 'social',
+        language: 'de',
+        url: 'https://www.baselland.ch/themen/sozialhilfe',
+        organization: 'Kanton Basel-Landschaft (page thématique « Sozialhilfe », Sozialamt)',
+        summary: [
+            'Page thématique du canton sur l’aide sociale et les prestations voisines. L’aide sociale est accordée par la commune de domicile ; le Sozialamt cantonal en fixe le cadre.',
+            'The canton’s topic page on social assistance and related benefits. Social assistance is granted by the municipality of residence; the cantonal Sozialamt sets the framework.'
+        ],
+        conditions: [
+            ['S’adresser au service social de sa commune de domicile', 'Avoir épuisé les autres ressources et prestations'],
+            ['Contact the social service of your municipality of residence', 'Have exhausted other resources and benefits']
+        ]
     })
 ];

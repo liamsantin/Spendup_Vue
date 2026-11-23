@@ -12,6 +12,7 @@ import type { Currency } from '@/features/accounts/types';
 import { DASHBOARD_MASKED_AMOUNT } from '@/features/dashboard/format';
 import { compareRows } from '@/features/insurance/compare';
 import { lamalApi, type LamalContext } from '@/features/insurance/lamal';
+import { getErrorMessage } from '@/utils/errors/app-error';
 import { recurrenceDetailPath } from '@/features/recurring-payments/paths';
 import { parseTaxAmount } from '@/features/tax/format';
 import { useUserSettingsStore } from '@/features/user-settings/stores/user-settings-store';
@@ -34,6 +35,9 @@ const failed = ref(false);
 const premiums = ref<Record<number, string>>({});
 const expected = ref('');
 const current = ref<number | null>(null);
+const child = ref(false);
+const busy = ref(false);
+const message = ref<{ kind: 'ok' | 'error'; text: string } | null>(null);
 
 const hide = computed(() => settings.current.hideSensitiveAmounts);
 const insuranceLink = computed(() =>
@@ -81,21 +85,70 @@ function franchiseLabel(franchise: number): string {
 async function load() {
     loading.value = true;
     failed.value = false;
+    message.value = null;
     try {
-        const loaded = await lamalApi.context();
+        const loaded = await lamalApi.context(undefined, child.value);
         context.value = loaded;
+        const saved = loaded.saved;
         premiums.value = Object.fromEntries(
-            loaded.franchises.map((f) => [
-                f,
-                f === loaded.currentFranchise && loaded.currentMonthlyPremium ? String(loaded.currentMonthlyPremium) : ''
-            ])
+            loaded.franchises.map((f) => {
+                const quote = saved?.quotes.find((q) => q.franchise === f);
+                if (quote) return [f, String(quote.monthlyPremium)];
+                return [
+                    f,
+                    !saved && f === loaded.currentFranchise && loaded.currentMonthlyPremium ? String(loaded.currentMonthlyPremium) : ''
+                ];
+            })
         );
-        expected.value = loaded.expectedCosts !== null ? String(loaded.expectedCosts) : '';
-        current.value = loaded.currentFranchise;
+        expected.value = saved ? String(saved.expectedCosts) : loaded.expectedCosts !== null ? String(loaded.expectedCosts) : '';
+        current.value = saved ? saved.currentFranchise : loaded.currentFranchise;
     } catch {
         failed.value = true;
     } finally {
         loading.value = false;
+    }
+}
+
+function setChild(value: boolean) {
+    if (child.value === value) return;
+    child.value = value;
+    void load();
+}
+
+async function save() {
+    if (!context.value || !options.value.length || anyInvalid.value) return;
+    busy.value = true;
+    message.value = null;
+    try {
+        await lamalApi.save({
+            expectedCosts: costs.value ?? 0,
+            quotes: options.value.map((o) => ({ franchise: o.franchise, monthlyPremium: o.monthlyPremium })),
+            currentFranchise: current.value,
+            year: context.value.year,
+            child: child.value
+        });
+        const loaded = await lamalApi.context(undefined, child.value);
+        context.value = loaded;
+        message.value = { kind: 'ok', text: t('lamalComparison.savedOk') };
+    } catch (e: unknown) {
+        message.value = { kind: 'error', text: getErrorMessage(e) || t('lamalComparison.saveFailed') };
+    } finally {
+        busy.value = false;
+    }
+}
+
+async function removeSaved() {
+    if (!context.value?.saved) return;
+    busy.value = true;
+    message.value = null;
+    try {
+        await lamalApi.deleteSaved(context.value.year, child.value);
+        context.value = { ...context.value, saved: null };
+        message.value = { kind: 'ok', text: t('lamalComparison.deletedOk') };
+    } catch (e: unknown) {
+        message.value = { kind: 'error', text: getErrorMessage(e) || t('lamalComparison.saveFailed') };
+    } finally {
+        busy.value = false;
     }
 }
 
@@ -118,6 +171,16 @@ onMounted(() => void load());
                     }}</a>
                 </p>
                 <p v-if="context.isFallback" class="lamal__muted">{{ t('lamalComparison.fallback', { year: context.legalYear }) }}</p>
+
+                <div class="lamal__presets" role="group" :aria-label="t('lamalComparison.profileLabel')">
+                    <button type="button" class="su-btn" :class="{ 'su-btn--ink': !child }" :aria-pressed="!child" @click="setChild(false)">
+                        {{ t('lamalComparison.profileAdult') }}
+                    </button>
+                    <button type="button" class="su-btn" :class="{ 'su-btn--ink': child }" :aria-pressed="child" @click="setChild(true)">
+                        {{ t('lamalComparison.profileChild') }}
+                    </button>
+                </div>
+                <p v-if="child" class="lamal__muted">{{ t('lamalComparison.childHint') }}</p>
 
                 <section class="su-section">
                     <header class="su-section__head">
@@ -260,6 +323,25 @@ onMounted(() => void load());
                     </template>
                     <p class="lamal__muted">
                         {{ t('lamalComparison.formula', { rate: context.quotePartRate, max: money(context.quotePartMax) }) }}
+                    </p>
+
+                    <div class="lamal__presets lamal__save">
+                        <button type="button" class="su-btn" :disabled="busy || !options.length || anyInvalid" @click="save">
+                            {{ context.saved ? t('lamalComparison.saveUpdate') : t('lamalComparison.save') }}
+                        </button>
+                        <button v-if="context.saved" type="button" class="su-btn" :disabled="busy" @click="removeSaved">
+                            {{ t('lamalComparison.deleteSaved') }}
+                        </button>
+                    </div>
+                    <p class="lamal__muted">
+                        {{
+                            context.saved
+                                ? t('lamalComparison.savedOn', { date: new Date(context.saved.updatedAt).toLocaleDateString(locale) })
+                                : t('lamalComparison.saveHint')
+                        }}
+                    </p>
+                    <p v-if="message" :class="message.kind === 'error' ? 'lamal__error' : 'lamal__muted'" role="status">
+                        {{ message.text }}
                     </p>
                 </section>
 

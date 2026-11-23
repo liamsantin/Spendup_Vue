@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { compoundInputIssue, computeCompoundInterest } from '@/features/compound-interest/calculator';
+import { compoundInputIssue, computeCompoundInterest, solveCompoundGoal } from '@/features/compound-interest/calculator';
 import {
     COMPOUND_INTEREST_PATH,
     COMPOUND_MAX_SAVED,
     type CompoundCalculation,
+    type CompoundInterestGoal,
     type CompoundInterestRequest,
     type CompoundInterestResult
 } from '@/features/compound-interest/types';
@@ -119,6 +120,64 @@ describe('calcul local des intérêts composés', () => {
         expect(
             computeCompoundInterest(input({ initialAmount: 1_000_000_000, annualRatePercent: 100, years: 50, compounding: 'daily' }))
         ).toBeNull();
+    });
+});
+
+describe('calcul inverse', () => {
+    it('versement : le versement trouvé atteint le montant visé à quelques centimes près', () => {
+        const solution = solveCompoundGoal(input({ initialAmount: 1000, annualRatePercent: 5, years: 10 }), 50000, 'contribution');
+        expect(solution?.contribution).toBeGreaterThan(0);
+        const result = run({ initialAmount: 1000, annualRatePercent: 5, years: 10, contributionAmount: solution?.contribution ?? 0 });
+        expect(result.finalValue).toBeGreaterThanOrEqual(50000);
+        expect(result.finalValue).toBeLessThan(50010);
+    });
+
+    it('versement nul quand le capital atteint déjà l’objectif', () => {
+        expect(solveCompoundGoal(input({ initialAmount: 10000, annualRatePercent: 3, years: 5 }), 5000, 'contribution')).toEqual({
+            contribution: 0,
+            months: null
+        });
+    });
+
+    it('durée : 10 000 à 5 % doublent en 171 mois environ', () => {
+        const solution = solveCompoundGoal(input({ initialAmount: 10000, annualRatePercent: 5, compounding: 'yearly' }), 20000, 'years');
+        expect(solution?.months).toBeGreaterThanOrEqual(170);
+        expect(solution?.months).toBeLessThanOrEqual(172);
+    });
+
+    it('objectif inatteignable sans rendement ni versement, montant ou paramètres invalides refusés', () => {
+        expect(solveCompoundGoal(input({ initialAmount: 10000, annualRatePercent: 0 }), 20000, 'years')).toEqual({
+            contribution: null,
+            months: null
+        });
+        expect(solveCompoundGoal(input({ initialAmount: 1000, annualRatePercent: 5 }), 0, 'years')).toBeNull();
+        expect(solveCompoundGoal(input({ annualRatePercent: 5 }), 1000, 'years')).toBeNull();
+    });
+});
+
+describe('démo : calcul inverse', () => {
+    it('répond comme le calcul local et refuse un mode ou un montant invalides', () => {
+        const goal = handleDemoRequest('POST', `${BASE}/goal`, {
+            targetAmount: 50000,
+            solve: 'contribution',
+            input: input({ initialAmount: 1000, annualRatePercent: 5, years: 10 })
+        }) as CompoundInterestGoal;
+        expect(goal.reachable).toBe(true);
+        expect(goal.result?.input.contributionAmount).toBe(goal.contributionAmount);
+
+        const unreachable = handleDemoRequest('POST', `${BASE}/goal`, {
+            targetAmount: 20000,
+            solve: 'years',
+            input: input({ initialAmount: 10000 })
+        }) as CompoundInterestGoal;
+        expect(unreachable.reachable).toBe(false);
+
+        expect(() =>
+            handleDemoRequest('POST', `${BASE}/goal`, { targetAmount: 0, solve: 'years', input: input({ initialAmount: 1 }) })
+        ).toThrow();
+        expect(() =>
+            handleDemoRequest('POST', `${BASE}/goal`, { targetAmount: 10, solve: 'other', input: input({ initialAmount: 1 }) })
+        ).toThrow();
     });
 });
 

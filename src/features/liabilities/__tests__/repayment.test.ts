@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { resetDemoDb } from '@/features/demo/db';
 import { handleDemoRequest } from '@/features/demo/handle';
-import { REPAYMENT_SIMULATOR_PATH, simulateRepayment, type RepaymentResult } from '@/features/liabilities/repayment';
+import { REPAYMENT_SIMULATOR_PATH, repaymentYears, simulateRepayment, type RepaymentResult } from '@/features/liabilities/repayment';
 import { idsFromPath } from '@/layouts/shell/composables/useShellNav';
 import DemoRoutes from '@/router/DemoRoutes';
 
@@ -51,6 +51,37 @@ describe('démo', () => {
         ]) {
             expect(() => handleDemoRequest('POST', BASE, body)).toThrow();
         }
+    });
+});
+
+describe('tableau d’amortissement', () => {
+    it('une ligne par mois, sommes égales aux totaux, restant dû final nul', () => {
+        const result = run(10000, 5, 856.08);
+        const schedule = result.schedule ?? [];
+        const sum = (key: 'payment' | 'interest' | 'principal') => Math.round(schedule.reduce((acc, row) => acc + row[key], 0) * 100) / 100;
+        expect(schedule).toHaveLength(12);
+        expect(schedule[0]).toMatchObject({ month: 1, interest: result.firstMonthInterest });
+        expect(schedule[11].balance).toBe(0);
+        expect(sum('principal')).toBe(10000);
+        expect(sum('interest')).toBe(result.totalInterest);
+        expect(sum('payment')).toBe(result.totalPaid);
+    });
+
+    it('pas de tableau sans remboursement possible', () => {
+        expect(run(10000, 12, 100).schedule).toBeNull();
+    });
+
+    it('regroupe par année : 30 mois = 3 années, restant dû de fin d’année', () => {
+        const schedule = run(30000, 0, 1000).schedule ?? [];
+        const years = repaymentYears(schedule);
+        expect(years.map((y) => y.year)).toEqual([1, 2, 3]);
+        expect(years[0]).toMatchObject({ payment: 12000, interest: 0, principal: 12000, balance: 18000 });
+        expect(years[2]).toMatchObject({ payment: 6000, balance: 0 });
+    });
+
+    it('la démo renvoie le tableau', () => {
+        const result = handleDemoRequest('POST', BASE, { principal: 1000, annualRatePercent: 0, monthlyPayment: 300 }) as RepaymentResult;
+        expect(result.schedule).toHaveLength(4);
     });
 });
 

@@ -62,6 +62,7 @@ import {
     demoCompoundCreate,
     demoCompoundGet,
     demoCompoundList,
+    demoCompoundGoal,
     demoCompoundRemove,
     demoCompoundSimulate,
     demoCompoundUpdate
@@ -73,7 +74,7 @@ import {
     demoRetirementSave,
     demoRetirementSimulate
 } from '@/features/demo/retirement';
-import { demoLamalCompare, demoLamalContext } from '@/features/demo/lamal';
+import { demoLamalCompare, demoLamalContext, demoLamalDeleteSaved, demoLamalSave } from '@/features/demo/lamal';
 import { demoLegalParameters } from '@/features/demo/legal-parameters';
 import { demoRepaymentSimulation } from '@/features/demo/repayment';
 import { demoSavingsProjection } from '@/features/demo/savings-projection';
@@ -242,13 +243,20 @@ function dispatch(method: string, target: { path: string; query: URLSearchParams
         return ok(demoMonthInsights(db, query.get('month'), query.get('currency'), query.get('to')));
     if (path === '/api/forecasts/year' && method === 'GET') return ok(demoYearForecast(db, query.get('year'), query.get('currency')));
     if (path === '/api/insurance/lamal-comparison/context' && method === 'GET')
-        return ok(demoLamalContext(db, query.get('year') ? Number(query.get('year')) : null));
+        return ok(demoLamalContext(db, query.get('year') ? Number(query.get('year')) : null, query.get('child') === 'true'));
     if (path === '/api/insurance/lamal-comparison' && method === 'POST') return ok(demoLamalCompare(body as LamalComparisonRequest));
+    if (path === '/api/insurance/lamal-comparison/saved' && method === 'PUT') return ok(demoLamalSave(body as LamalComparisonRequest));
+    if (path === '/api/insurance/lamal-comparison/saved' && method === 'DELETE') {
+        demoLamalDeleteSaved(query.get('year') ? Number(query.get('year')) : null, query.get('child') === 'true');
+        return noContent();
+    }
     if (path === '/api/liabilities/repayment-simulation' && method === 'POST') return ok(demoRepaymentSimulation(body as RepaymentRequest));
     if (path === '/api/legal-parameters' && method === 'GET')
         return ok(demoLegalParameters(query.get('year') ? Number(query.get('year')) : null));
     if (path === '/api/compound-interest/simulate' && method === 'POST')
         return ok(demoCompoundSimulate(body as Parameters<typeof demoCompoundSimulate>[0]));
+    if (path === '/api/compound-interest/goal' && method === 'POST')
+        return ok(demoCompoundGoal(body as Parameters<typeof demoCompoundGoal>[0]));
     if (path === '/api/compound-interest/calculations' && method === 'GET') return ok(demoCompoundList());
     if (path === '/api/compound-interest/calculations' && method === 'POST')
         return ok(demoCompoundCreate(body as Parameters<typeof demoCompoundCreate>[0]));

@@ -6,12 +6,18 @@
  */
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRoute } from 'vue-router';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import { formatAccountBalance } from '@/features/accounts/format';
 import type { Currency } from '@/features/accounts/types';
 import { compoundInterestApi } from '@/features/compound-interest/api';
-import { computeCompoundInterest, compoundInputIssue } from '@/features/compound-interest/calculator';
+import {
+    computeCompoundInterest,
+    compoundInputIssue,
+    solveCompoundGoal,
+    type CompoundGoalSolve
+} from '@/features/compound-interest/calculator';
 import {
     COMPOUNDINGS,
     COMPOUND_NAME_MAX,
@@ -28,6 +34,7 @@ import { useUserSettingsStore } from '@/features/user-settings/stores/user-setti
 import { getErrorMessage } from '@/utils/errors/app-error';
 
 const { t, locale } = useI18n();
+const route = useRoute();
 const settings = useUserSettingsStore();
 
 const saved = ref<CompoundCalculation[]>([]);
@@ -48,6 +55,8 @@ const growthText = ref('');
 const compounding = ref<Compounding>('monthly');
 const feeText = ref('');
 const inflationText = ref('');
+const targetText = ref('');
+const goalNote = ref<{ kind: 'ok' | 'error'; text: string } | null>(null);
 
 const hide = computed(() => settings.current.hideSensitiveAmounts);
 const selected = computed(() => saved.value.find((c) => c.publicId === selectedId.value) ?? null);
@@ -184,7 +193,80 @@ async function remove() {
     }
 }
 
-onMounted(() => void loadSaved());
+/** Montant visé : le bouton calcule le versement ou la durée qui manque et remplit le champ correspondant. */
+function solveGoal(mode: CompoundGoalSolve) {
+    goalNote.value = null;
+    const target = amountOf(targetText.value);
+    if (!(target > 0)) {
+        goalNote.value = { kind: 'error', text: t('compoundInterest.goalInvalid') };
+        return;
+    }
+    const solution = solveCompoundGoal(input.value, target, mode);
+    if (!solution) {
+        goalNote.value = {
+            kind: 'error',
+            text: issue.value ? t(`compoundInterest.issue.${issue.value}`) : t('compoundInterest.goalInvalid')
+        };
+        return;
+    }
+    const targetLabel = money(target);
+    if (mode === 'contribution') {
+        if (solution.contribution === null) {
+            goalNote.value = { kind: 'error', text: t('compoundInterest.goalUnreachable') };
+        } else if (solution.contribution === 0) {
+            contributionText.value = '';
+            goalNote.value = { kind: 'ok', text: t('compoundInterest.goalReached', { target: targetLabel }) };
+        } else {
+            contributionText.value = String(solution.contribution);
+            goalNote.value = {
+                kind: 'ok',
+                text: t('compoundInterest.goalContribution', {
+                    target: targetLabel,
+                    years: t('compoundInterest.years', { n: input.value.years }, input.value.years),
+                    amount: money(solution.contribution)
+                })
+            };
+        }
+        return;
+    }
+    if (solution.months === null) {
+        goalNote.value = { kind: 'error', text: t('compoundInterest.goalUnreachable') };
+        return;
+    }
+    const wholeYears = Math.floor(solution.months / 12);
+    const restMonths = solution.months % 12;
+    yearsText.value = String(Math.max(1, Math.ceil(solution.months / 12)));
+    const duration =
+        wholeYears === 0
+            ? t('compoundInterest.durationMonthsOnly', { months: restMonths })
+            : restMonths === 0
+              ? t('compoundInterest.years', { n: wholeYears }, wholeYears)
+              : t('compoundInterest.durationMonths', {
+                    years: t('compoundInterest.years', { n: wholeYears }, wholeYears),
+                    months: restMonths
+                });
+    goalNote.value = { kind: 'ok', text: t('compoundInterest.goalYears', { target: targetLabel, duration }) };
+}
+
+/** Lien depuis l’onglet Projection d’un objectif d’épargne : `?initial=&contribution=&rate=&years=&target=`. */
+function applyQuery() {
+    const read = (key: string): string => {
+        const raw = route.query[key];
+        const value = Array.isArray(raw) ? raw[0] : raw;
+        return typeof value === 'string' && /^\d+(\.\d+)?$/.test(value.trim()) ? value.trim() : '';
+    };
+    initialText.value = read('initial');
+    contributionText.value = read('contribution');
+    rateText.value = read('rate');
+    targetText.value = read('target');
+    const years = read('years');
+    if (years && Number.isInteger(Number(years)) && Number(years) >= 1 && Number(years) <= 50) yearsText.value = years;
+}
+
+onMounted(() => {
+    applyQuery();
+    void loadSaved();
+});
 </script>
 
 <template>
@@ -270,6 +352,32 @@ onMounted(() => void loadSaved());
                         <p class="compound__muted">{{ t('compoundInterest.yearsHint') }}</p>
                     </div>
                 </div>
+
+                <h3 class="compound__subhead">{{ t('compoundInterest.goalTitle') }}</h3>
+                <div class="su-field compound__field">
+                    <label for="compound-target" class="su-field__label">{{ t('compoundInterest.goalLabel') }}</label>
+                    <v-text-field
+                        id="compound-target"
+                        v-model="targetText"
+                        inputmode="decimal"
+                        color="primary"
+                        variant="outlined"
+                        hide-details
+                        :suffix="currency"
+                    />
+                    <p class="compound__muted">{{ t('compoundInterest.goalHint') }}</p>
+                </div>
+                <div class="compound__actions">
+                    <button type="button" class="su-btn" @click="solveGoal('contribution')">
+                        {{ t('compoundInterest.goalSolveContribution') }}
+                    </button>
+                    <button type="button" class="su-btn" @click="solveGoal('years')">
+                        {{ t('compoundInterest.goalSolveYears') }}
+                    </button>
+                </div>
+                <p v-if="goalNote" :class="goalNote.kind === 'error' ? 'compound__error' : 'compound__ok'" role="status">
+                    {{ goalNote.text }}
+                </p>
 
                 <h3 class="compound__subhead">{{ t('compoundInterest.optionsTitle') }}</h3>
                 <div class="compound__grid">

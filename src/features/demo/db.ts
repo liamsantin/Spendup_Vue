@@ -13,6 +13,7 @@ import type { PaymentMethod } from '@/features/payment-methods/types';
 import type { RecurringDue, RecurringExpense, RecurringIncome } from '@/features/recurring-payments/types';
 import type { SavingsGoal, SavingsGoalStatus } from '@/features/savings-goals/types';
 import type { CompoundCalculation } from '@/features/compound-interest/types';
+import type { LamalSavedComparison } from '@/features/insurance/lamal';
 import type { RetirementProfile } from '@/features/retirement/types';
 import type { Instrument, InvestmentOperation } from '@/features/investments/types';
 import type { Liability } from '@/features/liabilities/types';
@@ -76,6 +77,8 @@ export type DemoDb = {
     goals: SavingsGoal[];
     /** Calculs d’intérêts composés enregistrés (paramètres seulement). */
     compoundCalculations: CompoundCalculation[];
+    /** Comparaisons LAMal enregistrées (saisies seulement), une par année et profil. */
+    lamalSaved: LamalSavedComparison[];
     /** Saisie du simulateur retraite (un seul profil). */
     retirementProfile: RetirementProfile | null;
     assets: Asset[];
@@ -898,6 +901,7 @@ export function createDemoDb(): DemoDb {
         },
         goals: [],
         compoundCalculations: [],
+        lamalSaved: [],
         retirementProfile: null,
         assetValuations: {
             ASTCAR1: [{ valuationDate: '2026-10-01', value: 18500, source: 'manuelle', createdAt: NOW, updatedAt: null }],

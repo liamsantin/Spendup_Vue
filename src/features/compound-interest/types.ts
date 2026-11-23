@@ -64,6 +64,23 @@ export interface CompoundInterestResult {
     scenarios: CompoundInterestScenario[];
 }
 
+/** Calcul inverse : `contribution` (versement qui atteint le montant visé) ou `years` (durée qui l’atteint). */
+export interface CompoundInterestGoalRequest {
+    targetAmount: number;
+    solve: 'contribution' | 'years';
+    input: CompoundInterestRequest;
+}
+
+export interface CompoundInterestGoal {
+    solve: string;
+    /** `false` : objectif inatteignable avec ces paramètres (`result` est `null`). */
+    reachable: boolean;
+    targetAmount: number;
+    contributionAmount: number | null;
+    months: number | null;
+    result: CompoundInterestResult | null;
+}
+
 export interface SaveCompoundCalculationPayload {
     name: string;
     input: CompoundInterestRequest;

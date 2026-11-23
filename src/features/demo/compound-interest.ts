@@ -1,10 +1,16 @@
-import { computeCompoundInterest, compoundInputIssue, type CompoundIssue } from '@/features/compound-interest/calculator';
+import {
+    computeCompoundInterest,
+    compoundInputIssue,
+    solveCompoundGoal,
+    type CompoundIssue
+} from '@/features/compound-interest/calculator';
 import {
     COMPOUNDINGS,
     CONTRIBUTION_FREQUENCIES,
     COMPOUND_MAX_SAVED,
     COMPOUND_NAME_MAX,
     type CompoundCalculation,
+    type CompoundInterestGoal,
     type CompoundInterestRequest,
     type CompoundInterestResult,
     type Compounding,
@@ -72,6 +78,40 @@ function compute(input: CompoundInterestRequest): CompoundInterestResult {
 /** Calcul sans enregistrement : mêmes limites que l’API, même méthode que la page. */
 export function demoCompoundSimulate(body: Partial<CompoundInterestRequest>): CompoundInterestResult {
     return compute(normalize(body));
+}
+
+/** Calcul inverse sans enregistrement : versement ou durée pour atteindre un montant visé, comme l’API. */
+export function demoCompoundGoal(body: {
+    targetAmount: number;
+    solve: string;
+    input: Partial<CompoundInterestRequest>;
+}): CompoundInterestGoal {
+    const target = round2(body.targetAmount);
+    if (!(target > 0) || target > 1_000_000_000) invalid('Le montant visé doit être compris entre 0,01 et 1 000 000 000.');
+    const solve = String(body.solve ?? '')
+        .trim()
+        .toLowerCase();
+    if (solve !== 'contribution' && solve !== 'years') invalid('Le calcul inverse est invalide (contribution, years).');
+
+    const solveContribution = solve === 'contribution';
+    const input = normalize(solveContribution ? { ...body.input, contributionAmount: 1 } : { ...body.input, years: 50 });
+    const issue = compoundInputIssue(input);
+    if (issue) invalid(MESSAGES[issue]);
+    const solution = solveCompoundGoal(input, target, solveContribution ? 'contribution' : 'years');
+    if (!solution || (solution.contribution === null && solution.months === null)) {
+        return { solve, reachable: false, targetAmount: target, contributionAmount: null, months: null, result: null };
+    }
+    const final = solveContribution
+        ? { ...input, contributionAmount: solution.contribution ?? 0 }
+        : { ...input, years: Math.max(1, Math.ceil((solution.months ?? 12) / 12)) };
+    return {
+        solve,
+        reachable: true,
+        targetAmount: target,
+        contributionAmount: solution.contribution,
+        months: solution.months,
+        result: compute(final)
+    };
 }
 
 function name(raw: string | null | undefined): string {

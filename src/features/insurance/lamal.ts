@@ -20,6 +20,19 @@ export interface LamalContext {
     expectedCosts: number | null;
     expectedCostsYear: number | null;
     currency: string;
+    /** Profil du comparateur : `true` pour un enfant (franchises 0 à 600, quote-part plafonnée à 350). */
+    child: boolean;
+    /** Comparaison enregistrée pour l'année et le profil, `null` s'il n'y en a pas. */
+    saved: LamalSavedComparison | null;
+}
+
+export interface LamalSavedComparison {
+    year: number;
+    child: boolean;
+    expectedCosts: number;
+    currentFranchise: number | null;
+    quotes: LamalQuote[];
+    updatedAt: string;
 }
 
 export interface LamalQuote {
@@ -32,6 +45,7 @@ export interface LamalComparisonRequest {
     quotes: LamalQuote[];
     currentFranchise: number | null;
     year: number | null;
+    child?: boolean;
 }
 
 export interface LamalOption {
@@ -57,14 +71,25 @@ export interface LamalComparison {
     savingVsCurrent: number | null;
     options: LamalOption[];
     currency: string;
+    child: boolean;
 }
 
 export const lamalApi = {
-    context(year?: number) {
-        const query = year ? `?year=${year}` : '';
+    context(year?: number, child = false) {
+        const params = new URLSearchParams();
+        if (year) params.set('year', String(year));
+        if (child) params.set('child', 'true');
+        const query = params.size ? `?${params.toString()}` : '';
         return fetchWrapper.get(`/api/insurance/lamal-comparison/context${query}`) as Promise<LamalContext>;
     },
     compare(request: LamalComparisonRequest) {
         return fetchWrapper.post('/api/insurance/lamal-comparison', request) as Promise<LamalComparison>;
+    },
+    /** Enregistre (crée ou remplace) la comparaison de l'année et du profil. */
+    save(request: LamalComparisonRequest) {
+        return fetchWrapper.put('/api/insurance/lamal-comparison/saved', request) as Promise<LamalSavedComparison>;
+    },
+    deleteSaved(year: number, child: boolean) {
+        return fetchWrapper.delete(`/api/insurance/lamal-comparison/saved?year=${year}${child ? '&child=true' : ''}`) as Promise<void>;
     }
 };

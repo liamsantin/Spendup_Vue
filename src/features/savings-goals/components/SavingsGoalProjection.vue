@@ -10,6 +10,7 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import { parseAccountAmount } from '@/features/accounts/format';
+import { COMPOUND_INTEREST_PATH } from '@/features/compound-interest/types';
 import { savingsGoalsApi } from '@/features/savings-goals/api';
 import SavingsProjectionChart from '@/features/savings-goals/components/SavingsProjectionChart.vue';
 import { formatSavingsGoalAmount } from '@/features/savings-goals/format';
@@ -51,6 +52,15 @@ const points = computed(() => {
 });
 
 const final = computed(() => points.value[points.value.length - 1] ?? null);
+
+/** Calculateur d’intérêts composés avec les chiffres de la projection (versements mensuels, durée choisie, objectif). */
+const calculatorLink = computed(() => {
+    const query: Record<string, string> = { years: years.value, target: String(props.goal.targetAmount) };
+    if (startAmount.value > 0) query.initial = String(startAmount.value);
+    if (monthly.value !== null && monthly.value > 0) query.contribution = String(monthly.value);
+    if (rate.value !== null && rate.value > 0) query.rate = String(rate.value);
+    return { path: COMPOUND_INTEREST_PATH, query };
+});
 const money = (amount: number) => formatSavingsGoalAmount(amount, props.goal.currency, locale.value);
 
 async function load() {
@@ -140,6 +150,8 @@ watch(
 
                 <SavingsProjectionChart :start-amount="startAmount" :points="points" :currency="goal.currency" :locale="locale" />
             </template>
+
+            <RouterLink class="su-link" :to="calculatorLink">{{ t('savingsGoalsPage.projection.openCalculator') }}</RouterLink>
 
             <p class="sg-proj__muted">{{ t('savingsGoalsPage.projection.disclaimer') }}</p>
         </template>

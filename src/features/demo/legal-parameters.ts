@@ -39,6 +39,16 @@ const ITEMS_2026: LegalParameter[] = [
     amount('lamalQuotePartRate', 'Quote-part LAMal au-delà de la franchise', 10, '%', OFSP_COST_SHARING),
     amount('lamalQuotePartMaxAdult', 'Plafond annuel de la quote-part LAMal, adulte', 700, 'CHF/an', OFSP_COST_SHARING),
     amount('lamalQuotePartMaxChild', 'Plafond annuel de la quote-part LAMal, enfant', 350, 'CHF/an', OFSP_COST_SHARING),
+    {
+        key: 'lamalChildFranchises',
+        label: 'Franchises LAMal, enfant (0 = franchise ordinaire)',
+        value: null,
+        values: [0, 100, 200, 300, 400, 500, 600],
+        unit: 'CHF/an',
+        source: PRIMINFO,
+        verifiedAt: VERIFIED,
+        note: 'Pas de franchise ordinaire pour un enfant : elle vaut 0 ; les options vont de 100 à 600 CHF par pas de 100.'
+    },
     amount('familyAllowanceChildMin', 'Allocation pour enfant, minimum fédéral', 215, 'CHF/mois', OFAS_FAMILY),
     amount('familyAllowanceTrainingMin', 'Allocation de formation professionnelle, minimum fédéral', 268, 'CHF/mois', OFAS_FAMILY)
 ];

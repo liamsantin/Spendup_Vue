@@ -13,7 +13,7 @@ import { formatAccountBalance } from '@/features/accounts/format';
 import type { Currency } from '@/features/accounts/types';
 import { DASHBOARD_MASKED_AMOUNT } from '@/features/dashboard/format';
 import { liabilitiesApi } from '@/features/liabilities/api';
-import { simulateRepayment } from '@/features/liabilities/repayment';
+import { repaymentYears, simulateRepayment } from '@/features/liabilities/repayment';
 import type { Liability } from '@/features/liabilities/types';
 import { parseTaxAmount } from '@/features/tax/format';
 import { useUserSettingsStore } from '@/features/user-settings/stores/user-settings-store';
@@ -47,6 +47,9 @@ const result = computed(() => {
     if (principal.value === null || payment.value === null || anyInvalid.value) return null;
     return simulateRepayment({ principal: principal.value, annualRatePercent: rate.value, monthlyPayment: payment.value });
 });
+
+const years = computed(() => (result.value?.schedule ? repaymentYears(result.value.schedule) : []));
+const showMonthly = ref(false);
 
 const interestShare = computed(() => {
     const r = result.value;
@@ -207,6 +210,58 @@ onMounted(() => void load());
                             <p class="su-fig__num">{{ money(result.firstMonthInterest) }}</p>
                         </div>
                     </div>
+
+                    <template v-if="result.schedule?.length">
+                        <h3 class="repay__subhead">{{ t('repaymentSimulator.scheduleTitle') }}</h3>
+                        <div class="su-table-wrap">
+                            <table class="su-table">
+                                <thead>
+                                    <tr>
+                                        <th>{{ t('repaymentSimulator.colYear') }}</th>
+                                        <th class="is-num">{{ t('repaymentSimulator.colPayment') }}</th>
+                                        <th class="is-num">{{ t('repaymentSimulator.colInterest') }}</th>
+                                        <th class="is-num">{{ t('repaymentSimulator.colPrincipal') }}</th>
+                                        <th class="is-num">{{ t('repaymentSimulator.colBalance') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="row in years" :key="row.year">
+                                        <td>{{ row.year }}</td>
+                                        <td class="is-num">{{ money(row.payment) }}</td>
+                                        <td class="is-num">{{ money(row.interest) }}</td>
+                                        <td class="is-num">{{ money(row.principal) }}</td>
+                                        <td class="is-num">{{ money(row.balance) }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <details class="repay__details" @toggle="showMonthly = ($event.target as HTMLDetailsElement).open">
+                            <summary>{{ t('repaymentSimulator.scheduleMonthly') }}</summary>
+                            <div v-if="showMonthly" class="su-table-wrap">
+                                <table class="su-table">
+                                    <thead>
+                                        <tr>
+                                            <th>{{ t('repaymentSimulator.colMonth') }}</th>
+                                            <th class="is-num">{{ t('repaymentSimulator.colPayment') }}</th>
+                                            <th class="is-num">{{ t('repaymentSimulator.colInterest') }}</th>
+                                            <th class="is-num">{{ t('repaymentSimulator.colPrincipal') }}</th>
+                                            <th class="is-num">{{ t('repaymentSimulator.colBalance') }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="row in result.schedule" :key="row.month">
+                                            <td>{{ row.month }}</td>
+                                            <td class="is-num">{{ money(row.payment) }}</td>
+                                            <td class="is-num">{{ money(row.interest) }}</td>
+                                            <td class="is-num">{{ money(row.principal) }}</td>
+                                            <td class="is-num">{{ money(row.balance) }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </details>
+                    </template>
                 </template>
             </section>
 
@@ -226,6 +281,22 @@ onMounted(() => void load());
 </template>
 
 <style scoped>
+.repay__subhead {
+    margin: 24px 0 12px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.repay__details {
+    margin-top: 12px;
+}
+
+.repay__details summary {
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+}
+
 .repay {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
