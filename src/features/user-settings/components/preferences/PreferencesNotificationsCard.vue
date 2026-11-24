@@ -18,13 +18,15 @@ type SwitchKey =
     | 'emailSecurityAlerts'
     | 'emailFriendRequest'
     | 'emailFinancialAlerts'
+    | 'emailCalendar'
     | 'pushNotifications'
     | 'pushSecurityAlerts'
     | 'pushFriendRequest'
-    | 'pushFinancialAlerts';
+    | 'pushFinancialAlerts'
+    | 'pushCalendar';
 
-const emailSwitches: SwitchKey[] = ['emailSecurityAlerts', 'emailFriendRequest', 'emailFinancialAlerts'];
-const pushSwitches: SwitchKey[] = ['pushNotifications', 'pushSecurityAlerts', 'pushFriendRequest', 'pushFinancialAlerts'];
+const emailSwitches: SwitchKey[] = ['emailSecurityAlerts', 'emailFriendRequest', 'emailFinancialAlerts', 'emailCalendar'];
+const pushSwitches: SwitchKey[] = ['pushNotifications', 'pushSecurityAlerts', 'pushFriendRequest', 'pushFinancialAlerts', 'pushCalendar'];
 </script>
 
 <template>

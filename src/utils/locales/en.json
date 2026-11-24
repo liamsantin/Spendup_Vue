@@ -4058,6 +4058,8 @@
             "pushSecurityAlerts": "Security alerts (in-app)",
             "pushFriendRequest": "Friend requests (in-app)",
             "pushFinancialAlerts": "Financial alerts (in-app)",
+            "emailCalendar": "Calendar: invitations, changes, cancellations (email)",
+            "pushCalendar": "Calendar: invitations, changes, cancellations, reminders (in-app)",
             "digestFrequency": "Digest frequency",
             "digest": {
                 "off": "Off",

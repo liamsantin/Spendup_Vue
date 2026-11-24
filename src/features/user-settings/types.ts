@@ -9,7 +9,7 @@ export type CardStyle = 'shadow' | 'border' | 'flat';
 export type Density = 'comfortable' | 'compact';
 export type DefaultDashboardView = 'overview' | 'budget' | 'transactions';
 
-/** Contrat GET `/api/settings` — 30 champs. */
+/** Contrat GET `/api/settings` — 32 champs. */
 export type UserSettings = {
     profileVisibility: ProfileVisibility;
     discoverableInSearch: boolean;
@@ -22,6 +22,8 @@ export type UserSettings = {
     pushSecurityAlerts: boolean;
     pushFriendRequest: boolean;
     pushFinancialAlerts: boolean;
+    pushCalendar: boolean;
+    emailCalendar: boolean;
     notificationDigestFrequency: NotificationDigestFrequency;
     idleLogoutMinutes: number | null;
     require2faForSensitiveActions: boolean;
@@ -58,6 +60,8 @@ export const USER_SETTINGS_DEFAULTS: UserSettings = {
     pushSecurityAlerts: true,
     pushFriendRequest: true,
     pushFinancialAlerts: true,
+    pushCalendar: true,
+    emailCalendar: true,
     notificationDigestFrequency: 'daily',
     idleLogoutMinutes: null,
     require2faForSensitiveActions: false,
