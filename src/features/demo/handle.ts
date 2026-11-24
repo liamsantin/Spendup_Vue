@@ -193,7 +193,7 @@ function dispatch(method: string, target: { path: string; query: URLSearchParams
 
     const tax = routeTax(method, path, body, query);
     if (tax) return tax;
-    const calendar = routeCalendar(method, path, query);
+    const calendar = routeCalendar(method, path, query, body);
     if (calendar) return calendar;
     const imports = routeImports(method, path, body, query);
     if (imports) return imports;

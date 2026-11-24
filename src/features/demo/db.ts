@@ -22,7 +22,15 @@ import type { RealEstateCharge, RealEstateMaintenance, RealEstateUnit } from '@/
 import type { SharedDebt } from '@/features/shared-debts/types';
 import { seedFriends, type DemoFriend } from '@/features/demo/friends';
 import { seedRecurringHousehold } from '@/features/demo/recurring';
-import { DEMO_REFERENCE_TAX_YEAR, demoMonthShift, demoTaxYear, shiftDemoDates, shiftTaxYear, shiftYmd } from '@/features/demo/sliding';
+import {
+    DEMO_REFERENCE_TAX_YEAR,
+    DEMO_REFERENCE_TODAY,
+    demoMonthShift,
+    demoTaxYear,
+    shiftDemoDates,
+    shiftTaxYear,
+    shiftYmd
+} from '@/features/demo/sliding';
 import { seedWealth } from '@/features/demo/wealth';
 import { seedTaxReturns, type DemoTaxReturn } from '@/features/demo/tax';
 import type { Tag } from '@/features/tags/types';
@@ -31,6 +39,7 @@ import type { Transaction, TransactionMovement, TransactionType } from '@/featur
 import { USER_SETTINGS_DEFAULTS, type UserSettings } from '@/features/user-settings/types';
 import type { NetWorthOverview, NetWorthSnapshot } from '@/features/net-worth/types';
 import { DEMO_USER_PUBLIC_ID } from '@/features/demo/user';
+import { seedDemoCalendarEvents, type DemoCalendarEvent } from '@/features/demo/calendar-events';
 
 const NOW = '2026-11-14T09:00:00.000Z';
 
@@ -115,6 +124,8 @@ export type DemoDb = {
     importTemplates: ImportTemplate[];
     /** Octets d'un relevé en revue (relecture), oubliés à la clôture de l'import. Jamais envoyés ni stockés. */
     importFiles: Record<string, Uint8Array>;
+    /** Événements d'agenda saisis, posés autour du mois courant (pas décalés avec le reste). */
+    calendarEvents: DemoCalendarEvent[];
 };
 
 const ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -257,6 +268,10 @@ export function createDemoDb(): DemoDb {
     const recurring = seedRecurringHousehold();
     const friendsDirectory = seedFriends();
     const wealth = seedWealth();
+    const [refYear, refMonth] = DEMO_REFERENCE_TODAY.split('-').map(Number);
+    const calendarIndex = refYear * 12 + refMonth - 1 + demoMonthShift();
+    const calendarYear = Math.floor(calendarIndex / 12);
+    const calendarMonth = calendarIndex % 12;
     const ubs: Account['bank'] = {
         tierPublicId: 'TIERUBS',
         name: 'UBS',
@@ -901,6 +916,7 @@ export function createDemoDb(): DemoDb {
             ]
         },
         goals: [],
+        calendarEvents: seedDemoCalendarEvents(calendarYear, calendarMonth),
         compoundCalculations: [],
         lamalSaved: [],
         retirementProfile: null,
@@ -1094,7 +1110,8 @@ export function slideDemoDb(source: DemoDb, now?: Date): DemoDb {
         'fileBlobs',
         'imports',
         'importTemplates',
-        'importFiles'
+        'importFiles',
+        'calendarEvents'
     ]);
     const slid: Record<string, unknown> = { ...source };
     for (const key of Object.keys(slid)) {

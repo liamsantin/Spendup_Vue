@@ -9,7 +9,14 @@ defineProps<{
     items: CalendarOccurrence[];
 }>();
 
+const emit = defineEmits<{ open: [occurrence: CalendarOccurrence] }>();
+
 const { t, locale } = useI18n();
+
+/** Seuls les événements saisis s'ouvrent ici ; une occurrence de source se gère dans son module. */
+function isEditable(occurrence: CalendarOccurrence): boolean {
+    return !!occurrence.eventPublicId && !occurrence.sourceKey && !occurrence.sharedBy;
+}
 
 function meta(occurrence: CalendarOccurrence): string {
     const parts = [occurrenceTime(occurrence, locale.value) ?? t('calendarPage.allDay')];
@@ -37,17 +44,25 @@ function meta(occurrence: CalendarOccurrence): string {
                 :class="`cal-tone--${occurrenceTone(occurrence)}`"
                 :style="occurrence.color && !occurrence.sourceKey ? { '--event-color': occurrence.color } : undefined"
             >
-                <span class="su-sq cal-list__sq" aria-hidden="true" />
-                <span class="cal-list__main">
-                    <span class="cal-list__title" :class="{ 'cal-is-canceled': isCanceled(occurrence) }">{{ occurrence.title }}</span>
-                    <span class="cal-list__meta">{{ meta(occurrence) }}</span>
-                </span>
-                <span
-                    v-if="occurrence.amount != null && occurrence.currency"
-                    class="cal-list__amount"
-                    :class="occurrence.amount < 0 ? 'su-neg' : 'su-pos'"
-                    >{{ formatOccurrenceAmount(occurrence.amount, occurrence.currency) }}</span
+                <component
+                    :is="isEditable(occurrence) ? 'button' : 'div'"
+                    :type="isEditable(occurrence) ? 'button' : undefined"
+                    class="cal-list__row"
+                    :class="{ 'cal-list__row--action': isEditable(occurrence) }"
+                    @click="isEditable(occurrence) && emit('open', occurrence)"
                 >
+                    <span class="su-sq cal-list__sq" aria-hidden="true" />
+                    <span class="cal-list__main">
+                        <span class="cal-list__title" :class="{ 'cal-is-canceled': isCanceled(occurrence) }">{{ occurrence.title }}</span>
+                        <span class="cal-list__meta">{{ meta(occurrence) }}</span>
+                    </span>
+                    <span
+                        v-if="occurrence.amount != null && occurrence.currency"
+                        class="cal-list__amount"
+                        :class="occurrence.amount < 0 ? 'su-neg' : 'su-pos'"
+                        >{{ formatOccurrenceAmount(occurrence.amount, occurrence.currency) }}</span
+                    >
+                </component>
             </li>
         </ul>
         <p v-else class="cal-side__empty">{{ t('calendarPage.emptyDay') }}</p>

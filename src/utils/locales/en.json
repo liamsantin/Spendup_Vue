@@ -4432,6 +4432,81 @@
             "sharedDebt": "Shared debt",
             "personalLoan": "Personal loan",
             "liability": "Debt"
+        },
+        "newEvent": "New event",
+        "form": {
+            "createTitle": "New event",
+            "editTitle": "Edit event",
+            "delete": "Delete",
+            "fields": {
+                "title": "Title",
+                "calendar": "Calendar",
+                "allDay": "All day",
+                "start": "Start",
+                "startTime": "Start time",
+                "end": "End",
+                "endTime": "End time",
+                "repeat": "Repeat",
+                "repeatEnd": "Ends",
+                "lieu": "Location",
+                "description": "Description",
+                "reminders": "Reminders"
+            },
+            "repeat": {
+                "none": "Does not repeat",
+                "daily": "Every day",
+                "weekdays": "Monday to Friday",
+                "weekly": "Every week on {day}",
+                "monthly": "Every month on day {day}",
+                "yearly": "Every year on {date}",
+                "custom": "Custom repeat"
+            },
+            "repeatEnd": {
+                "never": "Never",
+                "until": "On",
+                "count": "After a number of times"
+            },
+            "repeatCountSuffix": "times",
+            "reminders": {
+                "add": "Add a reminder",
+                "atStart": "At start",
+                "minutes": "{count} min before",
+                "hours": "{count} h before",
+                "days": "1 day before | {count} days before",
+                "weeks": "1 week before | {count} weeks before",
+                "remove": "Remove reminder “{label}”"
+            },
+            "lockedHint": "The calendar and the type (timed or all day) cannot change after creation.",
+            "remindersHint": "Reminders apply to the whole series.",
+            "customRuleHint": "This repeat rule comes from an import and is kept as is.",
+            "errors": {
+                "titleRequired": "A title is required.",
+                "titleTooLong": "200 characters at most.",
+                "startRequired": "Pick a start date.",
+                "timeInvalid": "Invalid time.",
+                "endBeforeStart": "The end is before the start.",
+                "lieuTooLong": "255 characters at most.",
+                "descriptionTooLong": "4000 characters at most.",
+                "tooManyReminders": "5 reminders at most.",
+                "repeatUntilRequired": "Pick the last day.",
+                "repeatUntilBeforeStart": "The repeat ends before the start.",
+                "repeatCountInvalid": "Between 1 and 999 times.",
+                "conflict": "This event changed in the meantime. Close and reopen it to start from the latest version.",
+                "notFound": "This event no longer exists.",
+                "loadFailed": "The event could not be opened. Try again in a moment."
+            }
+        },
+        "scope": {
+            "saveTitle": "Edit a recurring event",
+            "deleteTitle": "Delete a recurring event",
+            "occurrence": "This event",
+            "following": "This and following events",
+            "series": "All events",
+            "occurrenceLocked": "The repeat changed, so it cannot apply to a single event."
+        },
+        "deleteConfirm": {
+            "title": "Delete this event?",
+            "message": "“{title}” will be removed from the calendar."
         }
     },
     "assetsPage": {

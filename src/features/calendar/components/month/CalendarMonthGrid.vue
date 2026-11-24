@@ -2,6 +2,7 @@
 /**
  * Grille mensuelle : semaines du lundi au dimanche, trois pastilles par jour puis « +N ».
  * Les jours hors du mois restent cliquables (ils font changer de mois) et affichent leurs occurrences en grisé.
+ * Double-clic : nouvel événement ce jour-là.
  */
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -21,7 +22,7 @@ const props = defineProps<{
     label: string;
 }>();
 
-const emit = defineEmits<{ select: [ymd: string] }>();
+const emit = defineEmits<{ select: [ymd: string]; create: [ymd: string] }>();
 
 const { t, locale } = useI18n();
 
@@ -68,6 +69,7 @@ function toneStyle(occurrence: CalendarOccurrence) {
                 :aria-selected="cell.ymd === selected"
                 :aria-label="`${cell.day} · ${t('calendarPage.eventCount', { count: cell.occurrences.length }, cell.occurrences.length)}`"
                 @click="emit('select', cell.ymd)"
+                @dblclick="emit('create', cell.ymd)"
             >
                 <span class="cal-month__day">
                     {{ cell.day }}

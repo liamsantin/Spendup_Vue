@@ -1,9 +1,9 @@
 // Calendrier : tons des occurrences, partagés par la grille et les listes du panneau.
-// Événement saisi : couleur de son calendrier (`--event-color`), noir sinon ; revenu bleu, charge noir,
-// échéance gris, épargne violet.
+// Événement saisi : couleur de son calendrier (`--event-color`), sarcelle sinon ; revenu bleu, charge noir,
+// échéance ambre, épargne violet.
 
 .cal-tone--event {
-    --tone: var(--event-color, var(--ink));
+    --tone: var(--event-color, var(--t-teal-ink));
     --tone-ink: var(--ink);
 }
 
@@ -18,8 +18,8 @@
 }
 
 .cal-tone--due {
-    --tone: var(--gray);
-    --tone-ink: var(--gray);
+    --tone: var(--t-amber-ink);
+    --tone-ink: var(--t-amber-ink);
 }
 
 .cal-tone--goal {
@@ -55,6 +55,34 @@
     &:first-child {
         border-top: 0;
         padding-top: 0;
+    }
+}
+
+.cal-list__row {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+}
+
+.cal-list__row--action {
+    cursor: pointer;
+
+    &:hover .cal-list__title {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--ink);
+        outline-offset: 2px;
     }
 }
 

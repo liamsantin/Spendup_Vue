@@ -4432,6 +4432,81 @@
             "sharedDebt": "Dette partagée",
             "personalLoan": "Prêt entre proches",
             "liability": "Dette"
+        },
+        "newEvent": "Nouvel événement",
+        "form": {
+            "createTitle": "Nouvel événement",
+            "editTitle": "Modifier l’événement",
+            "delete": "Supprimer",
+            "fields": {
+                "title": "Titre",
+                "calendar": "Calendrier",
+                "allDay": "Journée entière",
+                "start": "Début",
+                "startTime": "Heure de début",
+                "end": "Fin",
+                "endTime": "Heure de fin",
+                "repeat": "Répétition",
+                "repeatEnd": "Fin de la répétition",
+                "lieu": "Lieu",
+                "description": "Description",
+                "reminders": "Rappels"
+            },
+            "repeat": {
+                "none": "Ne se répète pas",
+                "daily": "Chaque jour",
+                "weekdays": "Du lundi au vendredi",
+                "weekly": "Chaque semaine, le {day}",
+                "monthly": "Chaque mois, le {day}",
+                "yearly": "Chaque année, le {date}",
+                "custom": "Répétition personnalisée"
+            },
+            "repeatEnd": {
+                "never": "Jamais",
+                "until": "Jusqu’au",
+                "count": "Après un nombre de fois"
+            },
+            "repeatCountSuffix": "fois",
+            "reminders": {
+                "add": "Ajouter un rappel",
+                "atStart": "Au début",
+                "minutes": "{count} min avant",
+                "hours": "{count} h avant",
+                "days": "1 jour avant | {count} jours avant",
+                "weeks": "1 semaine avant | {count} semaines avant",
+                "remove": "Retirer le rappel « {label} »"
+            },
+            "lockedHint": "Le calendrier et le type (horaire ou journée entière) ne changent plus après la création.",
+            "remindersHint": "Les rappels valent pour toute la série.",
+            "customRuleHint": "Cette répétition vient d’un import : elle est gardée telle quelle.",
+            "errors": {
+                "titleRequired": "Le titre est obligatoire.",
+                "titleTooLong": "200 caractères au plus.",
+                "startRequired": "Choisissez la date de début.",
+                "timeInvalid": "Heure invalide.",
+                "endBeforeStart": "La fin précède le début.",
+                "lieuTooLong": "255 caractères au plus.",
+                "descriptionTooLong": "4000 caractères au plus.",
+                "tooManyReminders": "5 rappels au plus.",
+                "repeatUntilRequired": "Choisissez le dernier jour.",
+                "repeatUntilBeforeStart": "La répétition s’arrête avant le début.",
+                "repeatCountInvalid": "Entre 1 et 999 fois.",
+                "conflict": "L’événement a changé entre-temps. Fermez puis rouvrez-le pour partir de la dernière version.",
+                "notFound": "Cet événement n’existe plus.",
+                "loadFailed": "Impossible d’ouvrir l’événement. Réessayez dans un instant."
+            }
+        },
+        "scope": {
+            "saveTitle": "Modifier un événement récurrent",
+            "deleteTitle": "Supprimer un événement récurrent",
+            "occurrence": "Cet événement",
+            "following": "Cet événement et les suivants",
+            "series": "Tous les événements",
+            "occurrenceLocked": "La répétition a changé : elle ne s’applique pas à un seul événement."
+        },
+        "deleteConfirm": {
+            "title": "Supprimer l’événement ?",
+            "message": "« {title} » sera retiré du calendrier."
         }
     },
     "assetsPage": {

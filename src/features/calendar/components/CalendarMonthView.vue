@@ -5,14 +5,16 @@
  */
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ChevronLeftIcon, ChevronRightIcon } from 'vue-tabler-icons';
+import { ChevronLeftIcon, ChevronRightIcon, PlusIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import CalendarMonthGrid from '@/features/calendar/components/month/CalendarMonthGrid.vue';
+import CalendarEventFormModal from '@/features/calendar/components/modals/CalendarEventFormModal.vue';
 import CalendarDayPanel from '@/features/calendar/components/side/CalendarDayPanel.vue';
 import CalendarMonthSummary from '@/features/calendar/components/side/CalendarMonthSummary.vue';
 import { useCalendarOccurrences } from '@/features/calendar/composables/useCalendarOccurrences';
 import { monthGrid, parseYmd, toYmd, ymdOf } from '@/features/calendar/dates';
 import { groupByDay, monthSummary, upcomingOutflows } from '@/features/calendar/occurrences';
+import type { CalendarOccurrence } from '@/features/calendar/types';
 
 const { t, locale } = useI18n();
 
@@ -24,7 +26,21 @@ const selected = ref(todayYmd);
 const grid = computed(() => monthGrid(year.value, month.value));
 const from = computed(() => grid.value.from);
 const to = computed(() => grid.value.to);
-const { items, error } = useCalendarOccurrences(from, to);
+const { items, error, reload } = useCalendarOccurrences(from, to);
+
+const formOpen = ref(false);
+const editing = ref<CalendarOccurrence | null>(null);
+
+function createEvent(ymd = selected.value) {
+    select(ymd);
+    editing.value = null;
+    formOpen.value = true;
+}
+
+function openEvent(occurrence: CalendarOccurrence) {
+    editing.value = occurrence;
+    formOpen.value = true;
+}
 
 const monthPrefix = computed(() => toYmd(year.value, month.value, 1).slice(0, 7));
 const byDay = computed(() => groupByDay(items.value));
@@ -90,6 +106,10 @@ function select(ymd: string) {
             <button type="button" class="su-btn su-btn--ghost cal-bar__today" @click="goToday">
                 {{ t('calendarPage.today') }}
             </button>
+            <button type="button" class="su-btn su-btn--ink" @click="createEvent()">
+                <PlusIcon :size="16" stroke-width="2" aria-hidden="true" />
+                {{ t('calendarPage.newEvent') }}
+            </button>
         </div>
 
         <div class="su-g12 cal">
@@ -103,13 +123,22 @@ function select(ymd: string) {
                 :today="todayYmd"
                 :label="monthTitle"
                 @select="select"
+                @create="createEvent"
             />
 
             <aside class="cal__side su-stack su-stack--tight">
-                <CalendarDayPanel :title="selectedTitle" :items="selectedItems" />
+                <CalendarDayPanel :title="selectedTitle" :items="selectedItems" @open="openEvent" />
                 <CalendarMonthSummary :summary="summary" :upcoming="upcoming" />
             </aside>
         </div>
+
+        <CalendarEventFormModal
+            v-model="formOpen"
+            :event-public-id="editing?.eventPublicId ?? null"
+            :occurrence="editing"
+            :date="selected"
+            @changed="reload"
+        />
     </div>
 </template>
 
@@ -138,6 +167,7 @@ function select(ymd: string) {
 
 .cal-bar__today {
     margin-left: auto;
+    margin-right: 8px;
 }
 
 .cal__month {

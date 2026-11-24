@@ -48,6 +48,87 @@ export type CalendarOccurrencesResult = {
     items: CalendarOccurrence[];
 };
 
+/** Calendrier de l'utilisateur (`GET /api/calendars`). `permission` : freeBusy, read, write, manage. */
+export type CalendarInfo = {
+    publicId: string;
+    name: string;
+    description: string | null;
+    calendarType: string;
+    color: string | null;
+    timezone: string | null;
+    isOwner: boolean;
+    permission: string;
+    isHidden: boolean;
+};
+
+/** Réglages utiles à la création (`GET /api/calendar/preferences`). */
+export type CalendarPreferences = {
+    defaultCalendarId: string | null;
+    defaultDurationMinutes: number;
+    defaultReminderMinutes: number | null;
+    timezone: string;
+};
+
+export type CalendarReminder = { beforeMinutes: number; canal: string };
+
+/**
+ * Événement saisi (`/api/calendar-events/{publicId}`). Horaire : `startUtc` / `endUtc` + `timezone` ;
+ * journée entière : `startDate` / `endDate` (inclusives). `recurrenceRule` : RRULE sans préfixe.
+ */
+export type CalendarEvent = {
+    publicId: string;
+    calendarPublicId: string;
+    title: string;
+    description: string | null;
+    lieu: string | null;
+    isFullDay: boolean;
+    startUtc: string | null;
+    endUtc: string | null;
+    timezone: string | null;
+    startDate: string | null;
+    endDate: string | null;
+    recurrenceRule: string | null;
+    visibilite: string;
+    status: string;
+    reminders: CalendarReminder[];
+    rowVersion: number;
+};
+
+export type CreateCalendarEventPayload = {
+    calendarPublicId: string | null;
+    title: string;
+    isFullDay: boolean;
+    startUtc?: string;
+    endUtc?: string;
+    timezone?: string;
+    startDate?: string;
+    endDate?: string;
+    description?: string;
+    lieu?: string;
+    recurrenceRule?: string;
+    reminders: CalendarReminder[];
+};
+
+/** Portée d'une modification ou d'une suppression sur un événement récurrent. */
+export type CalendarEventScope = 'series' | 'occurrence' | 'following';
+
+/** Modification partielle : champs absents inchangés, chaîne vide = effacer (description, lieu, règle). */
+export type UpdateCalendarEventPayload = {
+    rowVersion: number;
+    title?: string;
+    description?: string;
+    lieu?: string;
+    startUtc?: string;
+    endUtc?: string;
+    timezone?: string;
+    startDate?: string;
+    endDate?: string;
+    recurrenceRule?: string;
+    reminders?: CalendarReminder[];
+    scope: CalendarEventScope;
+    occurrenceStart?: string;
+};
+
 export type CalendarOccurrencesQuery = {
     /** `yyyy-MM-dd`, inclus. */
     from: string;

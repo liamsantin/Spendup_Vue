@@ -1,6 +1,20 @@
-import { addDaysYmd, occurrenceDays, parseYmd, toYmd } from '@/features/calendar/dates';
-import type { CalendarOccurrence, CalendarOccurrencesResult } from '@/features/calendar/types';
-import { demoDb } from '@/features/demo/db';
+import { occurrenceDays, parseYmd, toYmd } from '@/features/calendar/dates';
+import type {
+    CalendarOccurrence,
+    CalendarOccurrencesResult,
+    CreateCalendarEventPayload,
+    UpdateCalendarEventPayload
+} from '@/features/calendar/types';
+import {
+    DEMO_CALENDAR,
+    createDemoEvent,
+    deleteDemoEvent,
+    expandDemoEvent,
+    findDemoEvent,
+    toEventResponse,
+    updateDemoEvent
+} from '@/features/demo/calendar-events';
+import { createPublicId, demoDb } from '@/features/demo/db';
 import { AppError } from '@/utils/errors/app-error';
 
 export type CalendarEventKind = 'income' | 'expense' | 'due' | 'goal';
@@ -124,8 +138,6 @@ const KIND_SOURCES: Record<CalendarEventKind, string> = {
     due: 'liability'
 };
 
-const DEMO_CALENDAR_COLOR = '#2f5bea';
-
 function toOccurrence(event: CalendarEvent): CalendarOccurrence {
     const sourceKey = KIND_SOURCES[event.kind];
     return {
@@ -149,38 +161,6 @@ function toOccurrence(event: CalendarEvent): CalendarOccurrence {
     };
 }
 
-/** Deux événements saisis par mois, pour que la démo montre aussi l'agenda (heure locale du navigateur). */
-function agendaForMonth(year: number, month: number): CalendarOccurrence[] {
-    const lastDay = new Date(year, month + 1, 0).getDate();
-    const dentistStart = new Date(year, month, Math.min(9, lastDay), 10, 0);
-    const dentistEnd = new Date(year, month, Math.min(9, lastDay), 10, 45);
-    const tripStart = toYmd(year, month, Math.min(20, lastDay));
-    const event = (id: string, title: string, rest: Partial<CalendarOccurrence>): CalendarOccurrence => ({
-        id: `DEMOEVT${id}-${year}-${month}:${rest.startUtc ?? rest.startDate}`,
-        sourceKey: null,
-        eventPublicId: `DEMOEVT${id}-${year}-${month}`,
-        entityPublicId: null,
-        title,
-        isFullDay: false,
-        startUtc: null,
-        endUtc: null,
-        startDate: null,
-        endDate: null,
-        amount: null,
-        currency: null,
-        status: null,
-        color: DEMO_CALENDAR_COLOR,
-        isRecurring: false,
-        isModified: false,
-        sharedBy: null,
-        ...rest
-    });
-    return [
-        event('DENT', 'Dentiste', { startUtc: dentistStart.toISOString(), endUtc: dentistEnd.toISOString() }),
-        event('TESS', 'Week-end au Tessin', { isFullDay: true, startDate: tripStart, endDate: addDaysYmd(tripStart, 2) })
-    ];
-}
-
 /** Occurrences de la fenêtre `from`–`to` (incluses), au format de `GET /api/calendar/occurrences`. */
 export function demoOccurrences(from: string, to: string): CalendarOccurrencesResult {
     const items: CalendarOccurrence[] = [];
@@ -188,23 +168,62 @@ export function demoOccurrences(from: string, to: string): CalendarOccurrencesRe
     cursor.setDate(1);
     const end = parseYmd(to);
     while (cursor <= end) {
-        const year = cursor.getFullYear();
-        const month = cursor.getMonth();
-        items.push(...demoEventsForMonth(year, month).map(toOccurrence), ...agendaForMonth(year, month));
-        cursor.setMonth(month + 1);
+        items.push(...demoEventsForMonth(cursor.getFullYear(), cursor.getMonth()).map(toOccurrence));
+        cursor.setMonth(cursor.getMonth() + 1);
     }
-    const inWindow = items.filter((o) => occurrenceDays(o).some((day) => day >= from && day <= to));
-    return { from, to, items: inWindow };
+    const sources = items.filter((o) => occurrenceDays(o).some((day) => day >= from && day <= to));
+    const agenda = demoDb().calendarEvents.flatMap((evt) => expandDemoEvent(evt, from, to));
+    return { from, to, items: [...agenda, ...sources] };
 }
 
-/** Routes calendrier du mode démo : lecture des occurrences seulement, le reste est réservé à un compte. */
-export function routeCalendar(method: string, path: string, query: URLSearchParams): { status: number; body: unknown } | null {
+const DEMO_PREFERENCES = {
+    defaultView: 'month',
+    weekStartsOn: 1,
+    showWeekends: true,
+    showWeekNumbers: false,
+    use24HourClock: true,
+    dayStartHour: 7,
+    dayEndHour: 22,
+    defaultCalendarId: null,
+    defaultDurationMinutes: 60,
+    defaultVisibilite: 'prive',
+    defaultReminderMinutes: 15,
+    secondTimezone: null,
+    eventInvitesFrom: 'friends',
+    autoAcceptFamilyInvites: false,
+    showDeclinedEvents: false
+};
+
+type Result = { status: number; body: unknown };
+
+/** Routes calendrier du mode démo : occurrences, calendrier « Personnel » et événements saisis ; le reste demande un compte. */
+export function routeCalendar(method: string, path: string, query: URLSearchParams, body?: unknown): Result | null {
     if (!path.startsWith('/api/calendar')) return null;
+    const events = demoDb().calendarEvents;
     if (path === '/api/calendar/occurrences' && method === 'GET') {
         const from = query.get('from');
         const to = query.get('to');
         if (!from || !to || from > to) throw new AppError('Fenêtre de dates invalide.', 400);
         return { status: 200, body: demoOccurrences(from, to) };
+    }
+    if (path === '/api/calendars' && method === 'GET') return { status: 200, body: { items: [DEMO_CALENDAR] } };
+    if (path === '/api/calendar/preferences' && method === 'GET') {
+        return {
+            status: 200,
+            body: { ...DEMO_PREFERENCES, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Zurich' }
+        };
+    }
+    if (path === '/api/calendar-events' && method === 'POST') {
+        return { status: 200, body: createDemoEvent(events, body as CreateCalendarEventPayload, createPublicId()) };
+    }
+    const id = /^\/api\/calendar-events\/([^/]+)$/.exec(path)?.[1];
+    if (id && method === 'GET') return { status: 200, body: toEventResponse(findDemoEvent(events, decodeURIComponent(id))) };
+    if (id && method === 'PATCH') {
+        return { status: 200, body: updateDemoEvent(events, decodeURIComponent(id), body as UpdateCalendarEventPayload, createPublicId) };
+    }
+    if (id && method === 'DELETE') {
+        deleteDemoEvent(events, decodeURIComponent(id), Number(query.get('rowVersion')), query.get('scope'), query.get('occurrenceStart'));
+        return { status: 204, body: undefined };
     }
     throw new AppError('Disponible avec un compte.', 403);
 }
