@@ -4418,6 +4418,12 @@
             "create": "Créer",
             "more": "Plus d’options"
         },
+        "drag": {
+            "resizeStart": "Modifier l’heure de début",
+            "resizeEnd": "Modifier l’heure de fin",
+            "forbidden": "Vous ne pouvez pas modifier cet événement.",
+            "failed": "Impossible d’enregistrer le nouvel horaire. Réessayez."
+        },
         "agenda": {
             "empty": "Rien de prévu jusqu’au {date}.",
             "loadMore": "Afficher la suite",

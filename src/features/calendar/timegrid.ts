@@ -46,6 +46,75 @@ export function snapToSlot(minutes: number, slot = SLOT_MINUTES): number {
     return Math.min(Math.max(Math.floor(minutes / slot) * slot, 0), DAY_MINUTES - slot);
 }
 
+export type DragMode = 'move' | 'resizeStart' | 'resizeEnd';
+
+/** Bloc horaire d'un seul jour. `endMin` vaut 1440 quand l'événement finit à minuit. */
+export type BlockSpan = {
+    ymd: string;
+    startMin: number;
+    endMin: number;
+};
+
+/** Horaire local prêt pour le formulaire et le `PATCH`. */
+export type PlacedSpan = {
+    startDate: string;
+    startTime: string;
+    endDate: string;
+    endTime: string;
+};
+
+/** Demi-heure la plus proche, de 00:00 à minuit inclus. */
+function snapNearest(minutes: number, slot = SLOT_MINUTES): number {
+    const clamped = Math.min(Math.max(minutes, 0), DAY_MINUTES);
+    return Math.min(Math.max(Math.round(clamped / slot) * slot, 0), DAY_MINUTES);
+}
+
+function toPlaced(ymd: string, startMin: number, endMin: number): PlacedSpan {
+    const startTime = minutesToHhmm(Math.min(startMin, DAY_MINUTES - 1));
+    if (endMin >= DAY_MINUTES) return { startDate: ymd, startTime, endDate: addDaysYmd(ymd, 1), endTime: '00:00' };
+    return { startDate: ymd, startTime, endDate: ymd, endTime: minutesToHhmm(endMin) };
+}
+
+/**
+ * Nouvel horaire après un glisser. `minutes` est l'heure visée avant calage : le début pour un déplacement,
+ * le bord tiré pour un redimensionnement. Le déplacement conserve la durée et reste dans le jour cible.
+ * Un bord se cale sur la demi-heure (30 min au minimum, minuit au plus tard).
+ */
+export function placeDrag(origin: BlockSpan, ymd: string, minutes: number, mode: DragMode): PlacedSpan {
+    const duration = Math.min(Math.max(origin.endMin - origin.startMin, 0), DAY_MINUTES);
+    let start = origin.startMin;
+    let end = origin.startMin + duration;
+    let day = origin.ymd;
+
+    if (mode === 'move') {
+        day = ymd;
+        start = snapNearest(minutes);
+        if (start >= DAY_MINUTES) start = DAY_MINUTES - (duration === 0 ? SLOT_MINUTES : duration);
+        else if (start + duration > DAY_MINUTES) start = DAY_MINUTES - duration;
+        if (start < 0) start = 0;
+        end = start + duration;
+    } else if (mode === 'resizeEnd') {
+        end = snapNearest(minutes);
+        if (end - start < SLOT_MINUTES) end = Math.min(start + SLOT_MINUTES, DAY_MINUTES);
+        if (end <= start) end = Math.min(start + SLOT_MINUTES, DAY_MINUTES);
+    } else {
+        start = snapNearest(minutes);
+        if (end - start < SLOT_MINUTES) start = Math.max(end - SLOT_MINUTES, 0);
+        if (start >= end) start = Math.max(end - SLOT_MINUTES, 0);
+    }
+
+    return toPlaced(day, start, end);
+}
+
+/** Minutes du jour couvert par un horaire posé (une fin à minuit revient à 1440). */
+export function placedMinutes(placed: PlacedSpan): { ymd: string; startMin: number; endMin: number } {
+    const [sh, sm] = placed.startTime.split(':').map(Number);
+    const startMin = sh * 60 + sm;
+    if (placed.endDate !== placed.startDate) return { ymd: placed.startDate, startMin, endMin: DAY_MINUTES };
+    const [eh, em] = placed.endTime.split(':').map(Number);
+    return { ymd: placed.startDate, startMin, endMin: eh * 60 + em };
+}
+
 /** Répartit les occurrences d'un jour (déjà filtrées sur ce jour) entre bandeau et grille. */
 export function layoutDay(items: readonly CalendarOccurrence[], ymd: string): DayLayout {
     const dayStart = parseYmd(ymd).getTime();

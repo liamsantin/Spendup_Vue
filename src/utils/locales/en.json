@@ -4418,6 +4418,12 @@
             "create": "Create",
             "more": "More options"
         },
+        "drag": {
+            "resizeStart": "Change the start time",
+            "resizeEnd": "Change the end time",
+            "forbidden": "You cannot edit this event.",
+            "failed": "The new time could not be saved. Try again."
+        },
         "agenda": {
             "empty": "Nothing planned until {date}.",
             "loadMore": "Show more",

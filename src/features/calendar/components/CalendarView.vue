@@ -12,14 +12,25 @@ import { ChevronLeftIcon, ChevronRightIcon, PlusIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import CalendarAgendaList from '@/features/calendar/components/agenda/CalendarAgendaList.vue';
 import CalendarMonthGrid from '@/features/calendar/components/month/CalendarMonthGrid.vue';
+import { calendarApi } from '@/features/calendar/api';
 import CalendarEventFormModal from '@/features/calendar/components/modals/CalendarEventFormModal.vue';
+import CalendarEventScopeDialog from '@/features/calendar/components/modals/CalendarEventScopeDialog.vue';
 import CalendarDayPanel from '@/features/calendar/components/side/CalendarDayPanel.vue';
 import CalendarMonthSummary from '@/features/calendar/components/side/CalendarMonthSummary.vue';
 import CalendarTimeGrid from '@/features/calendar/components/week/CalendarTimeGrid.vue';
 import { useCalendarOccurrences } from '@/features/calendar/composables/useCalendarOccurrences';
 import { addDaysYmd, monthGrid, parseYmd, toYmd, weekDays, ymdOf } from '@/features/calendar/dates';
 import { groupByDay, monthSummary, upcomingOutflows } from '@/features/calendar/occurrences';
-import { CALENDAR_VIEWS, type CalendarOccurrence, type CalendarViewMode } from '@/features/calendar/types';
+import { buildUpdateEventPayload, eventToFormFields, occurrenceStartOf } from '@/features/calendar/payload';
+import {
+    CALENDAR_VIEWS,
+    type CalendarEvent,
+    type CalendarEventScope,
+    type CalendarOccurrence,
+    type CalendarViewMode
+} from '@/features/calendar/types';
+import type { PlacedSpan } from '@/features/calendar/timegrid';
+import { AppError } from '@/utils/errors/app-error';
 
 /** L'agenda charge 30 jours de plus à chaque fois, jusqu'à un an (fenêtre maximale de l'API). */
 const AGENDA_STEP_DAYS = 30;
@@ -164,12 +175,90 @@ function openEvent(occurrence: CalendarOccurrence) {
     formOpen.value = true;
 }
 
+// ── glisser-déposer : le calcul d'horaire est dans la grille, l'enregistrement ici ──
+type Reschedule = { occurrence: CalendarOccurrence } & PlacedSpan;
+
+const dragRelease = ref(0);
+const dragScopeOpen = ref(false);
+const dragSaving = ref(false);
+const dragError = ref<string | null>(null);
+const dragPending = ref<Reschedule | null>(null);
+const dragEvent = ref<CalendarEvent | null>(null);
+const dragLocked = computed(() => dragSaving.value || dragScopeOpen.value || dragPending.value !== null);
+
+function dragMessage(e: unknown): string {
+    const status = AppError.fromUnknown(e).status;
+    if (status === 409) return t('calendarPage.form.errors.conflict');
+    if (status === 404) return t('calendarPage.form.errors.notFound');
+    if (status === 403) return t('calendarPage.drag.forbidden');
+    return t('calendarPage.drag.failed');
+}
+
+function rejectDrag() {
+    dragScopeOpen.value = false;
+    dragPending.value = null;
+    dragEvent.value = null;
+    dragRelease.value += 1;
+}
+
+async function onReschedule(change: Reschedule) {
+    if (dragPending.value) return;
+    if (!change.occurrence.eventPublicId) {
+        dragRelease.value += 1;
+        return;
+    }
+    dragError.value = null;
+    dragPending.value = change;
+    try {
+        const event = await calendarApi.getEvent(change.occurrence.eventPublicId);
+        dragEvent.value = event;
+        if (event.recurrenceRule) dragScopeOpen.value = true;
+        else await commitDrag('series');
+    } catch (e) {
+        dragError.value = dragMessage(e);
+        rejectDrag();
+    }
+}
+
+async function commitDrag(scope: CalendarEventScope) {
+    const pending = dragPending.value;
+    const event = dragEvent.value;
+    if (!pending || !event || dragSaving.value) return;
+    const initial = eventToFormFields(event, pending.occurrence);
+    const built = buildUpdateEventPayload(
+        { ...initial, startDate: pending.startDate, startTime: pending.startTime, endDate: pending.endDate, endTime: pending.endTime },
+        { event, initial, scope, occurrenceStart: occurrenceStartOf(pending.occurrence) }
+    );
+    if (!built.ok || !built.changed) {
+        rejectDrag();
+        return;
+    }
+    dragSaving.value = true;
+    dragScopeOpen.value = false;
+    try {
+        await calendarApi.updateEvent(event.publicId, built.payload);
+        await reload();
+        dragPending.value = null;
+        dragEvent.value = null;
+    } catch (e) {
+        dragError.value = dragMessage(e);
+        rejectDrag();
+    } finally {
+        dragSaving.value = false;
+    }
+}
+
+function onDragScope(open: boolean) {
+    dragScopeOpen.value = open;
+    if (!open && !dragSaving.value && dragPending.value) rejectDrag();
+}
+
 // ── raccourcis clavier ──
 function onKeydown(event: KeyboardEvent) {
     if (event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey || event.repeat) return;
     const target = event.target as HTMLElement | null;
     if (target?.closest('input, textarea, select, [contenteditable="true"], [role="dialog"]')) return;
-    if (formOpen.value || document.querySelector('.v-overlay--active')) return;
+    if (formOpen.value || dragScopeOpen.value || document.querySelector('.v-overlay--active')) return;
 
     const key = event.key.toLowerCase();
     const viewIndex = ['1', '2', '3', '4'].indexOf(key);
@@ -190,6 +279,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
     <div>
         <AppAlert v-if="error" type="error" class="cal-alert">
             {{ t('calendarPage.loadError') }}
+        </AppAlert>
+        <AppAlert v-if="dragError" type="error" class="cal-alert">
+            {{ dragError }}
         </AppAlert>
 
         <!-- Navigation : boutons-icônes carrés, titre de la période 16 px 700, « Aujourd’hui » discret. -->
@@ -250,10 +342,13 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
             :today="todayYmd"
             :label="title"
             :day-links="view === 'week'"
+            :release="dragRelease"
+            :locked="dragLocked"
             @open="openEvent"
             @day="openDay"
             @more="createEvent($event.ymd, $event.time, $event.title)"
             @created="reload"
+            @reschedule="onReschedule"
         />
 
         <CalendarAgendaList
@@ -276,6 +371,15 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
             :time="draft.time"
             :title="draft.title"
             @changed="reload"
+        />
+
+        <CalendarEventScopeDialog
+            :model-value="dragScopeOpen"
+            mode="save"
+            allow-occurrence
+            :loading="dragSaving"
+            @update:model-value="onDragScope"
+            @confirm="commitDrag"
         />
     </div>
 </template>

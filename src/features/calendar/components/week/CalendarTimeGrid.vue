@@ -2,9 +2,9 @@
 /**
  * Grille horaire des vues Semaine et Jour : en-tête des jours, bandeau « journée entière », 24 heures qui défilent
  * (ouverture vers 7 h) et ligne « maintenant ». Les blocs qui se chevauchent se partagent la largeur de la colonne.
- * Un clic sur un créneau libre ouvre la création rapide.
+ * Un clic sur un créneau libre ouvre la création rapide. Un événement saisi se déplace ou se redimensionne au pointeur.
  */
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CalendarQuickCreate from '@/features/calendar/components/week/CalendarQuickCreate.vue';
 import { parseYmd, ymdOf } from '@/features/calendar/dates';
@@ -15,8 +15,21 @@ import {
     occurrenceTone,
     occurrenceToneStyle
 } from '@/features/calendar/occurrences';
-import { DAY_MINUTES, layoutDay, minutesToHhmm, snapToSlot, wallMinutes } from '@/features/calendar/timegrid';
+import {
+    DAY_MINUTES,
+    layoutDay,
+    minutesToHhmm,
+    placeDrag,
+    placedMinutes,
+    snapToSlot,
+    wallMinutes,
+    type DragMode,
+    type PlacedSpan,
+    type TimedBlock
+} from '@/features/calendar/timegrid';
 import type { CalendarOccurrence } from '@/features/calendar/types';
+
+const DRAG_THRESHOLD_PX = 4;
 
 const HOUR_PX = 48;
 const OPEN_AT_HOUR = 7;
@@ -31,6 +44,10 @@ const props = defineProps<{
     label: string;
     /** Vue Semaine : un clic sur l'en-tête d'un jour ouvre la vue Jour. */
     dayLinks?: boolean;
+    /** Incrémenté pour annuler un glisser qui n'a pas été enregistré. */
+    release?: number;
+    /** Vrai pendant l'enregistrement ou le choix de portée : un second glisser n'est pas pris. */
+    locked?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -38,6 +55,7 @@ const emit = defineEmits<{
     day: [ymd: string];
     more: [draft: { ymd: string; time: string; title: string }];
     created: [];
+    reschedule: [change: { occurrence: CalendarOccurrence } & PlacedSpan];
 }>();
 
 const { t, locale } = useI18n();
@@ -46,6 +64,7 @@ const scroller = ref<HTMLElement | null>(null);
 const quick = ref<{ ymd: string; minutes: number } | null>(null);
 const now = ref(new Date());
 let timer: ReturnType<typeof setInterval> | undefined;
+let swallowClick: ((event: MouseEvent) => void) | null = null;
 
 const hours = Array.from({ length: 23 }, (_, i) => ({ top: (i + 1) * HOUR_PX, label: minutesToHhmm((i + 1) * 60) }));
 
@@ -97,16 +116,175 @@ function onMore(title: string) {
     quick.value = null;
 }
 
+function canDrag(occurrence: CalendarOccurrence): boolean {
+    return isEditableOccurrence(occurrence) && !isCanceled(occurrence);
+}
+
+type DragSession = {
+    mode: DragMode;
+    occurrence: CalendarOccurrence;
+    originYmd: string;
+    startMin: number;
+    endMin: number;
+    /** Écart entre le pointeur et le début du bloc, pour ne pas le faire sauter sous le curseur. */
+    grab: number;
+    x: number;
+    y: number;
+    moved: boolean;
+    ymd: string;
+    pointerMin: number;
+};
+
+type DragPreview = PlacedSpan & { ymd: string; startMin: number; endMin: number; occurrence: CalendarOccurrence };
+
+const session = ref<DragSession | null>(null);
+/** Position gardée après le lâcher, jusqu'à l'enregistrement ou l'annulation. */
+const held = ref<DragPreview | null>(null);
+
+function previewOf(span: BlockPreviewInput): DragPreview {
+    const minutes = span.mode === 'move' ? span.pointerMin - span.grab : span.pointerMin;
+    const ymd = span.mode === 'move' ? span.ymd : span.originYmd;
+    const placed = placeDrag({ ymd: span.originYmd, startMin: span.startMin, endMin: span.endMin }, ymd, minutes, span.mode);
+    return { ...placed, ...placedMinutes(placed), occurrence: span.occurrence };
+}
+
+type BlockPreviewInput = Pick<DragSession, 'mode' | 'pointerMin' | 'grab' | 'ymd' | 'originYmd' | 'startMin' | 'endMin' | 'occurrence'>;
+
+const preview = computed(() => (session.value?.moved ? previewOf(session.value) : held.value));
+
+function isDimmed(id: string): boolean {
+    return (session.value?.moved === true && session.value.occurrence.id === id) || held.value?.occurrence.id === id;
+}
+
+function previewLabel(item: DragPreview): string {
+    const start = minutesToHhmm(item.startMin);
+    if (item.endMin <= item.startMin) return start;
+    const end = item.endMin >= DAY_MINUTES ? '00:00' : minutesToHhmm(item.endMin);
+    return `${start} – ${end}`;
+}
+
+function minutesAt(event: PointerEvent, column: HTMLElement): number {
+    return ((event.clientY - column.getBoundingClientRect().top) / HOUR_PX) * 60;
+}
+
+function columnAt(event: PointerEvent): HTMLElement | null {
+    return document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>('[data-cal-day]') ?? null;
+}
+
+function startDrag(event: PointerEvent, block: TimedBlock, ymd: string, mode: DragMode) {
+    if (event.button !== 0 || props.locked || !canDrag(block.occurrence)) return;
+    event.stopPropagation();
+    stopDragListeners();
+    const column = (event.currentTarget as HTMLElement).closest<HTMLElement>('[data-cal-day]');
+    if (!column) return;
+    quick.value = null;
+    session.value = {
+        mode,
+        occurrence: block.occurrence,
+        originYmd: ymd,
+        startMin: block.startMin,
+        endMin: block.endMin,
+        grab: minutesAt(event, column) - block.startMin,
+        x: event.clientX,
+        y: event.clientY,
+        moved: false,
+        ymd,
+        pointerMin: minutesAt(event, column)
+    };
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
+    window.addEventListener('pointercancel', onPointerUp);
+}
+
+function atPointer(current: DragSession, event: PointerEvent): DragSession {
+    const column = columnAt(event);
+    const ymd = current.mode === 'move' && column?.dataset.calDay ? column.dataset.calDay : current.ymd;
+    const measure = current.mode === 'move' ? column : scroller.value?.querySelector<HTMLElement>(`[data-cal-day="${current.originYmd}"]`);
+    return { ...current, moved: true, ymd, pointerMin: measure ? minutesAt(event, measure) : current.pointerMin };
+}
+
+function onPointerMove(event: PointerEvent) {
+    const current = session.value;
+    if (!current) return;
+    if (!current.moved && Math.hypot(event.clientX - current.x, event.clientY - current.y) < DRAG_THRESHOLD_PX) return;
+    session.value = atPointer(current, event);
+}
+
+function stopDragListeners() {
+    window.removeEventListener('pointermove', onPointerMove);
+    window.removeEventListener('pointerup', onPointerUp);
+    window.removeEventListener('pointercancel', onPointerUp);
+}
+
+/** Le clic qui suit un glisser ne doit ni ouvrir l'événement ni créer un créneau. Un clic ailleurs passe. */
+function swallowNextClick() {
+    if (swallowClick) window.removeEventListener('click', swallowClick, true);
+    swallowClick = (event: MouseEvent) => {
+        if (swallowClick) window.removeEventListener('click', swallowClick, true);
+        swallowClick = null;
+        const grid = scroller.value?.closest('.cal-week');
+        if (grid && event.target instanceof Node && grid.contains(event.target)) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+    };
+    window.addEventListener('click', swallowClick, true);
+}
+
+function onPointerUp(event: PointerEvent) {
+    const current = session.value;
+    stopDragListeners();
+    session.value = null;
+    if (!current) return;
+    const far = Math.hypot(event.clientX - current.x, event.clientY - current.y) >= DRAG_THRESHOLD_PX;
+    if (!current.moved && !far) return;
+    swallowNextClick();
+    const placed = previewOf(atPointer(current, event));
+    const same =
+        placed.ymd === current.originYmd && placed.startMin === current.startMin && placed.endMin === Math.min(current.endMin, DAY_MINUTES);
+    if (same) return;
+    held.value = placed;
+    emit('reschedule', {
+        occurrence: current.occurrence,
+        startDate: placed.startDate,
+        startTime: placed.startTime,
+        endDate: placed.endDate,
+        endTime: placed.endTime
+    });
+}
+
+function onBlockClick(occurrence: CalendarOccurrence) {
+    if (canDrag(occurrence)) emit('open', occurrence);
+}
+
+watch(
+    () => props.byDay,
+    () => (held.value = null)
+);
+watch(
+    () => props.release,
+    () => (held.value = null)
+);
+
 onMounted(() => {
     if (scroller.value) scroller.value.scrollTop = OPEN_AT_HOUR * HOUR_PX - 8;
     timer = setInterval(() => (now.value = new Date()), 60_000);
 });
 
-onBeforeUnmount(() => clearInterval(timer));
+onBeforeUnmount(() => {
+    clearInterval(timer);
+    stopDragListeners();
+    if (swallowClick) window.removeEventListener('click', swallowClick, true);
+});
 </script>
 
 <template>
-    <section class="cal-week" :aria-label="label" :style="{ '--days': days.length, '--hour': `${HOUR_PX}px` }">
+    <section
+        class="cal-week"
+        :class="{ 'is-dragging': session?.moved }"
+        :aria-label="label"
+        :style="{ '--days': days.length, '--hour': `${HOUR_PX}px` }"
+    >
         <div class="cal-week__frame">
             <!-- en-tête des jours -->
             <div class="cal-week__row cal-week__head">
@@ -173,30 +351,65 @@ onBeforeUnmount(() => clearInterval(timer));
                         :key="column.ymd"
                         class="cal-week__col"
                         :class="{ 'is-today': column.ymd === today }"
+                        :data-cal-day="column.ymd"
                         @click="onSlot($event, column.ymd)"
                     >
-                        <component
-                            :is="isEditableOccurrence(block.occurrence) ? 'button' : 'div'"
+                        <div
                             v-for="block in column.layout.timed"
                             :key="block.occurrence.id"
-                            :type="isEditableOccurrence(block.occurrence) ? 'button' : undefined"
                             class="cal-week__block"
                             :class="[
                                 `cal-tone--${occurrenceTone(block.occurrence)}`,
                                 {
-                                    'is-action': isEditableOccurrence(block.occurrence),
+                                    'is-action': canDrag(block.occurrence),
+                                    'is-dimmed': isDimmed(block.occurrence.id),
                                     'is-short': block.endMin - block.startMin < 45
                                 }
                             ]"
                             :style="blockStyle(block)"
+                            :role="canDrag(block.occurrence) ? 'button' : undefined"
+                            :tabindex="canDrag(block.occurrence) ? 0 : undefined"
                             :title="`${block.occurrence.title} · ${occurrenceTimeRange(block.occurrence, locale) ?? ''}`"
-                            @click.stop="isEditableOccurrence(block.occurrence) && emit('open', block.occurrence)"
+                            @pointerdown="startDrag($event, block, column.ymd, 'move')"
+                            @click.stop="onBlockClick(block.occurrence)"
+                            @keydown.enter.prevent="onBlockClick(block.occurrence)"
+                            @keydown.space.prevent="onBlockClick(block.occurrence)"
                         >
                             <span class="cal-week__block-title" :class="{ 'cal-is-canceled': isCanceled(block.occurrence) }">
                                 {{ block.occurrence.title }}
                             </span>
                             <span class="cal-week__block-time">{{ occurrenceTimeRange(block.occurrence, locale) }}</span>
-                        </component>
+                            <template v-if="canDrag(block.occurrence)">
+                                <button
+                                    type="button"
+                                    class="cal-week__resize cal-week__resize--start"
+                                    :aria-label="t('calendarPage.drag.resizeStart')"
+                                    @pointerdown.stop="startDrag($event, block, column.ymd, 'resizeStart')"
+                                    @click.stop
+                                />
+                                <button
+                                    type="button"
+                                    class="cal-week__resize cal-week__resize--end"
+                                    :aria-label="t('calendarPage.drag.resizeEnd')"
+                                    @pointerdown.stop="startDrag($event, block, column.ymd, 'resizeEnd')"
+                                    @click.stop
+                                />
+                            </template>
+                        </div>
+
+                        <div
+                            v-if="preview && preview.ymd === column.ymd"
+                            class="cal-week__block cal-week__ghost-block"
+                            :class="[
+                                `cal-tone--${occurrenceTone(preview.occurrence)}`,
+                                { 'is-short': preview.endMin - preview.startMin < 45 }
+                            ]"
+                            :style="blockStyle({ ...preview, column: 0, columns: 1 })"
+                            aria-hidden="true"
+                        >
+                            <span class="cal-week__block-title">{{ preview.occurrence.title }}</span>
+                            <span class="cal-week__block-time">{{ previewLabel(preview) }}</span>
+                        </div>
 
                         <span
                             v-for="hour in hours"
@@ -443,11 +656,48 @@ onBeforeUnmount(() => clearInterval(timer));
 }
 
 .cal-week__block.is-action {
-    cursor: pointer;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
 }
 
 .cal-week__block.is-action:hover {
     box-shadow: inset 0 0 0 1px var(--ink);
+}
+
+.cal-week.is-dragging .cal-week__block.is-action {
+    cursor: grabbing;
+}
+
+.cal-week__block.is-dimmed {
+    opacity: 0.35;
+}
+
+.cal-week__resize {
+    position: absolute;
+    z-index: 1;
+    left: 0;
+    right: 0;
+    height: 8px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: ns-resize;
+}
+
+.cal-week__resize--start {
+    top: 0;
+}
+
+.cal-week__resize--end {
+    bottom: 0;
+}
+
+.cal-week__ghost-block {
+    z-index: 4;
+    opacity: 0.92;
+    box-shadow: inset 0 0 0 1px var(--ink);
+    pointer-events: none;
 }
 
 .cal-week__block:focus-visible {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { layoutDay, minutesToHhmm, snapToSlot } from '@/features/calendar/timegrid';
+import { layoutDay, minutesToHhmm, placeDrag, snapToSlot } from '@/features/calendar/timegrid';
 import type { CalendarOccurrence } from '@/features/calendar/types';
 
 const DAY = '2026-12-07';
@@ -77,6 +77,66 @@ describe('snapToSlot', () => {
         expect(snapToSlot(629)).toBe(600);
         expect(snapToSlot(-10)).toBe(0);
         expect(snapToSlot(1500)).toBe(1410);
+    });
+});
+
+describe('placeDrag', () => {
+    const origin = { ymd: DAY, startMin: 9 * 60, endMin: 10 * 60 };
+
+    it('déplace en conservant la durée et cale sur la demi-heure', () => {
+        expect(placeDrag(origin, DAY, 10 * 60 + 10, 'move')).toEqual({
+            startDate: DAY,
+            startTime: '10:00',
+            endDate: DAY,
+            endTime: '11:00'
+        });
+    });
+
+    it('change de jour', () => {
+        expect(placeDrag(origin, '2026-12-08', 14 * 60, 'move')).toMatchObject({
+            startDate: '2026-12-08',
+            startTime: '14:00',
+            endDate: '2026-12-08',
+            endTime: '15:00'
+        });
+    });
+
+    it('reste dans le jour quand la durée dépasserait minuit', () => {
+        expect(placeDrag(origin, DAY, 23 * 60 + 40, 'move')).toEqual({
+            startDate: DAY,
+            startTime: '23:00',
+            endDate: '2026-12-08',
+            endTime: '00:00'
+        });
+    });
+
+    it('allonge ou réduit la fin, avec 30 minutes au minimum et minuit au maximum', () => {
+        expect(placeDrag(origin, DAY, 11 * 60 + 10, 'resizeEnd')).toMatchObject({ startTime: '09:00', endTime: '11:00' });
+        expect(placeDrag(origin, DAY, 9 * 60 + 10, 'resizeEnd').endTime).toBe('09:30');
+        expect(placeDrag(origin, DAY, 24 * 60, 'resizeEnd')).toEqual({
+            startDate: DAY,
+            startTime: '09:00',
+            endDate: '2026-12-08',
+            endTime: '00:00'
+        });
+    });
+
+    it('avance le début sans passer sous 30 minutes', () => {
+        expect(placeDrag(origin, DAY, 8 * 60 + 10, 'resizeStart')).toMatchObject({ startTime: '08:00', endTime: '10:00' });
+        expect(placeDrag(origin, '2026-12-09', 12 * 60, 'resizeStart')).toMatchObject({
+            startDate: DAY,
+            startTime: '09:30',
+            endTime: '10:00'
+        });
+    });
+
+    it('déplace un événement sans durée sans lui en donner', () => {
+        expect(placeDrag({ ...origin, endMin: origin.startMin }, DAY, 15 * 60, 'move')).toEqual({
+            startDate: DAY,
+            startTime: '15:00',
+            endDate: DAY,
+            endTime: '15:00'
+        });
     });
 });
 
