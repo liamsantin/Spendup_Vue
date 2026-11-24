@@ -8,7 +8,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CalendarQuickCreate from '@/features/calendar/components/week/CalendarQuickCreate.vue';
-import { parseYmd, ymdOf } from '@/features/calendar/dates';
+import { isoWeek, parseYmd, ymdOf } from '@/features/calendar/dates';
 import {
     isCanceled,
     isEditableOccurrence,
@@ -33,7 +33,6 @@ import type { CalendarOccurrence } from '@/features/calendar/types';
 const DRAG_THRESHOLD_PX = 4;
 
 const HOUR_PX = 48;
-const OPEN_AT_HOUR = 7;
 const MAX_BAND_ITEMS = 3;
 /** À partir de 19 h, l'encart de création rapide s'ouvre au-dessus du créneau pour rester dans la grille. */
 const QUICK_ABOVE_FROM = 19 * 60;
@@ -45,6 +44,13 @@ const props = defineProps<{
     label: string;
     /** Vue Semaine : un clic sur l'en-tête d'un jour ouvre la vue Jour. */
     dayLinks?: boolean;
+    hour24?: boolean;
+    dayStartHour?: number;
+    dayEndHour?: number;
+    /** Durée du bandeau quand le clic n'a pas tiré de fin. */
+    defaultDuration?: number;
+    secondTimezone?: string | null;
+    showWeekNumbers?: boolean;
     /** Incrémenté pour annuler un glisser qui n'a pas été enregistré. */
     release?: number;
     /** Vrai pendant l'enregistrement ou le choix de portée : un second glisser n'est pas pris. */
@@ -70,7 +76,32 @@ const now = ref(new Date());
 let timer: ReturnType<typeof setInterval> | undefined;
 let swallowClick: ((event: MouseEvent) => void) | null = null;
 
-const hours = Array.from({ length: 23 }, (_, i) => ({ top: (i + 1) * HOUR_PX, label: minutesToHhmm((i + 1) * 60) }));
+const duration = computed(() => props.defaultDuration ?? 60);
+const openAtHour = computed(() => props.dayStartHour ?? 7);
+
+function hourLabel(hour: number, timeZone?: string): string {
+    if ((props.hour24 ?? true) && !timeZone) return minutesToHhmm(hour * 60);
+    const date = new Date();
+    date.setHours(hour, 0, 0, 0);
+    return new Intl.DateTimeFormat(locale.value, {
+        hour: props.hour24 === false ? 'numeric' : '2-digit',
+        minute: '2-digit',
+        hour12: props.hour24 === false,
+        timeZone
+    }).format(date);
+}
+
+const hours = computed(() =>
+    Array.from({ length: 23 }, (_, i) => {
+        const hour = i + 1;
+        return {
+            hour,
+            top: hour * HOUR_PX,
+            label: hourLabel(hour),
+            alt: props.secondTimezone ? hourLabel(hour, props.secondTimezone) : null
+        };
+    })
+);
 
 const columns = computed(() =>
     props.days.map((ymd) => {
@@ -113,7 +144,7 @@ const highlight = computed(() => {
     if (live?.moved) return { ymd: live.ymd, ...selectRange(live.anchor, live.pointerMin) };
     const draft = quick.value;
     if (!draft) return null;
-    return { ymd: draft.ymd, startMin: draft.startMin, endMin: draft.endMin ?? draft.startMin + 60 };
+    return { ymd: draft.ymd, startMin: draft.startMin, endMin: draft.endMin ?? draft.startMin + duration.value };
 });
 
 function onColumnDown(event: PointerEvent, ymd: string) {
@@ -333,10 +364,16 @@ watch(
     () => (held.value = null)
 );
 
+function scrollToOpen() {
+    if (scroller.value) scroller.value.scrollTop = openAtHour.value * HOUR_PX - 8;
+}
+
 onMounted(() => {
-    if (scroller.value) scroller.value.scrollTop = OPEN_AT_HOUR * HOUR_PX - 8;
+    scrollToOpen();
     timer = setInterval(() => (now.value = new Date()), 60_000);
 });
+
+watch(openAtHour, () => scrollToOpen());
 
 onBeforeUnmount(() => {
     clearInterval(timer);
@@ -351,12 +388,16 @@ onBeforeUnmount(() => {
         class="cal-week"
         :class="{ 'is-dragging': session?.moved }"
         :aria-label="label"
-        :style="{ '--days': days.length, '--hour': `${HOUR_PX}px` }"
+        :style="{ '--days': days.length, '--hour': `${HOUR_PX}px`, '--gutter': secondTimezone ? '72px' : '56px' }"
     >
         <div class="cal-week__frame">
             <!-- en-tête des jours -->
             <div class="cal-week__row cal-week__head">
-                <span class="cal-week__gutter" aria-hidden="true" />
+                <span class="cal-week__gutter cal-week__weeknum">
+                    <span v-if="showWeekNumbers && days[0]" :title="t('calendarPage.settings.weekNumber', { week: isoWeek(days[0]) })">
+                        {{ isoWeek(days[0]) }}
+                    </span>
+                </span>
                 <component
                     :is="dayLinks ? 'button' : 'div'"
                     v-for="column in columns"
@@ -410,8 +451,9 @@ onBeforeUnmount(() => {
             <div ref="scroller" class="cal-week__scroll">
                 <div class="cal-week__row cal-week__body">
                     <div class="cal-week__gutter cal-week__hours" aria-hidden="true">
-                        <span v-for="hour in hours" :key="hour.label" class="cal-week__hour" :style="{ top: `${hour.top}px` }">
+                        <span v-for="hour in hours" :key="hour.hour" class="cal-week__hour" :style="{ top: `${hour.top}px` }">
                             {{ hour.label }}
+                            <small v-if="hour.alt">{{ hour.alt }}</small>
                         </span>
                     </div>
                     <div
@@ -422,6 +464,18 @@ onBeforeUnmount(() => {
                         :data-cal-day="column.ymd"
                         @pointerdown="onColumnDown($event, column.ymd)"
                     >
+                        <span
+                            v-if="(dayStartHour ?? 0) > 0"
+                            class="cal-week__off"
+                            :style="{ top: 0, height: px((dayStartHour ?? 0) * 60) }"
+                            aria-hidden="true"
+                        />
+                        <span
+                            v-if="(dayEndHour ?? 24) < 24"
+                            class="cal-week__off"
+                            :style="{ top: px((dayEndHour ?? 24) * 60), height: px((24 - (dayEndHour ?? 24)) * 60) }"
+                            aria-hidden="true"
+                        />
                         <div
                             v-for="block in column.layout.timed"
                             :key="block.occurrence.id"
@@ -481,7 +535,7 @@ onBeforeUnmount(() => {
 
                         <span
                             v-for="hour in hours"
-                            :key="hour.label"
+                            :key="hour.hour"
                             class="cal-week__line"
                             :style="{ top: `${hour.top}px` }"
                             aria-hidden="true"
@@ -507,7 +561,7 @@ onBeforeUnmount(() => {
                                 top: px(
                                     (quick.endMin ?? quick.startMin) >= QUICK_ABOVE_FROM
                                         ? quick.startMin
-                                        : (quick.endMin ?? quick.startMin + 60)
+                                        : (quick.endMin ?? quick.startMin + duration)
                                 )
                             }"
                             @created="onCreated"
@@ -529,12 +583,12 @@ onBeforeUnmount(() => {
 }
 
 .cal-week__frame {
-    min-width: calc(56px + var(--days) * 88px);
+    min-width: calc(var(--gutter, 56px) + var(--days) * 88px);
 }
 
 .cal-week__row {
     display: grid;
-    grid-template-columns: 56px repeat(var(--days), minmax(0, 1fr));
+    grid-template-columns: var(--gutter, 56px) repeat(var(--days), minmax(0, 1fr));
 }
 
 .cal-week__head,
@@ -689,7 +743,32 @@ onBeforeUnmount(() => {
     color: var(--gray);
     font-size: 12px;
     font-variant-numeric: tabular-nums;
+    line-height: 1.15;
+    text-align: right;
     transform: translateY(-50%);
+}
+
+.cal-week__hour small {
+    display: block;
+    font-size: 10px;
+}
+
+.cal-week__weeknum {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 8px;
+    color: var(--gray);
+    font-size: 12px;
+}
+
+.cal-week__off {
+    position: absolute;
+    z-index: 0;
+    left: 0;
+    right: 0;
+    background: color-mix(in srgb, var(--ink) 4%, transparent);
+    pointer-events: none;
 }
 
 .cal-week__col {

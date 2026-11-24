@@ -2,6 +2,7 @@ import type { Component } from 'vue';
 import { SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
 import {
     AccountsNavIcon,
+    CalendarNavIcon,
     CategoriesNavIcon,
     DashboardNavIcon,
     FilesNavIcon,
@@ -164,6 +165,11 @@ const sidebarThemes: sidebarTheme[] = [
                 title: 'nav.items.preferences',
                 icon: PreferencesNavIcon,
                 to: SETTINGS_PATHS.preferences
+            },
+            {
+                title: 'nav.items.calendarSettings',
+                icon: CalendarNavIcon,
+                to: SETTINGS_PATHS.calendar
             },
             {
                 title: 'nav.items.notificationSettings',

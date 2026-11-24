@@ -66,12 +66,39 @@ export type CalendarInfo = {
     isHidden: boolean;
 };
 
-/** Réglages utiles à la création (`GET /api/calendar/preferences`). */
+/** Réglages généraux (`GET /api/calendar/preferences`). Groupes Affichage, Création, Fuseau. */
 export type CalendarPreferences = {
+    defaultView: string;
+    weekStartsOn: number;
+    showWeekends: boolean;
+    showWeekNumbers: boolean;
+    use24HourClock: boolean;
+    dayStartHour: number;
+    dayEndHour: number;
     defaultCalendarId: string | null;
     defaultDurationMinutes: number;
+    defaultVisibilite: string;
     defaultReminderMinutes: number | null;
     timezone: string;
+    secondTimezone: string | null;
+};
+
+/** Modification partielle. Chaîne vide pour `defaultCalendarId` ou `secondTimezone` : effacer. */
+export type UpdateCalendarPreferencesPayload = {
+    defaultView?: string;
+    weekStartsOn?: number;
+    showWeekends?: boolean;
+    showWeekNumbers?: boolean;
+    use24HourClock?: boolean;
+    dayStartHour?: number;
+    dayEndHour?: number;
+    defaultCalendarId?: string;
+    defaultDurationMinutes?: number;
+    defaultVisibilite?: string;
+    defaultReminderMinutes?: number;
+    clearDefaultReminder?: boolean;
+    timezone?: string;
+    secondTimezone?: string;
 };
 
 export type CalendarReminder = { beforeMinutes: number; canal: string };

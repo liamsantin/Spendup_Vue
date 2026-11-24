@@ -129,6 +129,7 @@ export const SHELL_NAV_IDS = {
     settings: 'settings',
     profile: 'profile',
     preferences: 'preferences',
+    calendarSettings: 'calendar-settings',
     notificationSettings: 'notification-settings',
     privacy: 'privacy',
     security: 'security',
@@ -243,6 +244,9 @@ export function idsFromPath(path: string): { openId: string | null; activeId: st
     if (pathIs(path, SETTINGS_PATHS.preferences)) {
         return { openId: SHELL_NAV_IDS.settings, activeId: SHELL_NAV_IDS.preferences };
     }
+    if (pathIs(path, SETTINGS_PATHS.calendar)) {
+        return { openId: SHELL_NAV_IDS.settings, activeId: SHELL_NAV_IDS.calendarSettings };
+    }
     if (pathIs(path, SETTINGS_PATHS.notifications)) {
         return { openId: SHELL_NAV_IDS.settings, activeId: SHELL_NAV_IDS.notificationSettings };
     }
@@ -354,6 +358,7 @@ export function useShellNav() {
     const settingsLeaves = computed<NavLeaf[]>(() => [
         live(SHELL_NAV_IDS.profile, t('nav.items.profile'), ProfileNavIcon, SETTINGS_PATHS.account),
         live(SHELL_NAV_IDS.preferences, t('nav.items.preferences'), PreferencesNavIcon, SETTINGS_PATHS.preferences),
+        live(SHELL_NAV_IDS.calendarSettings, t('nav.items.calendarSettings'), CalendarNavIcon, SETTINGS_PATHS.calendar),
         live(SHELL_NAV_IDS.notificationSettings, t('nav.items.notificationSettings'), NotificationsNavIcon, SETTINGS_PATHS.notifications),
         live(SHELL_NAV_IDS.privacy, t('nav.items.privacy'), PrivacyNavIcon, SETTINGS_PATHS.privacy),
         live(SHELL_NAV_IDS.security, t('nav.items.security'), SecurityNavIcon, SETTINGS_PATHS.security),

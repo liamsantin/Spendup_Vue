@@ -153,6 +153,10 @@ describe('idsFromPath', () => {
             openId: SHELL_NAV_IDS.settings,
             activeId: SHELL_NAV_IDS.preferences
         });
+        expect(idsFromPath(SETTINGS_PATHS.calendar)).toEqual({
+            openId: SHELL_NAV_IDS.settings,
+            activeId: SHELL_NAV_IDS.calendarSettings
+        });
         expect(idsFromPath(SETTINGS_PATHS.notifications)).toEqual({
             openId: SHELL_NAV_IDS.settings,
             activeId: SHELL_NAV_IDS.notificationSettings

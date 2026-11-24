@@ -60,6 +60,17 @@ describe('routeCalendar', () => {
         routeCalendar('GET', '/api/calendar/occurrences', new URLSearchParams({ from, to }))!.body as CalendarOccurrencesResult;
     const titlesOn = (ymd: string) => get(ymd, ymd).items.map((o) => o.title);
 
+    it('enregistre les réglages généraux', () => {
+        const saved = routeCalendar('PATCH', '/api/calendar/preferences', new URLSearchParams(), {
+            defaultView: 'week',
+            showWeekNumbers: true,
+            clearDefaultReminder: true
+        })!.body as { defaultView: string; showWeekNumbers: boolean; defaultReminderMinutes: number | null };
+        expect(saved).toMatchObject({ defaultView: 'week', showWeekNumbers: true, defaultReminderMinutes: null });
+        const again = routeCalendar('GET', '/api/calendar/preferences', new URLSearchParams())!.body as { defaultView: string };
+        expect(again.defaultView).toBe('week');
+    });
+
     it('ne répond qu’aux chemins du calendrier', () => {
         expect(routeCalendar('GET', '/api/accounts', new URLSearchParams())).toBeNull();
     });

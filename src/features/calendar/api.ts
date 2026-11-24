@@ -7,6 +7,7 @@ import type {
     CalendarOccurrencesResult,
     CalendarPreferences,
     CreateCalendarEventPayload,
+    UpdateCalendarPreferencesPayload,
     UpdateCalendarEventPayload
 } from '@/features/calendar/types';
 
@@ -24,6 +25,10 @@ export const calendarApi = {
 
     preferences() {
         return fetchWrapper.get('/api/calendar/preferences') as Promise<CalendarPreferences>;
+    },
+
+    updatePreferences(payload: UpdateCalendarPreferencesPayload) {
+        return fetchWrapper.patch('/api/calendar/preferences', payload) as Promise<CalendarPreferences>;
     },
 
     getEvent(publicId: string) {

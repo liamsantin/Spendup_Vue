@@ -28,15 +28,36 @@ export function addDaysYmd(ymd: string, days: number): string {
     return ymdOf(date);
 }
 
-/** Lundi de la semaine de `ymd`. */
-export function weekStartYmd(ymd: string): string {
-    return addDaysYmd(ymd, -((parseYmd(ymd).getDay() + 6) % 7));
+/**
+ * Premier jour de la semaine de `ymd`. `weekStartsOn` : 1 = lundi … 7 = dimanche.
+ */
+export function weekStartYmd(ymd: string, weekStartsOn = 1): string {
+    const start = weekStartsOn % 7;
+    return addDaysYmd(ymd, -((parseYmd(ymd).getDay() - start + 7) % 7));
 }
 
-/** Les sept jours, du lundi au dimanche, de la semaine de `ymd`. */
-export function weekDays(ymd: string): string[] {
-    const start = weekStartYmd(ymd);
+/** Les sept jours de la semaine de `ymd`, à partir de `weekStartsOn`. */
+export function weekDays(ymd: string, weekStartsOn = 1): string[] {
+    const start = weekStartYmd(ymd, weekStartsOn);
     return Array.from({ length: 7 }, (_, i) => addDaysYmd(start, i));
+}
+
+/** Retire les samedis et dimanches, en gardant l'ordre de la semaine. */
+export function visibleDays(days: string[], showWeekends: boolean): string[] {
+    if (showWeekends) return days;
+    return days.filter((ymd) => {
+        const day = parseYmd(ymd).getDay();
+        return day !== 0 && day !== 6;
+    });
+}
+
+/** Numéro de semaine ISO (semaine du lundi, semaine 1 = celle du premier jeudi). */
+export function isoWeek(ymd: string): number {
+    const date = parseYmd(ymd);
+    const thursday = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 3 - ((date.getDay() + 6) % 7));
+    const first = new Date(thursday.getFullYear(), 0, 4);
+    first.setDate(first.getDate() - ((first.getDay() + 6) % 7));
+    return 1 + Math.round((thursday.getTime() - first.getTime()) / 86_400_000 / 7);
 }
 
 export type MonthGrid = {
@@ -49,9 +70,9 @@ export type MonthGrid = {
     days: string[];
 };
 
-/** Grille d'un mois en semaines commençant le lundi. */
-export function monthGrid(year: number, month: number): MonthGrid {
-    const offset = (new Date(year, month, 1).getDay() + 6) % 7;
+/** Grille d'un mois en semaines commençant à `weekStartsOn` (1 = lundi … 7 = dimanche). */
+export function monthGrid(year: number, month: number, weekStartsOn = 1): MonthGrid {
+    const offset = (new Date(year, month, 1).getDay() - (weekStartsOn % 7) + 7) % 7;
     const lastDay = new Date(year, month + 1, 0).getDate();
     const weekCount = Math.ceil((offset + lastDay) / 7);
     const days = Array.from({ length: weekCount * 7 }, (_, i) => ymdOf(new Date(year, month, 1 - offset + i)));

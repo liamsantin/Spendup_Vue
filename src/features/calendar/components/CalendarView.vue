@@ -7,8 +7,9 @@
  * Raccourcis : `T` aujourd'hui, `J` / `K` période précédente / suivante, `C` nouvel événement, `1` à `4` les vues.
  */
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { ChevronLeftIcon, ChevronRightIcon, PlusIcon } from 'vue-tabler-icons';
+import { ChevronLeftIcon, ChevronRightIcon, PlusIcon, SettingsIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import CalendarAgendaList from '@/features/calendar/components/agenda/CalendarAgendaList.vue';
 import CalendarMonthGrid from '@/features/calendar/components/month/CalendarMonthGrid.vue';
@@ -19,7 +20,8 @@ import CalendarDayPanel from '@/features/calendar/components/side/CalendarDayPan
 import CalendarMonthSummary from '@/features/calendar/components/side/CalendarMonthSummary.vue';
 import CalendarTimeGrid from '@/features/calendar/components/week/CalendarTimeGrid.vue';
 import { useCalendarOccurrences } from '@/features/calendar/composables/useCalendarOccurrences';
-import { addDaysYmd, monthGrid, parseYmd, toYmd, weekDays, ymdOf } from '@/features/calendar/dates';
+import { useCalendarPreferences } from '@/features/calendar/composables/useCalendarPreferences';
+import { addDaysYmd, monthGrid, parseYmd, toYmd, visibleDays, weekDays, ymdOf } from '@/features/calendar/dates';
 import { groupByDay, monthSummary, upcomingOutflows } from '@/features/calendar/occurrences';
 import { buildUpdateEventPayload, eventToFormFields, occurrenceStartOf } from '@/features/calendar/payload';
 import {
@@ -30,6 +32,7 @@ import {
     type CalendarViewMode
 } from '@/features/calendar/types';
 import type { PlacedSpan } from '@/features/calendar/timegrid';
+import { SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
 import { AppError } from '@/utils/errors/app-error';
 
 /** L'agenda charge 30 jours de plus à chaque fois, jusqu'à un an (fenêtre maximale de l'API). */
@@ -39,22 +42,41 @@ const AGENDA_MAX_DAYS = 365;
 const view = defineModel<CalendarViewMode>('view', { required: true });
 
 const { t, locale } = useI18n();
+const route = useRoute();
+const router = useRouter();
+const { preferences, load: loadPreferences } = useCalendarPreferences();
 
 const todayYmd = ymdOf(new Date());
 const selected = ref(todayYmd);
 const agendaSpan = ref(AGENDA_STEP_DAYS);
 
+const weekStartsOn = computed(() => preferences.value?.weekStartsOn ?? 1);
+const showWeekends = computed(() => preferences.value?.showWeekends ?? true);
+const showWeekNumbers = computed(() => preferences.value?.showWeekNumbers ?? false);
+const hour24 = computed(() => preferences.value?.use24HourClock ?? true);
+const dayStartHour = computed(() => preferences.value?.dayStartHour ?? 7);
+const dayEndHour = computed(() => preferences.value?.dayEndHour ?? 22);
+const defaultDuration = computed(() => preferences.value?.defaultDurationMinutes ?? 60);
+const secondTimezone = computed(() => preferences.value?.secondTimezone ?? null);
+
 const year = computed(() => Number(selected.value.slice(0, 4)));
 const month = computed(() => Number(selected.value.slice(5, 7)) - 1);
-const grid = computed(() => monthGrid(year.value, month.value));
-const week = computed(() => weekDays(selected.value));
+const grid = computed(() => monthGrid(year.value, month.value, weekStartsOn.value));
+const monthDays = computed(() => visibleDays(grid.value.days, showWeekends.value));
+const monthColumns = computed(() => (showWeekends.value ? 7 : 5));
+const week = computed(() => visibleDays(weekDays(selected.value, weekStartsOn.value), showWeekends.value));
+
+function openSettings() {
+    const base = route.path.startsWith('/demo') ? '/demo' : '/app';
+    void router.push(`${base}${SETTINGS_PATHS.calendar.slice('/app'.length)}`);
+}
 
 const range = computed(() => {
     switch (view.value) {
         case 'day':
             return { from: selected.value, to: selected.value };
         case 'week':
-            return { from: week.value[0], to: week.value[6] };
+            return { from: week.value[0], to: week.value[week.value.length - 1] };
         case 'agenda':
             return { from: selected.value, to: addDaysYmd(selected.value, agendaSpan.value - 1) };
         default:
@@ -276,7 +298,10 @@ function onKeydown(event: KeyboardEvent) {
     event.preventDefault();
 }
 
-onMounted(() => window.addEventListener('keydown', onKeydown));
+onMounted(() => {
+    window.addEventListener('keydown', onKeydown);
+    void loadPreferences();
+});
 onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
 </script>
 
@@ -313,6 +338,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
             <button type="button" class="su-btn su-btn--ghost cal-bar__today" :title="`${t('calendarPage.today')} (T)`" @click="goToday">
                 {{ t('calendarPage.today') }}
             </button>
+            <button type="button" class="su-orb cal-bar__settings" :aria-label="t('calendarPage.settings.open')" @click="openSettings">
+                <SettingsIcon :size="18" stroke-width="1.8" aria-hidden="true" />
+            </button>
             <button type="button" class="su-btn su-btn--ink" :title="`${t('calendarPage.newEvent')} (C)`" @click="createEvent()">
                 <PlusIcon :size="16" stroke-width="2" aria-hidden="true" />
                 {{ t('calendarPage.newEvent') }}
@@ -323,8 +351,10 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
             <CalendarMonthGrid
                 class="cal__month"
                 :month-prefix="monthPrefix"
-                :days="grid.days"
+                :days="monthDays"
+                :columns="monthColumns"
                 :week-count="grid.weekCount"
+                :show-week-numbers="showWeekNumbers"
                 :by-day="byDay"
                 :selected="selected"
                 :today="todayYmd"
@@ -347,6 +377,12 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
             :today="todayYmd"
             :label="title"
             :day-links="view === 'week'"
+            :hour24="hour24"
+            :day-start-hour="dayStartHour"
+            :day-end-hour="dayEndHour"
+            :default-duration="defaultDuration"
+            :second-timezone="secondTimezone"
+            :show-week-numbers="showWeekNumbers"
             :release="dragRelease"
             :locked="dragLocked"
             @open="openEvent"
@@ -401,6 +437,10 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
     align-items: center;
     gap: 4px;
     margin: 0 0 24px;
+}
+
+.cal-bar__settings {
+    margin-left: auto;
 }
 
 .cal-bar__title {

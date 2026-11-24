@@ -4,6 +4,7 @@ import type { LocationQuery, RouteLocationNormalized } from 'vue-router';
 export const SETTINGS_PATHS = {
     account: '/app/parametres/compte',
     preferences: '/app/parametres/preferences',
+    calendar: '/app/parametres/calendrier',
     notifications: '/app/parametres/notifications',
     privacy: '/app/parametres/confidentialite',
     security: '/app/parametres/securite',

@@ -30,6 +30,7 @@ describe('themeIdFromPath', () => {
         expect(settings?.items.map((item) => item.to).filter(Boolean)).toEqual([
             SETTINGS_PATHS.account,
             SETTINGS_PATHS.preferences,
+            SETTINGS_PATHS.calendar,
             SETTINGS_PATHS.notifications,
             SETTINGS_PATHS.privacy,
             SETTINGS_PATHS.security,

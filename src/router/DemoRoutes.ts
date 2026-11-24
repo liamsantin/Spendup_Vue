@@ -5,6 +5,7 @@ import AppRoutes from './AppRoutes';
 const OPEN_DEMO_PATHS = new Set([
     '',
     'calendrier',
+    'parametres/calendrier',
     'friends',
     'finances/comptes',
     'finances/comptes/:publicId',

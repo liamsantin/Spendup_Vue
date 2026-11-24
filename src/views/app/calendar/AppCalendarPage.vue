@@ -1,13 +1,29 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import { CALENDAR_VIEWS, CalendarView, type CalendarViewMode } from '@/features/calendar';
+import { useCalendarPreferences } from '@/features/calendar/composables/useCalendarPreferences';
 
 const { t } = useI18n();
+const { load } = useCalendarPreferences();
 
-/** Vue Agenda par défaut sur petit écran. */
-const view = ref<CalendarViewMode>(typeof window !== 'undefined' && window.matchMedia?.('(max-width: 767px)').matches ? 'agenda' : 'month');
+/** Vue Agenda par défaut sur petit écran ; sinon la vue enregistrée dans les réglages. */
+const narrow = typeof window !== 'undefined' && window.matchMedia?.('(max-width: 767px)').matches;
+const view = ref<CalendarViewMode>(narrow ? 'agenda' : 'month');
+const initial = view.value;
+
+onMounted(async () => {
+    if (narrow) return;
+    try {
+        const prefs = await load();
+        if (view.value === initial && (CALENDAR_VIEWS as readonly string[]).includes(prefs.defaultView)) {
+            view.value = prefs.defaultView as CalendarViewMode;
+        }
+    } catch {
+        /* la vue en cours reste affichée */
+    }
+});
 </script>
 
 <template>

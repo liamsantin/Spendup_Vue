@@ -1,11 +1,12 @@
 <script setup lang="ts">
 /**
- * Grille mensuelle : semaines du lundi au dimanche, trois pastilles par jour puis « +N ».
+ * Grille mensuelle : semaines selon le premier jour réglé, trois pastilles par jour puis « +N ».
  * Les jours hors du mois restent cliquables (ils font changer de mois) et affichent leurs occurrences en grisé.
  * Double-clic : nouvel événement ce jour-là.
  */
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { isoWeek, parseYmd } from '@/features/calendar/dates';
 import { isCanceled, occurrenceTone, occurrenceToneStyle } from '@/features/calendar/occurrences';
 import type { CalendarOccurrence } from '@/features/calendar/types';
 
@@ -15,7 +16,10 @@ const props = defineProps<{
     /** Mois affiché, `yyyy-MM`. */
     monthPrefix: string;
     days: string[];
+    /** Colonnes de la grille : 7, ou 5 quand les week-ends sont masqués. */
+    columns?: number;
     weekCount: number;
+    showWeekNumbers?: boolean;
     byDay: Map<string, CalendarOccurrence[]>;
     selected: string;
     today: string;
@@ -26,9 +30,11 @@ const emit = defineEmits<{ select: [ymd: string]; create: [ymd: string] }>();
 
 const { t, locale } = useI18n();
 
-/** Lundi → dimanche, libellés courts localisés (1er janvier 2024 = lundi). */
+const columnCount = computed(() => props.columns ?? 7);
+
+/** Libellés de la première semaine affichée, dans l'ordre des colonnes. */
 const weekdays = computed(() =>
-    Array.from({ length: 7 }, (_, i) => new Intl.DateTimeFormat(locale.value, { weekday: 'short' }).format(new Date(2024, 0, 1 + i)))
+    props.days.slice(0, columnCount.value).map((ymd) => new Intl.DateTimeFormat(locale.value, { weekday: 'short' }).format(parseYmd(ymd)))
 );
 
 const cells = computed(() =>
@@ -48,13 +54,13 @@ const toneStyle = occurrenceToneStyle;
 </script>
 
 <template>
-    <section class="cal-month" :aria-label="label">
+    <section class="cal-month" :aria-label="label" :style="{ '--cols': columnCount }">
         <div class="cal-month__weekdays" aria-hidden="true">
-            <span v-for="weekday in weekdays" :key="weekday">{{ weekday }}</span>
+            <span v-for="(weekday, index) in weekdays" :key="index">{{ weekday }}</span>
         </div>
         <div class="cal-month__grid" role="grid" :style="{ '--weeks': weekCount }">
             <button
-                v-for="cell in cells"
+                v-for="(cell, index) in cells"
                 :key="cell.ymd"
                 type="button"
                 role="gridcell"
@@ -70,6 +76,13 @@ const toneStyle = occurrenceToneStyle;
                 @dblclick="emit('create', cell.ymd)"
             >
                 <span class="cal-month__day">
+                    <span
+                        v-if="showWeekNumbers && index % columnCount === 0"
+                        class="cal-month__weeknum"
+                        :title="t('calendarPage.settings.weekNumber', { week: isoWeek(cell.ymd) })"
+                    >
+                        {{ isoWeek(cell.ymd) }}
+                    </span>
                     {{ cell.day }}
                     <span v-if="cell.ymd === today" class="cal-month__today-mark" aria-hidden="true" />
                 </span>
@@ -110,7 +123,7 @@ const toneStyle = occurrenceToneStyle;
 
 .cal-month__weekdays {
     display: grid;
-    grid-template-columns: repeat(7, minmax(0, 1fr));
+    grid-template-columns: repeat(var(--cols, 7), minmax(0, 1fr));
     padding: 0 0 10px;
     border-bottom: 1px solid var(--line);
     color: var(--gray);
@@ -123,7 +136,7 @@ const toneStyle = occurrenceToneStyle;
 
 .cal-month__grid {
     display: grid;
-    grid-template-columns: repeat(7, minmax(0, 1fr));
+    grid-template-columns: repeat(var(--cols, 7), minmax(0, 1fr));
     grid-template-rows: repeat(var(--weeks, 6), minmax(104px, auto));
     border-left: 1px solid var(--line);
 }
@@ -165,6 +178,13 @@ const toneStyle = occurrenceToneStyle;
 
 .cal-month__cell.is-out .cal-month__day {
     font-weight: 400;
+}
+
+.cal-month__weeknum {
+    margin-right: 6px;
+    color: var(--gray);
+    font-size: 11px;
+    font-weight: 500;
 }
 
 .cal-month__cell.is-out .cal-month__events,

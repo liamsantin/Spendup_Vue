@@ -3,7 +3,8 @@ import type {
     CalendarOccurrence,
     CalendarOccurrencesResult,
     CreateCalendarEventPayload,
-    UpdateCalendarEventPayload
+    UpdateCalendarEventPayload,
+    UpdateCalendarPreferencesPayload
 } from '@/features/calendar/types';
 import {
     DEMO_CALENDAR,
@@ -176,7 +177,27 @@ export function demoOccurrences(from: string, to: string): CalendarOccurrencesRe
     return { from, to, items: [...agenda, ...sources] };
 }
 
-const DEMO_PREFERENCES = {
+type DemoPreferences = {
+    defaultView: string;
+    weekStartsOn: number;
+    showWeekends: boolean;
+    showWeekNumbers: boolean;
+    use24HourClock: boolean;
+    dayStartHour: number;
+    dayEndHour: number;
+    defaultCalendarId: string | null;
+    defaultDurationMinutes: number;
+    defaultVisibilite: string;
+    defaultReminderMinutes: number | null;
+    /** Null : le fuseau du navigateur, tant que l'utilisateur n'en a pas choisi. */
+    timezone: string | null;
+    secondTimezone: string | null;
+    eventInvitesFrom: string;
+    autoAcceptFamilyInvites: boolean;
+    showDeclinedEvents: boolean;
+};
+
+const DEFAULT_PREFERENCES: DemoPreferences = {
     defaultView: 'month',
     weekStartsOn: 1,
     showWeekends: true,
@@ -188,11 +209,47 @@ const DEMO_PREFERENCES = {
     defaultDurationMinutes: 60,
     defaultVisibilite: 'prive',
     defaultReminderMinutes: 15,
+    timezone: null,
     secondTimezone: null,
     eventInvitesFrom: 'friends',
     autoAcceptFamilyInvites: false,
     showDeclinedEvents: false
 };
+
+/** Une copie par base démo : réinitialiser la démo repart des valeurs d'origine. */
+const preferencesByDb = new WeakMap<object, DemoPreferences>();
+
+function demoPreferences(): DemoPreferences {
+    const db = demoDb();
+    const current = preferencesByDb.get(db);
+    if (current) return current;
+    const fresh = { ...DEFAULT_PREFERENCES };
+    preferencesByDb.set(db, fresh);
+    return fresh;
+}
+
+function preferencesBody(prefs: DemoPreferences) {
+    return { ...prefs, timezone: prefs.timezone ?? (Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Zurich') };
+}
+
+function applyDemoPreferences(prefs: DemoPreferences, patch: UpdateCalendarPreferencesPayload) {
+    if (patch.defaultView) prefs.defaultView = patch.defaultView;
+    if (patch.weekStartsOn != null) prefs.weekStartsOn = patch.weekStartsOn;
+    if (patch.showWeekends != null) prefs.showWeekends = patch.showWeekends;
+    if (patch.showWeekNumbers != null) prefs.showWeekNumbers = patch.showWeekNumbers;
+    if (patch.use24HourClock != null) prefs.use24HourClock = patch.use24HourClock;
+    if (patch.dayStartHour != null) prefs.dayStartHour = patch.dayStartHour;
+    if (patch.dayEndHour != null) prefs.dayEndHour = patch.dayEndHour;
+    if (patch.defaultCalendarId === '') prefs.defaultCalendarId = null;
+    else if (patch.defaultCalendarId) prefs.defaultCalendarId = patch.defaultCalendarId;
+    if (patch.defaultDurationMinutes != null) prefs.defaultDurationMinutes = patch.defaultDurationMinutes;
+    if (patch.defaultVisibilite) prefs.defaultVisibilite = patch.defaultVisibilite;
+    if (patch.clearDefaultReminder) prefs.defaultReminderMinutes = null;
+    else if (patch.defaultReminderMinutes != null) prefs.defaultReminderMinutes = patch.defaultReminderMinutes;
+    if (patch.timezone) prefs.timezone = patch.timezone;
+    if (patch.secondTimezone === '') prefs.secondTimezone = null;
+    else if (patch.secondTimezone) prefs.secondTimezone = patch.secondTimezone;
+}
 
 type Result = { status: number; body: unknown };
 
@@ -208,14 +265,17 @@ export function routeCalendar(method: string, path: string, query: URLSearchPara
     }
     if (path === '/api/calendars' && method === 'GET') return { status: 200, body: { items: [DEMO_CALENDAR] } };
     if (path === '/api/calendar/preferences' && method === 'GET') {
-        return {
-            status: 200,
-            body: { ...DEMO_PREFERENCES, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Zurich' }
-        };
+        return { status: 200, body: preferencesBody(demoPreferences()) };
+    }
+    if (path === '/api/calendar/preferences' && method === 'PATCH') {
+        const prefs = demoPreferences();
+        applyDemoPreferences(prefs, (body ?? {}) as UpdateCalendarPreferencesPayload);
+        return { status: 200, body: preferencesBody(prefs) };
     }
     if (path === '/api/calendar-events' && method === 'POST') {
         const payload = body as CreateCalendarEventPayload;
-        const reminders = payload.reminders ?? [{ beforeMinutes: DEMO_PREFERENCES.defaultReminderMinutes, canal: 'app' }];
+        const reminder = demoPreferences().defaultReminderMinutes;
+        const reminders = payload.reminders ?? (reminder == null ? [] : [{ beforeMinutes: reminder, canal: 'app' }]);
         return { status: 200, body: createDemoEvent(events, { ...payload, reminders }, createPublicId()) };
     }
     const id = /^\/api\/calendar-events\/([^/]+)$/.exec(path)?.[1];

@@ -234,6 +234,11 @@ const AppRoutes: RouteRecordRaw = {
             component: () => import('@/views/app/parametres/preferences/AppSettingsPreferencesPage.vue')
         },
         {
+            name: 'AppSettingsCalendar',
+            path: 'parametres/calendrier',
+            component: () => import('@/views/app/parametres/calendrier/AppSettingsCalendarPage.vue')
+        },
+        {
             name: 'AppSettingsNotifications',
             path: 'parametres/notifications',
             component: () => import('@/views/app/parametres/notifications/AppSettingsNotificationsPage.vue')
