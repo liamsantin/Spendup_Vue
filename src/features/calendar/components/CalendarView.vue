@@ -161,12 +161,17 @@ function openDay(ymd: string) {
 // ── formulaire ──
 const formOpen = ref(false);
 const editing = ref<CalendarOccurrence | null>(null);
-const draft = ref<{ date: string; time: string | null; title: string }>({ date: todayYmd, time: null, title: '' });
+const draft = ref<{ date: string; time: string | null; endTime: string | null; title: string }>({
+    date: todayYmd,
+    time: null,
+    endTime: null,
+    title: ''
+});
 
-function createEvent(ymd = selected.value, time: string | null = null, eventTitle = '') {
+function createEvent(ymd = selected.value, time: string | null = null, eventTitle = '', endTime: string | null = null) {
     if (view.value === 'month') select(ymd);
     editing.value = null;
-    draft.value = { date: ymd, time, title: eventTitle };
+    draft.value = { date: ymd, time, endTime, title: eventTitle };
     formOpen.value = true;
 }
 
@@ -346,7 +351,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
             :locked="dragLocked"
             @open="openEvent"
             @day="openDay"
-            @more="createEvent($event.ymd, $event.time, $event.title)"
+            @more="createEvent($event.ymd, $event.time, $event.title, $event.endTime)"
             @created="reload"
             @reschedule="onReschedule"
         />
@@ -369,6 +374,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
             :occurrence="editing"
             :date="draft.date"
             :time="draft.time"
+            :end-time="draft.endTime"
             :title="draft.title"
             @changed="reload"
         />

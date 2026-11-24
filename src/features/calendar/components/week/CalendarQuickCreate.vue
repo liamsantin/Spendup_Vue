@@ -1,12 +1,12 @@
 <script setup lang="ts">
 /**
- * Création rapide sur un créneau : titre puis Entrée. Calendrier, durée et rappel viennent des réglages de création
- * (complétés par le serveur). « Plus d'options » ouvre le formulaire complet au même créneau.
+ * Création rapide sur un créneau : titre puis Entrée. Sans heure de fin, la durée et le rappel viennent des réglages
+ * (complétés par le serveur). Une plage tirée au pointeur impose la fin. « Plus d'options » ouvre le formulaire.
  */
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { calendarApi } from '@/features/calendar/api';
-import { parseYmd } from '@/features/calendar/dates';
+import { addDaysYmd, parseYmd } from '@/features/calendar/dates';
 import { browserTimezone, EVENT_TITLE_MAX, localToUtcIso } from '@/features/calendar/payload';
 import { getErrorMessage } from '@/utils/errors/app-error';
 
@@ -14,6 +14,8 @@ const props = defineProps<{
     ymd: string;
     /** `HH:mm`, heure locale. */
     time: string;
+    /** Fin de la plage tirée (`HH:mm`). Absente : durée par défaut des réglages. Minuit se code `00:00`. */
+    endTime?: string | null;
 }>();
 
 const emit = defineEmits<{
@@ -32,7 +34,7 @@ const error = ref<string | null>(null);
 
 const when = computed(() => {
     const day = new Intl.DateTimeFormat(locale.value, { weekday: 'short', day: 'numeric', month: 'short' }).format(parseYmd(props.ymd));
-    return `${day} · ${props.time}`;
+    return `${day} · ${props.time}${props.endTime ? ` – ${props.endTime}` : ''}`;
 });
 
 async function submit() {
@@ -46,6 +48,9 @@ async function submit() {
             title: trimmed,
             isFullDay: false,
             startUtc: localToUtcIso(props.ymd, props.time),
+            ...(props.endTime
+                ? { endUtc: localToUtcIso(props.endTime <= props.time ? addDaysYmd(props.ymd, 1) : props.ymd, props.endTime) }
+                : {}),
             timezone: browserTimezone()
         });
         emit('created');

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { layoutDay, minutesToHhmm, placeDrag, snapToSlot } from '@/features/calendar/timegrid';
+import { layoutDay, minutesToHhmm, placeDrag, selectRange, snapToSlot } from '@/features/calendar/timegrid';
 import type { CalendarOccurrence } from '@/features/calendar/types';
 
 const DAY = '2026-12-07';
@@ -77,6 +77,18 @@ describe('snapToSlot', () => {
         expect(snapToSlot(629)).toBe(600);
         expect(snapToSlot(-10)).toBe(0);
         expect(snapToSlot(1500)).toBe(1410);
+    });
+});
+
+describe('selectRange', () => {
+    it('garde le créneau pressé et l’étend vers le pointeur, vers le bas ou vers le haut', () => {
+        expect(selectRange(9 * 60 + 10, 9 * 60 + 20)).toEqual({ startMin: 9 * 60, endMin: 9 * 60 + 30 });
+        expect(selectRange(9 * 60 + 10, 10 * 60 + 40)).toEqual({ startMin: 9 * 60, endMin: 11 * 60 });
+        expect(selectRange(10 * 60 + 10, 8 * 60 + 50)).toEqual({ startMin: 8 * 60 + 30, endMin: 10 * 60 + 30 });
+    });
+
+    it('s’arrête à minuit', () => {
+        expect(selectRange(23 * 60, 24 * 60)).toEqual({ startMin: 23 * 60, endMin: 24 * 60 });
     });
 });
 

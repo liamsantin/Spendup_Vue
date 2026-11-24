@@ -2,7 +2,8 @@
 /**
  * Grille horaire des vues Semaine et Jour : en-tête des jours, bandeau « journée entière », 24 heures qui défilent
  * (ouverture vers 7 h) et ligne « maintenant ». Les blocs qui se chevauchent se partagent la largeur de la colonne.
- * Un clic sur un créneau libre ouvre la création rapide. Un événement saisi se déplace ou se redimensionne au pointeur.
+ * Un clic sur un créneau libre ouvre la création rapide ; maintenir le clic étend la plage jusqu'au relâchement.
+ * Un événement saisi se déplace ou se redimensionne au pointeur.
  */
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -21,7 +22,7 @@ import {
     minutesToHhmm,
     placeDrag,
     placedMinutes,
-    snapToSlot,
+    selectRange,
     wallMinutes,
     type DragMode,
     type PlacedSpan,
@@ -53,7 +54,7 @@ const props = defineProps<{
 const emit = defineEmits<{
     open: [occurrence: CalendarOccurrence];
     day: [ymd: string];
-    more: [draft: { ymd: string; time: string; title: string }];
+    more: [draft: { ymd: string; time: string; endTime: string | null; title: string }];
     created: [];
     reschedule: [change: { occurrence: CalendarOccurrence } & PlacedSpan];
 }>();
@@ -61,7 +62,10 @@ const emit = defineEmits<{
 const { t, locale } = useI18n();
 
 const scroller = ref<HTMLElement | null>(null);
-const quick = ref<{ ymd: string; minutes: number } | null>(null);
+/** `endMin` null : clic simple, la durée vient des réglages. Sinon, plage tirée au pointeur (1440 = minuit). */
+const quick = ref<{ ymd: string; startMin: number; endMin: number | null } | null>(null);
+type SelectSession = { ymd: string; anchor: number; pointerMin: number; x: number; y: number; moved: boolean };
+const selecting = ref<SelectSession | null>(null);
 const now = ref(new Date());
 let timer: ReturnType<typeof setInterval> | undefined;
 let swallowClick: ((event: MouseEvent) => void) | null = null;
@@ -99,10 +103,68 @@ function blockStyle(block: { startMin: number; endMin: number; column: number; c
     };
 }
 
-function onSlot(event: MouseEvent, ymd: string) {
+function clock(minutes: number): string {
+    return minutes >= DAY_MINUTES ? '00:00' : minutesToHhmm(minutes);
+}
+
+/** Bandeau de la plage en cours de sélection, ou de la création rapide une fois le clic relâché. */
+const highlight = computed(() => {
+    const live = selecting.value;
+    if (live?.moved) return { ymd: live.ymd, ...selectRange(live.anchor, live.pointerMin) };
+    const draft = quick.value;
+    if (!draft) return null;
+    return { ymd: draft.ymd, startMin: draft.startMin, endMin: draft.endMin ?? draft.startMin + 60 };
+});
+
+function onColumnDown(event: PointerEvent, ymd: string) {
+    if (event.button !== 0 || props.locked || session.value) return;
+    const target = event.target as HTMLElement | null;
+    if (target?.closest('.cal-week__block, .cal-quick')) return;
     const column = event.currentTarget as HTMLElement;
-    const minutes = snapToSlot(((event.clientY - column.getBoundingClientRect().top) / HOUR_PX) * 60);
-    quick.value = { ymd, minutes };
+    quick.value = null;
+    stopSelectListeners();
+    selecting.value = {
+        ymd,
+        anchor: ((event.clientY - column.getBoundingClientRect().top) / HOUR_PX) * 60,
+        pointerMin: 0,
+        x: event.clientX,
+        y: event.clientY,
+        moved: false
+    };
+    window.addEventListener('pointermove', onSelectMove);
+    window.addEventListener('pointerup', onSelectUp);
+    window.addEventListener('pointercancel', onSelectUp);
+}
+
+function onSelectMove(event: PointerEvent) {
+    const current = selecting.value;
+    if (!current) return;
+    if (!current.moved && Math.hypot(event.clientX - current.x, event.clientY - current.y) < DRAG_THRESHOLD_PX) return;
+    const column = scroller.value?.querySelector<HTMLElement>(`[data-cal-day="${current.ymd}"]`);
+    selecting.value = { ...current, moved: true, pointerMin: column ? minutesAt(event, column) : current.pointerMin };
+}
+
+function stopSelectListeners() {
+    window.removeEventListener('pointermove', onSelectMove);
+    window.removeEventListener('pointerup', onSelectUp);
+    window.removeEventListener('pointercancel', onSelectUp);
+}
+
+function onSelectUp(event: PointerEvent) {
+    const current = selecting.value;
+    stopSelectListeners();
+    selecting.value = null;
+    if (!current) return;
+    const far = Math.hypot(event.clientX - current.x, event.clientY - current.y) >= DRAG_THRESHOLD_PX;
+    if (!current.moved && !far) {
+        const anchor = selectRange(current.anchor, current.anchor).startMin;
+        quick.value = { ymd: current.ymd, startMin: anchor, endMin: null };
+        return;
+    }
+    swallowNextClick();
+    const column = scroller.value?.querySelector<HTMLElement>(`[data-cal-day="${current.ymd}"]`);
+    const range = selectRange(current.anchor, column ? minutesAt(event, column) : current.pointerMin);
+    quick.value = { ymd: current.ymd, startMin: range.startMin, endMin: range.endMin };
 }
 
 function onCreated() {
@@ -112,7 +174,12 @@ function onCreated() {
 
 function onMore(title: string) {
     if (!quick.value) return;
-    emit('more', { ymd: quick.value.ymd, time: minutesToHhmm(quick.value.minutes), title });
+    emit('more', {
+        ymd: quick.value.ymd,
+        time: minutesToHhmm(quick.value.startMin),
+        endTime: quick.value.endMin == null ? null : clock(quick.value.endMin),
+        title
+    });
     quick.value = null;
 }
 
@@ -274,6 +341,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
     clearInterval(timer);
     stopDragListeners();
+    stopSelectListeners();
     if (swallowClick) window.removeEventListener('click', swallowClick, true);
 });
 </script>
@@ -352,7 +420,7 @@ onBeforeUnmount(() => {
                         class="cal-week__col"
                         :class="{ 'is-today': column.ymd === today }"
                         :data-cal-day="column.ymd"
-                        @click="onSlot($event, column.ymd)"
+                        @pointerdown="onColumnDown($event, column.ymd)"
                     >
                         <div
                             v-for="block in column.layout.timed"
@@ -420,21 +488,32 @@ onBeforeUnmount(() => {
                         />
                         <span v-if="column.ymd === nowYmd" class="cal-week__now" :style="{ top: `${nowTop}px` }" aria-hidden="true" />
 
-                        <template v-if="quick && quick.ymd === column.ymd">
-                            <span class="cal-week__ghost" :style="{ top: px(quick.minutes), height: px(60) }" aria-hidden="true" />
-                            <CalendarQuickCreate
-                                :ymd="column.ymd"
-                                :time="minutesToHhmm(quick.minutes)"
-                                :class="[
-                                    index >= days.length - 2 && days.length > 2 ? 'cal-week__quick--end' : 'cal-week__quick',
-                                    { 'cal-week__quick--above': quick.minutes >= QUICK_ABOVE_FROM }
-                                ]"
-                                :style="{ top: px(quick.minutes >= QUICK_ABOVE_FROM ? quick.minutes : quick.minutes + 60) }"
-                                @created="onCreated"
-                                @more="onMore"
-                                @close="quick = null"
-                            />
-                        </template>
+                        <span
+                            v-if="highlight && highlight.ymd === column.ymd"
+                            class="cal-week__ghost"
+                            :style="{ top: px(highlight.startMin), height: px(highlight.endMin - highlight.startMin) }"
+                            aria-hidden="true"
+                        />
+                        <CalendarQuickCreate
+                            v-if="quick && quick.ymd === column.ymd"
+                            :ymd="column.ymd"
+                            :time="minutesToHhmm(quick.startMin)"
+                            :end-time="quick.endMin == null ? null : clock(quick.endMin)"
+                            :class="[
+                                index >= days.length - 2 && days.length > 2 ? 'cal-week__quick--end' : 'cal-week__quick',
+                                { 'cal-week__quick--above': (quick.endMin ?? quick.startMin) >= QUICK_ABOVE_FROM }
+                            ]"
+                            :style="{
+                                top: px(
+                                    (quick.endMin ?? quick.startMin) >= QUICK_ABOVE_FROM
+                                        ? quick.startMin
+                                        : (quick.endMin ?? quick.startMin + 60)
+                                )
+                            }"
+                            @created="onCreated"
+                            @more="onMore"
+                            @close="quick = null"
+                        />
                     </div>
                 </div>
             </div>

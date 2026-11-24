@@ -46,6 +46,17 @@ export function snapToSlot(minutes: number, slot = SLOT_MINUTES): number {
     return Math.min(Math.max(Math.floor(minutes / slot) * slot, 0), DAY_MINUTES - slot);
 }
 
+/**
+ * Plage sélectionnée en maintenant le clic. `anchorMin` est l'endroit pressé, `pointerMin` l'endroit courant.
+ * Le créneau pressé reste inclus ; la plage s'étend vers le pointeur, par pas d'un créneau, jusqu'à minuit.
+ */
+export function selectRange(anchorMin: number, pointerMin: number, slot = SLOT_MINUTES): { startMin: number; endMin: number } {
+    const anchor = snapToSlot(anchorMin, slot);
+    const pointerSlot = snapToSlot(pointerMin, slot);
+    if (pointerSlot < anchor) return { startMin: pointerSlot, endMin: anchor + slot };
+    return { startMin: anchor, endMin: Math.min(pointerSlot + slot, DAY_MINUTES) };
+}
+
 export type DragMode = 'move' | 'resizeStart' | 'resizeEnd';
 
 /** Bloc horaire d'un seul jour. `endMin` vaut 1440 quand l'événement finit à minuit. */

@@ -68,6 +68,10 @@ describe('emptyEventFormFields', () => {
         expect(slot).toMatchObject({ startDate: '2026-03-10', startTime: '14:30', endDate: '2026-03-10', endTime: '15:00' });
         const late = emptyEventFormFields('2026-03-10', { startTime: '23:30' });
         expect(late).toMatchObject({ startTime: '23:30', endDate: '2026-03-11', endTime: '00:30' });
+        const picked = emptyEventFormFields('2026-03-10', { startTime: '14:30', endTime: '16:00' });
+        expect(picked).toMatchObject({ startTime: '14:30', endDate: '2026-03-10', endTime: '16:00' });
+        const untilMidnight = emptyEventFormFields('2026-03-10', { startTime: '23:00', endTime: '00:00' });
+        expect(untilMidnight).toMatchObject({ startTime: '23:00', endDate: '2026-03-11', endTime: '00:00' });
     });
 });
 

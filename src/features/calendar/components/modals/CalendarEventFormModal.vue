@@ -34,6 +34,8 @@ const props = defineProps<{
     date: string;
     /** Heure de début proposée à la création (`HH:mm`), par exemple le créneau cliqué. */
     time?: string | null;
+    /** Heure de fin imposée (`HH:mm`), quand la plage a été tirée sur la grille. */
+    endTime?: string | null;
     /** Titre déjà saisi (création rapide → « Plus d'options »). */
     title?: string;
 }>();
@@ -122,7 +124,8 @@ async function load() {
                     calendarPublicId: preferred && writable.includes(preferred) ? preferred : (writable[0] ?? ''),
                     durationMinutes: preferences?.defaultDurationMinutes,
                     reminderMinutes: preferences?.defaultReminderMinutes,
-                    startTime: props.time
+                    startTime: props.time,
+                    endTime: props.endTime
                 })
             );
             form.title = props.title ?? '';

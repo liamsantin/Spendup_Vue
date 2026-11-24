@@ -86,7 +86,14 @@ export function occurrenceStartOf(occurrence: CalendarOccurrence): string | null
 /** Nouvel événement le `ymd` donné : à `startTime` si fourni, sinon heure ronde suivante aujourd'hui et 9 h un autre jour. */
 export function emptyEventFormFields(
     ymd: string,
-    defaults: { calendarPublicId?: string; durationMinutes?: number; reminderMinutes?: number | null; startTime?: string | null } = {},
+    defaults: {
+        calendarPublicId?: string;
+        durationMinutes?: number;
+        reminderMinutes?: number | null;
+        startTime?: string | null;
+        /** Fin imposée (`HH:mm`). Minuit ou avant le début : le lendemain. */
+        endTime?: string | null;
+    } = {},
     now: Date = new Date()
 ): CalendarEventFormFields {
     const start = parseYmd(ymd);
@@ -96,6 +103,11 @@ export function emptyEventFormFields(
     } else if (ymd === ymdOf(now)) start.setHours(Math.min(now.getHours() + 1, 23), 0, 0, 0);
     else start.setHours(9, 0, 0, 0);
     const end = new Date(start.getTime() + (defaults.durationMinutes ?? 60) * 60_000);
+    if (defaults.endTime && isHhmm(defaults.endTime)) {
+        const [h, m] = defaults.endTime.split(':').map(Number);
+        end.setHours(h, m, 0, 0);
+        if (end.getTime() <= start.getTime()) end.setDate(end.getDate() + 1);
+    }
     return {
         ...parseRepeat(null, null),
         title: '',
