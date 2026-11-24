@@ -6,12 +6,8 @@
 
 Avant d’ajouter ou recréer une view, un composant, une route ou un style :
 
-1. `_template/old-application/` (structure Spend.Up cible)
-2. `_template/modernize/` (thème admin / UI kit)
-3. Comparer avec `src/`
-4. Réutiliser / adapter — ne pas réécrire from scratch
-
-**Ne pas modifier** les dossiers `_template/`.
+1. Comparer avec `src/`
+2. Réutiliser / adapter — ne pas réécrire from scratch
 
 ## Confirmation utilisateur
 

@@ -15,6 +15,4 @@
 | Page `/app` multi-onglets | `AppTabsShell`                                | `patterns/app-tabs-shell.md` |
 | Page `/app` titre + body  | `AppPageShell`                                | `patterns/app-page-shell.md` |
 
-Référence visuelle Modernize : `_template/modernize/components/ui-components/`.
-
 Ajouter ici une entrée + fichier `<kebab>.md` pour tout nouveau shared d’usage transverse.

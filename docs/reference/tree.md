@@ -39,5 +39,3 @@ src/
 ├── router/ · plugins/ · scss/ · theme/ · test/ · types/ · utils/ · data/ · assets/
 └── security/            # CSP front
 ```
-
-Références lecture seule à la racine repo : `_template/modernize/`, `_template/old-application/`.

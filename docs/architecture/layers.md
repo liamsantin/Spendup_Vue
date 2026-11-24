@@ -27,7 +27,6 @@
 | `utils/helpers/`      | Helpers transverses (`<domaine>-helpers.ts`)                              |
 | `types/`              | Types techniques / UI hors domaine                                        |
 | `scss/`               | Tous les styles                                                           |
-| `_template/`          | Références **lecture seule** (`modernize/`, `old-application/`)           |
 
 ## Arborescence cible `src/`
 
@@ -43,12 +42,3 @@ src/
 ├── plugins/ · router/ · scss/ · theme/ · test/ · types/ · utils/
 └── data/ · assets/
 ```
-
-## Templates (`_template/`)
-
-| Dossier                      | Usage                                         |
-| ---------------------------- | --------------------------------------------- |
-| `_template/old-application/` | Structure / code Spend.Up cible — priorité    |
-| `_template/modernize/`       | Thème Modernize v6.2 — écrans / widgets admin |
-
-Ne pas modifier ces dossiers. Personnalisation uniquement dans `src/`.

@@ -4,7 +4,6 @@
 
 ## À faire
 
-- Commencer par `_template/old-application/`, puis `modernize/`.
 - Créer `features/<domaine>/` dès qu’il y a du code métier.
 - Views fines + shells documentés.
 - Stores Setup uniquement ; métier dans la feature, globaux dans `app/stores/`.
@@ -16,7 +15,6 @@
 
 ## À éviter
 
-- Modifier `_template/**`.
 - Logique métier dans `views/` ou racine `components/`.
 - Stores Options API ; dossier `src/stores/`.
 - MDP pending en `sessionStorage` / `localStorage`.
