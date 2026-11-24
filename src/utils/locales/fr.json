@@ -4406,7 +4406,11 @@
         "today": "Aujourd’hui",
         "selectedDay": "Jour sélectionné",
         "emptyDay": "Rien de prévu ce jour-là.",
-        "notConnected": "Le calendrier n’affiche pas encore vos récurrences, échéances et objectifs.",
+        "loadError": "Impossible de charger le calendrier. Réessayez dans un instant.",
+        "allDay": "Journée entière",
+        "canceled": "Annulé",
+        "sharedBy": "Partagé par {name}",
+        "otherCurrencies": "Montants en {currencies} non comptés dans le bilan.",
         "monthSummary": "Bilan du mois",
         "inflows": "Entrées prévues",
         "outflows": "Sorties prévues",
@@ -4415,10 +4419,19 @@
         "more": "+{count} autres",
         "eventCount": "aucun événement | {count} événement | {count} événements",
         "kinds": {
+            "event": "Événement",
             "income": "Revenu",
             "expense": "Charge",
             "due": "Échéance",
             "goal": "Objectif"
+        },
+        "sources": {
+            "recurringExpense": "Dépense récurrente",
+            "recurringIncome": "Revenu récurrent",
+            "savingsGoal": "Objectif d’épargne",
+            "sharedDebt": "Dette partagée",
+            "personalLoan": "Prêt entre proches",
+            "liability": "Dette"
         }
     },
     "assetsPage": {

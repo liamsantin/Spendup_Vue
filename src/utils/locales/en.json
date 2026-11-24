@@ -4406,7 +4406,11 @@
         "today": "Today",
         "selectedDay": "Selected day",
         "emptyDay": "Nothing planned that day.",
-        "notConnected": "The calendar does not show your recurring items, dues and goals yet.",
+        "loadError": "The calendar could not be loaded. Try again in a moment.",
+        "allDay": "All day",
+        "canceled": "Canceled",
+        "sharedBy": "Shared by {name}",
+        "otherCurrencies": "Amounts in {currencies} are not included in the summary.",
         "monthSummary": "Month summary",
         "inflows": "Planned income",
         "outflows": "Planned outgoings",
@@ -4415,10 +4419,19 @@
         "more": "+{count} more",
         "eventCount": "no event | {count} event | {count} events",
         "kinds": {
+            "event": "Event",
             "income": "Income",
             "expense": "Charge",
             "due": "Due",
             "goal": "Goal"
+        },
+        "sources": {
+            "recurringExpense": "Recurring expense",
+            "recurringIncome": "Recurring income",
+            "savingsGoal": "Savings goal",
+            "sharedDebt": "Shared debt",
+            "personalLoan": "Personal loan",
+            "liability": "Debt"
         }
     },
     "assetsPage": {

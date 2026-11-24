@@ -20,6 +20,7 @@ import type { UserSettings } from '@/features/user-settings/types';
 import { DEMO_USER_PUBLIC_ID } from '@/features/demo/user';
 import { mortgageRemainingFor, routeWealth } from '@/features/demo/wealth';
 import { routeTax } from '@/features/demo/tax';
+import { routeCalendar } from '@/features/demo/calendar';
 import { routeImports } from '@/features/demo/imports/routes';
 import { routeReimbursements } from '@/features/demo/reimbursements';
 import type { UpdateFileRequest } from '@/features/files/types';
@@ -192,6 +193,8 @@ function dispatch(method: string, target: { path: string; query: URLSearchParams
 
     const tax = routeTax(method, path, body, query);
     if (tax) return tax;
+    const calendar = routeCalendar(method, path, query);
+    if (calendar) return calendar;
     const imports = routeImports(method, path, body, query);
     if (imports) return imports;
     const wealth = routeWealth(method, path, query, body);

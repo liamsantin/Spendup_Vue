@@ -1,0 +1,100 @@
+// Calendrier : tons des occurrences, partagés par la grille et les listes du panneau.
+// Événement saisi : couleur de son calendrier (`--event-color`), noir sinon ; revenu bleu, charge noir,
+// échéance gris, épargne violet.
+
+.cal-tone--event {
+    --tone: var(--event-color, var(--ink));
+    --tone-ink: var(--ink);
+}
+
+.cal-tone--income {
+    --tone: var(--blue);
+    --tone-ink: var(--blue-ink);
+}
+
+.cal-tone--expense {
+    --tone: var(--ink);
+    --tone-ink: var(--ink);
+}
+
+.cal-tone--due {
+    --tone: var(--gray);
+    --tone-ink: var(--gray);
+}
+
+.cal-tone--goal {
+    --tone: var(--violet);
+    --tone-ink: var(--violet-ink);
+}
+
+[class*='cal-tone--'] .su-sq,
+.su-sq[class*='cal-tone--'] {
+    --sq-color: var(--tone);
+}
+
+.cal-is-canceled {
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+// Listes du panneau latéral (jour sélectionné, prochaines échéances) : filets fins, pas de carte.
+.cal-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.cal-list__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    padding: 10px 0;
+    border-top: 1px solid var(--line);
+
+    &:first-child {
+        border-top: 0;
+        padding-top: 0;
+    }
+}
+
+.cal-list__sq {
+    flex: none;
+}
+
+.cal-list__main {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.cal-list__title,
+.cal-list__meta {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cal-list__title {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.cal-list__meta {
+    color: var(--gray);
+    font-size: 13px;
+}
+
+.cal-list__amount {
+    flex: none;
+    font-size: 14px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.cal-side__empty {
+    margin: 0;
+    color: var(--gray);
+    font-size: 14px;
+}
