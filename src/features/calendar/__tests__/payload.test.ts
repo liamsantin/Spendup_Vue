@@ -62,6 +62,13 @@ describe('emptyEventFormFields', () => {
         const today = emptyEventFormFields('2026-03-02', {}, new Date(2026, 2, 2, 14, 20));
         expect(today).toMatchObject({ startTime: '15:00', endTime: '16:00', reminders: [] });
     });
+
+    it('part du créneau cliqué, y compris quand la durée passe minuit', () => {
+        const slot = emptyEventFormFields('2026-03-10', { startTime: '14:30', durationMinutes: 30 }, new Date(2026, 2, 10, 8));
+        expect(slot).toMatchObject({ startDate: '2026-03-10', startTime: '14:30', endDate: '2026-03-10', endTime: '15:00' });
+        const late = emptyEventFormFields('2026-03-10', { startTime: '23:30' });
+        expect(late).toMatchObject({ startTime: '23:30', endDate: '2026-03-11', endTime: '00:30' });
+    });
 });
 
 describe('buildCreateEventPayload', () => {

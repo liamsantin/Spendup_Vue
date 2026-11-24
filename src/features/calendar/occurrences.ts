@@ -20,6 +20,16 @@ export function isCanceled(occurrence: CalendarOccurrence): boolean {
     return occurrence.status === 'annule';
 }
 
+/** Seuls les événements saisis s'ouvrent dans le calendrier ; une occurrence de source se gère dans son module. */
+export function isEditableOccurrence(occurrence: CalendarOccurrence): boolean {
+    return !!occurrence.eventPublicId && !occurrence.sourceKey && !occurrence.sharedBy;
+}
+
+/** Variables CSS de ton : la couleur du calendrier pour un événement saisi. */
+export function occurrenceToneStyle(occurrence: CalendarOccurrence): Record<string, string> | undefined {
+    return occurrence.color && !occurrence.sourceKey ? { '--event-color': occurrence.color } : undefined;
+}
+
 /** Journées entières d'abord, puis par heure de début, puis par titre. */
 function compareOccurrences(a: CalendarOccurrence, b: CalendarOccurrence): number {
     const allDay = Number(!a.isFullDay) - Number(!b.isFullDay);
@@ -111,4 +121,12 @@ export function formatOccurrenceAmount(amount: number, currency: string, signed 
 export function occurrenceTime(occurrence: CalendarOccurrence, locale: string): string | null {
     if (occurrence.isFullDay || !occurrence.startUtc) return null;
     return new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(new Date(occurrence.startUtc));
+}
+
+/** Heures de début et de fin locales (« 09:00 – 10:30 ») ; null pour une journée entière. */
+export function occurrenceTimeRange(occurrence: CalendarOccurrence, locale: string): string | null {
+    const start = occurrenceTime(occurrence, locale);
+    if (!start || !occurrence.endUtc || occurrence.endUtc === occurrence.startUtc) return start;
+    const end = new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(new Date(occurrence.endUtc));
+    return `${start} – ${end}`;
 }

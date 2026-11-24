@@ -32,6 +32,10 @@ const props = defineProps<{
     occurrence?: CalendarOccurrence | null;
     /** Jour proposé à la création (`yyyy-MM-dd`). */
     date: string;
+    /** Heure de début proposée à la création (`HH:mm`), par exemple le créneau cliqué. */
+    time?: string | null;
+    /** Titre déjà saisi (création rapide → « Plus d'options »). */
+    title?: string;
 }>();
 
 const emit = defineEmits<{
@@ -117,9 +121,11 @@ async function load() {
                 emptyEventFormFields(props.date, {
                     calendarPublicId: preferred && writable.includes(preferred) ? preferred : (writable[0] ?? ''),
                     durationMinutes: preferences?.defaultDurationMinutes,
-                    reminderMinutes: preferences?.defaultReminderMinutes
+                    reminderMinutes: preferences?.defaultReminderMinutes,
+                    startTime: props.time
                 })
             );
+            form.title = props.title ?? '';
         }
         initial.value = { ...form, reminders: form.reminders.map((r) => ({ ...r })) };
     } catch (e) {

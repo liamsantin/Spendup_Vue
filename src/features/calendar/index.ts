@@ -1,23 +1,28 @@
 export { calendarApi } from '@/features/calendar/api';
 export { useCalendarOccurrences } from '@/features/calendar/composables/useCalendarOccurrences';
-export { addDaysYmd, monthGrid, occurrenceDays, parseYmd, toYmd, ymdOf } from '@/features/calendar/dates';
+export { addDaysYmd, monthGrid, occurrenceDays, parseYmd, toYmd, weekDays, weekStartYmd, ymdOf } from '@/features/calendar/dates';
 export type { MonthGrid } from '@/features/calendar/dates';
 export {
     formatOccurrenceAmount,
     groupByDay,
     isCanceled,
+    isEditableOccurrence,
     monthSummary,
     occurrenceTime,
+    occurrenceTimeRange,
     occurrenceTone,
     upcomingOutflows
 } from '@/features/calendar/occurrences';
 export type { MonthSummary } from '@/features/calendar/occurrences';
-export { CALENDAR_SOURCE_KEYS } from '@/features/calendar/types';
+export { layoutDay } from '@/features/calendar/timegrid';
+export type { DayLayout, TimedBlock } from '@/features/calendar/timegrid';
+export { CALENDAR_SOURCE_KEYS, CALENDAR_VIEWS } from '@/features/calendar/types';
 export type {
     CalendarOccurrence,
     CalendarOccurrencesQuery,
     CalendarOccurrencesResult,
     CalendarSourceKey,
-    CalendarTone
+    CalendarTone,
+    CalendarViewMode
 } from '@/features/calendar/types';
-export { default as CalendarMonthView } from '@/features/calendar/components/CalendarMonthView.vue';
+export { default as CalendarView } from '@/features/calendar/components/CalendarView.vue';

@@ -10,6 +10,11 @@ export const CALENDAR_SOURCE_KEYS = [
 
 export type CalendarSourceKey = (typeof CALENDAR_SOURCE_KEYS)[number];
 
+/** Vues du calendrier, dans l'ordre des raccourcis `1` à `4`. */
+export const CALENDAR_VIEWS = ['day', 'week', 'month', 'agenda'] as const;
+
+export type CalendarViewMode = (typeof CALENDAR_VIEWS)[number];
+
 /** Famille visuelle d'une occurrence : événement saisi ou nature de la source. */
 export type CalendarTone = 'event' | 'income' | 'expense' | 'due' | 'goal';
 
@@ -106,7 +111,8 @@ export type CreateCalendarEventPayload = {
     description?: string;
     lieu?: string;
     recurrenceRule?: string;
-    reminders: CalendarReminder[];
+    /** Absent : rappel par défaut des réglages ; `[]` : aucun rappel. */
+    reminders?: CalendarReminder[];
 };
 
 /** Portée d'une modification ou d'une suppression sur un événement récurrent. */

@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { formatOccurrenceAmount, groupByDay, monthSummary, occurrenceTone, upcomingOutflows } from '@/features/calendar/occurrences';
+import {
+    formatOccurrenceAmount,
+    groupByDay,
+    isEditableOccurrence,
+    monthSummary,
+    occurrenceTimeRange,
+    occurrenceTone,
+    upcomingOutflows
+} from '@/features/calendar/occurrences';
 import type { CalendarOccurrence } from '@/features/calendar/types';
 
 function occurrence(id: string, rest: Partial<CalendarOccurrence>): CalendarOccurrence {
@@ -23,6 +31,27 @@ function occurrence(id: string, rest: Partial<CalendarOccurrence>): CalendarOccu
         ...rest
     };
 }
+
+describe('occurrenceTimeRange', () => {
+    it('donne début et fin pour un horaire, rien pour une journée entière', () => {
+        const meeting = occurrence('a', {
+            isFullDay: false,
+            startUtc: new Date(2026, 11, 7, 9, 0).toISOString(),
+            endUtc: new Date(2026, 11, 7, 10, 30).toISOString()
+        });
+        expect(occurrenceTimeRange(meeting, 'fr-CH')).toBe('09:00 – 10:30');
+        expect(occurrenceTimeRange({ ...meeting, endUtc: null }, 'fr-CH')).toBe('09:00');
+        expect(occurrenceTimeRange(occurrence('b', { startDate: '2026-12-07' }), 'fr-CH')).toBeNull();
+    });
+});
+
+describe('isEditableOccurrence', () => {
+    it('n’ouvre que les événements saisis de l’utilisateur', () => {
+        expect(isEditableOccurrence(occurrence('a', { eventPublicId: 'E1' }))).toBe(true);
+        expect(isEditableOccurrence(occurrence('b', { eventPublicId: 'E1', sharedBy: 'Léa' }))).toBe(false);
+        expect(isEditableOccurrence(occurrence('c', { sourceKey: 'recurringExpense', entityPublicId: 'R1' }))).toBe(false);
+    });
+});
 
 describe('occurrenceTone', () => {
     it('distingue les événements saisis et chaque source', () => {

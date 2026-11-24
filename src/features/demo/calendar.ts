@@ -214,7 +214,9 @@ export function routeCalendar(method: string, path: string, query: URLSearchPara
         };
     }
     if (path === '/api/calendar-events' && method === 'POST') {
-        return { status: 200, body: createDemoEvent(events, body as CreateCalendarEventPayload, createPublicId()) };
+        const payload = body as CreateCalendarEventPayload;
+        const reminders = payload.reminders ?? [{ beforeMinutes: DEMO_PREFERENCES.defaultReminderMinutes, canal: 'app' }];
+        return { status: 200, body: createDemoEvent(events, { ...payload, reminders }, createPublicId()) };
     }
     const id = /^\/api\/calendar-events\/([^/]+)$/.exec(path)?.[1];
     if (id && method === 'GET') return { status: 200, body: toEventResponse(findDemoEvent(events, decodeURIComponent(id))) };

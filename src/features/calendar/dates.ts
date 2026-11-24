@@ -28,6 +28,17 @@ export function addDaysYmd(ymd: string, days: number): string {
     return ymdOf(date);
 }
 
+/** Lundi de la semaine de `ymd`. */
+export function weekStartYmd(ymd: string): string {
+    return addDaysYmd(ymd, -((parseYmd(ymd).getDay() + 6) % 7));
+}
+
+/** Les sept jours, du lundi au dimanche, de la semaine de `ymd`. */
+export function weekDays(ymd: string): string[] {
+    const start = weekStartYmd(ymd);
+    return Array.from({ length: 7 }, (_, i) => addDaysYmd(start, i));
+}
+
 export type MonthGrid = {
     /** Premier jour affiché (début de la première semaine). */
     from: string;

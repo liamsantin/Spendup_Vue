@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addDaysYmd, monthGrid, occurrenceDays } from '@/features/calendar/dates';
+import { addDaysYmd, monthGrid, occurrenceDays, weekDays, weekStartYmd } from '@/features/calendar/dates';
 import type { CalendarOccurrence } from '@/features/calendar/types';
 
 function occurrence(rest: Partial<CalendarOccurrence>): CalendarOccurrence {
@@ -38,6 +38,26 @@ describe('monthGrid', () => {
         expect(november.weekCount).toBe(6);
         expect(november.days).toHaveLength(42);
         expect(november.to).toBe('2026-12-06');
+    });
+});
+
+describe('weekDays', () => {
+    it('va du lundi au dimanche, à cheval sur deux mois', () => {
+        // Jeudi 3 décembre 2026 : la semaine commence le lundi 30 novembre.
+        expect(weekDays('2026-12-03')).toEqual([
+            '2026-11-30',
+            '2026-12-01',
+            '2026-12-02',
+            '2026-12-03',
+            '2026-12-04',
+            '2026-12-05',
+            '2026-12-06'
+        ]);
+    });
+
+    it('rattache le dimanche à la semaine qui finit', () => {
+        expect(weekStartYmd('2026-12-06')).toBe('2026-11-30');
+        expect(weekStartYmd('2026-11-30')).toBe('2026-11-30');
     });
 });
 

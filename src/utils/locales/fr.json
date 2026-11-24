@@ -4401,9 +4401,28 @@
     },
     "calendarPage": {
         "title": "Calendrier",
-        "previous": "Mois précédent",
-        "next": "Mois suivant",
+        "previous": "Période précédente",
+        "next": "Période suivante",
         "today": "Aujourd’hui",
+        "views": {
+            "label": "Vue du calendrier",
+            "day": "Jour",
+            "week": "Semaine",
+            "month": "Mois",
+            "agenda": "Agenda"
+        },
+        "allDayShort": "Journée",
+        "quick": {
+            "label": "Création rapide",
+            "placeholder": "Ajouter un titre",
+            "create": "Créer",
+            "more": "Plus d’options"
+        },
+        "agenda": {
+            "empty": "Rien de prévu jusqu’au {date}.",
+            "loadMore": "Afficher la suite",
+            "until": "Agenda affiché jusqu’au {date}."
+        },
         "selectedDay": "Jour sélectionné",
         "emptyDay": "Rien de prévu ce jour-là.",
         "loadError": "Impossible de charger le calendrier. Réessayez dans un instant.",

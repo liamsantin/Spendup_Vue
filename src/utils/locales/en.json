@@ -4401,9 +4401,28 @@
     },
     "calendarPage": {
         "title": "Calendar",
-        "previous": "Previous month",
-        "next": "Next month",
+        "previous": "Previous period",
+        "next": "Next period",
         "today": "Today",
+        "views": {
+            "label": "Calendar view",
+            "day": "Day",
+            "week": "Week",
+            "month": "Month",
+            "agenda": "Agenda"
+        },
+        "allDayShort": "All day",
+        "quick": {
+            "label": "Quick create",
+            "placeholder": "Add a title",
+            "create": "Create",
+            "more": "More options"
+        },
+        "agenda": {
+            "empty": "Nothing planned until {date}.",
+            "loadMore": "Show more",
+            "until": "Agenda shown until {date}."
+        },
         "selectedDay": "Selected day",
         "emptyDay": "Nothing planned that day.",
         "loadError": "The calendar could not be loaded. Try again in a moment.",

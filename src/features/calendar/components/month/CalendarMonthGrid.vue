@@ -6,7 +6,7 @@
  */
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { isCanceled, occurrenceTone } from '@/features/calendar/occurrences';
+import { isCanceled, occurrenceTone, occurrenceToneStyle } from '@/features/calendar/occurrences';
 import type { CalendarOccurrence } from '@/features/calendar/types';
 
 const MAX_PILLS = 3;
@@ -44,9 +44,7 @@ function toneClass(occurrence: CalendarOccurrence) {
     return [`cal-tone--${occurrenceTone(occurrence)}`, { 'cal-is-canceled': isCanceled(occurrence) }];
 }
 
-function toneStyle(occurrence: CalendarOccurrence) {
-    return occurrence.color && !occurrence.sourceKey ? { '--event-color': occurrence.color } : undefined;
-}
+const toneStyle = occurrenceToneStyle;
 </script>
 
 <template>
