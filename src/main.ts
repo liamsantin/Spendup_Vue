@@ -17,6 +17,7 @@ import { startDesktopFileSync } from '@/features/files/sync';
 import { setNativeNotificationNavigate } from '@/features/notifications';
 import { isTauri } from '@/utils/helpers/platform-helpers';
 import { revealDirective } from '@/directives/reveal';
+import { crossHref } from '@/utils/helpers/app-target';
 
 const app = createApp(App);
 app.use(createPinia());
@@ -25,6 +26,7 @@ app.use(PerfectScrollbarPlugin);
 app.use(i18n);
 app.use(SolarIconsPlugin, solarIconsDefaults);
 app.directive('reveal', revealDirective);
+app.config.globalProperties.$crossHref = crossHref;
 
 if (isTauri()) {
     const navigate = (path: string) => {

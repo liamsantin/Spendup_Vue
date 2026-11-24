@@ -1,5 +1,6 @@
 import type { RouteRecordRaw } from 'vue-router';
 import AppRoutes from './AppRoutes';
+import { DEMO_PREFIX } from '@/features/demo/session';
 
 /** Pages ouvrables dans la démo. Le reste affiche une invitation à créer un compte. */
 const OPEN_DEMO_PATHS = new Set([
@@ -50,9 +51,9 @@ function toDemoChild(child: RouteRecordRaw): RouteRecordRaw {
     };
 }
 
-/** Même shell que `/app`, préfixe `/demo`. */
+/** Même shell que `/app`, préfixe `/demo` (aucun préfixe sur demo.spendup.ch). */
 const DemoRoutes: RouteRecordRaw = {
-    path: '/demo',
+    path: DEMO_PREFIX || '/',
     meta: { requiresAuth: true, demo: true },
     component: () => import('@/layouts/full/FullLayout.vue'),
     children: (AppRoutes.children ?? []).map(toDemoChild)

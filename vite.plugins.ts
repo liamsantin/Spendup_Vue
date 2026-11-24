@@ -7,13 +7,27 @@ import type { Plugin } from 'vite';
  * Or `dist/` sert aussi de `frontendDist` à Tauri : sans ça, chaque build embarquerait
  * l’installeur précédent dans l’app (poids cumulatif à chaque release).
  */
-export function excludeDesktopInstaller(): Plugin {
+export function excludeDesktopInstaller(outDir = 'dist'): Plugin {
     return {
         name: 'spendup-exclude-desktop-installer',
         apply: 'build',
         async closeBundle() {
             if (!process.env.TAURI_ENV_PLATFORM) return;
-            await rm(resolve(process.cwd(), 'dist/downloads'), { recursive: true, force: true });
+            await rm(resolve(process.cwd(), outDir, 'downloads'), { recursive: true, force: true });
+        }
+    };
+}
+
+/**
+ * Les cibles `demo` et `app` n'ont pas besoin de l'installeur Windows ni des fichiers `downloads/` :
+ * seul le site public (landing) les sert.
+ */
+export function excludeDownloadsOutsideLanding(outDir: string): Plugin {
+    return {
+        name: 'spendup-exclude-downloads-outside-landing',
+        apply: 'build',
+        async closeBundle() {
+            await rm(resolve(process.cwd(), outDir, 'downloads'), { recursive: true, force: true });
         }
     };
 }
@@ -24,12 +38,12 @@ export function excludeDesktopInstaller(): Plugin {
  * navigateur impose les deux), donc on y réécrit la politique calculée pour le build —
  * sinon l’API de prod (`VITE_API_BASE_URL`) et SignalR seraient bloqués.
  */
-export function netlifyHeadersCsp(csp: string): Plugin {
+export function netlifyHeadersCsp(csp: string, outDir = 'dist'): Plugin {
     return {
         name: 'spendup-netlify-headers-csp',
         apply: 'build',
         async closeBundle() {
-            const file = resolve(process.cwd(), 'dist/_headers');
+            const file = resolve(process.cwd(), outDir, '_headers');
             let content: string;
             try {
                 content = await readFile(file, 'utf8');
@@ -46,12 +60,12 @@ export function netlifyHeadersCsp(csp: string): Plugin {
  * Équivalent Apache de `netlifyHeadersCsp` : `public/.htaccess` contient le marqueur
  * `__CSP__`, remplacé dans `dist/.htaccess` par la politique calculée pour le build.
  */
-export function apacheHeadersCsp(csp: string): Plugin {
+export function apacheHeadersCsp(csp: string, outDir = 'dist'): Plugin {
     return {
         name: 'spendup-apache-headers-csp',
         apply: 'build',
         async closeBundle() {
-            const file = resolve(process.cwd(), 'dist/.htaccess');
+            const file = resolve(process.cwd(), outDir, '.htaccess');
             let content: string;
             try {
                 content = await readFile(file, 'utf8');

@@ -191,7 +191,7 @@ const sections: FeatureSection[] = [
                             francs suisses. Sans jamais se connecter à votre banque.
                         </p>
                         <div class="s-actions su-hero-in" style="--su-in-delay: 180ms">
-                            <v-btn color="primary" size="x-large" flat class="text-none" to="/auth?tab=register">
+                            <v-btn color="primary" size="x-large" flat class="text-none" :href="$crossHref('app', '/auth?tab=register')">
                                 Commencer gratuitement
                                 <ArrowRightIcon size="18" class="ms-3" />
                             </v-btn>
@@ -280,7 +280,7 @@ const sections: FeatureSection[] = [
                     <div class="page-final__side">
                         <p>{{ showPricing ? 'Commencez gratuitement, sans engagement.' : 'Il ne vous faut qu’une adresse e-mail.' }}</p>
                         <div class="s-actions">
-                            <v-btn color="white" size="x-large" flat class="text-none" to="/auth?tab=register">
+                            <v-btn color="white" size="x-large" flat class="text-none" :href="$crossHref('app', '/auth?tab=register')">
                                 Créer mon espace
                                 <ArrowRightIcon size="18" class="ms-3" />
                             </v-btn>

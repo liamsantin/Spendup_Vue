@@ -61,9 +61,20 @@ const linkClass = (href: string) => [
         </ul>
 
         <div class="front-nav-dropdown__actions">
-            <v-btn class="text-none" size="x-large" variant="outlined" block to="/demo" @click="emit('navigate')">Démo</v-btn>
-            <v-btn class="text-none" size="x-large" flat block to="/auth?tab=register" @click="emit('navigate')">Créer un compte</v-btn>
-            <v-btn class="text-none" size="x-large" variant="outlined" block to="/auth?tab=login" @click="emit('navigate')">
+            <v-btn class="text-none" size="x-large" variant="outlined" block :href="$crossHref('demo', '/demo')" @click="emit('navigate')"
+                >Démo</v-btn
+            >
+            <v-btn class="text-none" size="x-large" flat block :href="$crossHref('app', '/auth?tab=register')" @click="emit('navigate')"
+                >Créer un compte</v-btn
+            >
+            <v-btn
+                class="text-none"
+                size="x-large"
+                variant="outlined"
+                block
+                :href="$crossHref('app', '/auth?tab=login')"
+                @click="emit('navigate')"
+            >
                 Connexion
             </v-btn>
         </div>
@@ -79,7 +90,11 @@ const linkClass = (href: string) => [
             <v-chip v-if="item.badge" rounded="md" class="font-weight-semibold h-23" color="primary" size="small" label> New </v-chip>
         </RouterLink>
 
-        <v-btn class="custom-hover-primary bg-primary d-flex w-100 text-white h-43 px-5 transform-none mt-2" flat to="/auth?tab=login">
+        <v-btn
+            class="custom-hover-primary bg-primary d-flex w-100 text-white h-43 px-5 transform-none mt-2"
+            flat
+            :href="$crossHref('app', '/auth?tab=login')"
+        >
             <span class="text-white">Connexion</span>
         </v-btn>
     </div>

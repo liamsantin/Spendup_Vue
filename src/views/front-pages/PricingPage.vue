@@ -186,7 +186,13 @@ function yearlyTotal(plan: PricingPlan): string {
                                 inclus dans chacune.
                             </p>
                             <div class="s-actions su-hero-in" style="--su-in-delay: 180ms">
-                                <v-btn color="primary" size="x-large" flat class="text-none" to="/auth?tab=register">
+                                <v-btn
+                                    color="primary"
+                                    size="x-large"
+                                    flat
+                                    class="text-none"
+                                    :href="$crossHref('app', '/auth?tab=register')"
+                                >
                                     Commencer gratuitement
                                     <ArrowRightIcon size="18" class="ms-3" />
                                 </v-btn>
@@ -285,7 +291,7 @@ function yearlyTotal(plan: PricingPlan): string {
                                         :variant="plan.popular ? 'flat' : 'outlined'"
                                         block
                                         class="plan-card__cta text-none"
-                                        to="/auth?tab=register"
+                                        :href="$crossHref('app', '/auth?tab=register')"
                                     >
                                         {{ plan.cta }}
                                     </v-btn>
@@ -432,7 +438,7 @@ function yearlyTotal(plan: PricingPlan): string {
                         <div class="page-final__side">
                             <p>Créez votre espace gratuitement. Aucune carte bancaire demandée.</p>
                             <div class="s-actions">
-                                <v-btn color="white" size="x-large" flat class="text-none" to="/auth?tab=register">
+                                <v-btn color="white" size="x-large" flat class="text-none" :href="$crossHref('app', '/auth?tab=register')">
                                     Créer mon espace
                                     <ArrowRightIcon size="18" class="ms-3" />
                                 </v-btn>

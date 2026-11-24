@@ -86,7 +86,7 @@ watch(
                             class="header-login d-md-flex d-none text-none h-43 px-4 flex-shrink-0"
                             variant="text"
                             color="textPrimary"
-                            to="/demo"
+                            :href="$crossHref('demo', '/demo')"
                         >
                             Démo
                         </v-btn>
@@ -94,7 +94,7 @@ watch(
                             class="header-login d-md-flex d-none text-none h-43 px-4 flex-shrink-0"
                             variant="text"
                             color="textPrimary"
-                            to="/auth?tab=login"
+                            :href="$crossHref('app', '/auth?tab=login')"
                         >
                             Connexion
                         </v-btn>
@@ -102,7 +102,7 @@ watch(
                             class="header-cta d-md-flex d-none text-none h-43 px-5 flex-shrink-0"
                             color="primary"
                             flat
-                            to="/auth?tab=register"
+                            :href="$crossHref('app', '/auth?tab=register')"
                         >
                             Créer un compte
                             <ArrowRightIcon size="17" class="ms-2" />

@@ -14,6 +14,7 @@ import {
     SendIcon
 } from 'vue-tabler-icons';
 import { ApiError } from '@/features/auth/api';
+import { crossHref } from '@/utils/helpers/app-target';
 import {
     buildContactMailto,
     contactEmail,
@@ -114,7 +115,7 @@ const channels = computed<ContactChannel[]>(() => [
         icon: LifebuoyIcon,
         title: 'Déjà utilisateur ?',
         text: 'Précisez l’adresse e-mail de votre compte : nous retrouverons plus vite votre espace.',
-        to: '/auth?tab=login',
+        href: crossHref('app', '/auth?tab=login'),
         linkLabel: 'Se connecter'
     },
     {

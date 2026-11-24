@@ -6,7 +6,13 @@ import vue from '@vitejs/plugin-vue';
 import vuetify from 'vite-plugin-vuetify';
 import vueDevTools from 'vite-plugin-vue-devtools';
 import { buildCspProdEnforce, CSP_DEV_REPORT_ONLY, SECURITY_HEADERS_BASE } from './src/security/csp';
-import { apacheHeadersCsp, excludeDesktopInstaller, netlifyHeadersCsp, vueTablerIconsTreeshake } from './vite.plugins';
+import {
+    apacheHeadersCsp,
+    excludeDesktopInstaller,
+    excludeDownloadsOutsideLanding,
+    netlifyHeadersCsp,
+    vueTablerIconsTreeshake
+} from './vite.plugins';
 
 /** Injecte une CSP enforce en meta sur le HTML de build (filet si le CDN omet le header). */
 function htmlCspMetaPlugin(cspProd: string): Plugin {
@@ -27,6 +33,9 @@ function htmlCspMetaPlugin(cspProd: string): Plugin {
 export default defineConfig(({ command, mode }) => {
     const env = loadEnv(mode, process.cwd(), '');
     const cspProd = buildCspProdEnforce(env.VITE_API_BASE_URL || 'http://localhost:5124');
+    // Builds web par cible (VITE_TARGET) : dist/landing, dist/demo, dist/app. Sans cible : dist/ (Tauri, dev).
+    const target = env.VITE_TARGET || '';
+    const outDir = target ? `dist/${target}` : 'dist';
 
     return {
         clearScreen: false,
@@ -37,10 +46,12 @@ export default defineConfig(({ command, mode }) => {
             vueTablerIconsTreeshake(),
             vuetify({ autoImport: true }),
             htmlCspMetaPlugin(cspProd),
-            netlifyHeadersCsp(cspProd),
-            apacheHeadersCsp(cspProd),
-            excludeDesktopInstaller()
+            netlifyHeadersCsp(cspProd, outDir),
+            apacheHeadersCsp(cspProd, outDir),
+            excludeDesktopInstaller(outDir),
+            ...(target && target !== 'landing' ? [excludeDownloadsOutsideLanding(outDir)] : [])
         ],
+        build: { outDir },
         /**
          * vue-i18n v9 compile les messages via `new Function` par défaut → casse CSP prod
          * (`script-src` sans `unsafe-eval`). Le JIT (v9.3+) évite eval tout en gardant les JSON runtime.

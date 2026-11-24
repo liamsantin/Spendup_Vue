@@ -16,6 +16,12 @@ interface ImportMetaEnv {
     readonly VITE_CONTACT_EMAIL?: string;
     /** URL publique du site (sans slash final) : liens légaux ouverts depuis l'application Windows. */
     readonly VITE_PUBLIC_SITE_URL?: string;
+    /** `landing` | `demo` | `app` : cible du build web. Absent = toutes les routes (dev, Tauri). */
+    readonly VITE_TARGET?: string;
+    /** URLs publiques des cibles (sans slash final), pour les liens inter-domaines. */
+    readonly VITE_LANDING_URL?: string;
+    readonly VITE_DEMO_URL?: string;
+    readonly VITE_APP_URL?: string;
 }
 
 interface ImportMeta {
