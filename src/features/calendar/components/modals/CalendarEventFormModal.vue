@@ -9,6 +9,7 @@ import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { calendarApi } from '@/features/calendar/api';
+import CalendarEventBudget from '@/features/calendar/components/forms/CalendarEventBudget.vue';
 import CalendarEventForm, { type CalendarEventFormFieldErrors } from '@/features/calendar/components/forms/CalendarEventForm.vue';
 import CalendarEventScopeDialog from '@/features/calendar/components/modals/CalendarEventScopeDialog.vue';
 import {
@@ -249,6 +250,7 @@ function onScope(scope: CalendarEventScope) {
             :calendar-items="calendarItems"
             :field-errors="fieldErrors"
         />
+        <CalendarEventBudget v-if="isEdit && event && !loading" :event-public-id="event.publicId" />
 
         <template #footer="{ close }">
             <button v-if="isEdit && event" type="button" class="su-btn su-btn--danger" :disabled="acting" @click="onDelete">

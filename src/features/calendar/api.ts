@@ -1,6 +1,9 @@
 import { fetchWrapper } from '@/utils/helpers/fetch-helpers';
 import type {
     CalendarEvent,
+    CalendarBudgetTransaction,
+    CalendarEventBudget,
+    SetCalendarEventBudgetPayload,
     CalendarForecast,
     CalendarEventScope,
     CalendarInfo,
@@ -99,5 +102,38 @@ export const calendarApi = {
         const params = new URLSearchParams({ rowVersion: String(rowVersion), scope });
         if (occurrenceStart) params.set('occurrenceStart', occurrenceStart);
         return fetchWrapper.delete(`/api/calendar-events/${encodeURIComponent(publicId)}?${params.toString()}`) as Promise<void>;
+    },
+
+    eventBudget(eventPublicId: string) {
+        return fetchWrapper.get(`/api/calendar-events/${encodeURIComponent(eventPublicId)}/budget`) as Promise<CalendarEventBudget>;
+    },
+
+    setEventBudget(eventPublicId: string, payload: SetCalendarEventBudgetPayload) {
+        return fetchWrapper.put(
+            `/api/calendar-events/${encodeURIComponent(eventPublicId)}/budget`,
+            payload
+        ) as Promise<CalendarEventBudget>;
+    },
+
+    deleteEventBudget(eventPublicId: string) {
+        return fetchWrapper.delete(`/api/calendar-events/${encodeURIComponent(eventPublicId)}/budget`) as Promise<void>;
+    },
+
+    attachBudgetTransaction(eventPublicId: string, transactionPublicId: string) {
+        return fetchWrapper.post(`/api/calendar-events/${encodeURIComponent(eventPublicId)}/budget/transactions`, {
+            transactionPublicId
+        }) as Promise<CalendarEventBudget>;
+    },
+
+    detachBudgetTransaction(eventPublicId: string, transactionPublicId: string) {
+        return fetchWrapper.delete(
+            `/api/calendar-events/${encodeURIComponent(eventPublicId)}/budget/transactions/${encodeURIComponent(transactionPublicId)}`
+        ) as Promise<CalendarEventBudget>;
+    },
+
+    budgetSuggestions(eventPublicId: string) {
+        return fetchWrapper.get(`/api/calendar-events/${encodeURIComponent(eventPublicId)}/budget/suggestions`) as Promise<{
+            items: CalendarBudgetTransaction[];
+        }>;
     }
 };

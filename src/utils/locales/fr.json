@@ -4476,6 +4476,31 @@
             "budget": "Budgets",
             "transactions": "Transactions"
         },
+        "budget": {
+            "title": "Budget",
+            "empty": "Aucun budget pour cet événement.",
+            "add": "Ajouter un budget",
+            "edit": "Modifier",
+            "type": "Type d’événement",
+            "planned": "Budget prévu",
+            "remaining": "Il reste {amount}",
+            "exceeded": "Dépassé de {amount}",
+            "expenses": "Dépenses rattachées",
+            "noExpenses": "Aucune dépense rattachée.",
+            "suggestions": "Suggestions sur la période",
+            "attach": "Rattacher",
+            "detach": "Détacher",
+            "remove": "Supprimer le budget",
+            "types": {
+                "vacances": "Vacances",
+                "demenagement": "Déménagement",
+                "naissance": "Naissance",
+                "mariage": "Mariage",
+                "achatImportant": "Achat important",
+                "projet": "Projet",
+                "other": "Autre"
+            }
+        },
         "filters": "Filtres",
         "closeDay": "Fermer le détail du jour",
         "newSources": {

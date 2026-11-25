@@ -235,3 +235,31 @@ export type UpdateCalendarSourcePayload = {
 
 /** Élément d'une source masqué par l'utilisateur (`GET /api/calendar/exclusions`). */
 export type CalendarSourceExclusion = { sourceKey: string; entityPublicId: string; label: string };
+
+export const CALENDAR_BUDGET_TYPES = ['vacances', 'demenagement', 'naissance', 'mariage', 'achatImportant', 'projet', 'other'] as const;
+export type CalendarBudgetType = (typeof CALENDAR_BUDGET_TYPES)[number];
+
+/** Transaction rattachée ou suggérée ; montant positif pour une dépense, négatif pour un remboursement. */
+export type CalendarBudgetTransaction = {
+    publicId: string;
+    label: string;
+    operationDate: string;
+    amount: number;
+    currency: string;
+    transactionType: string;
+};
+
+/** Prévu / réel d'un événement (`GET /api/calendar-events/{id}/budget`). */
+export type CalendarEventBudget = {
+    eventType: string;
+    plannedBudget: number;
+    currency: string;
+    notes: string | null;
+    spent: number;
+    remaining: number;
+    percent: number | null;
+    exceeded: boolean;
+    transactions: CalendarBudgetTransaction[];
+};
+
+export type SetCalendarEventBudgetPayload = { eventType: string; plannedBudget: number; currency?: string; notes?: string };
