@@ -196,7 +196,8 @@ export type CalendarSourceSetting = {
     shareWithFamily: boolean;
 };
 
-export type CalendarSourceList = { profile: CalendarProfile; items: CalendarSourceSetting[] };
+/** `profileChosen` : faux tant que l'utilisateur n'a jamais choisi de profil (absent en mode démo). */
+export type CalendarSourceList = { profile: CalendarProfile; items: CalendarSourceSetting[]; profileChosen?: boolean };
 
 export type UpdateCalendarSourcePayload = {
     isEnabled?: boolean;

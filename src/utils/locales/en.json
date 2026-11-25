@@ -4469,6 +4469,16 @@
         },
         "filters": "Filters",
         "closeDay": "Close day details",
+        "firstOpen": {
+            "title": "What do you want to see in your calendar?",
+            "hint": "Pick a starting point. You can fine-tune every source in the settings.",
+            "minimal": "Only your events. No due dates from other modules.",
+            "equilibre": "Your events, income and the important due dates (recurring expenses from CHF 50).",
+            "complet": "Everything: recurring items, taxes, debts, goals and each day’s transaction totals.",
+            "confirm": "Confirm",
+            "later": "Later",
+            "error": "Could not save this choice."
+        },
         "status": { "paid": "Paid", "upcoming": "Upcoming", "overdue": "Overdue" },
         "openSource": "Open in module",
         "newEvent": "New event",

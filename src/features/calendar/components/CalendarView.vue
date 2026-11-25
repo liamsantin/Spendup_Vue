@@ -20,6 +20,7 @@ import CalendarMonthGrid from '@/features/calendar/components/month/CalendarMont
 import { calendarApi } from '@/features/calendar/api';
 import CalendarDayModal from '@/features/calendar/components/modals/CalendarDayModal.vue';
 import CalendarEventFormModal from '@/features/calendar/components/modals/CalendarEventFormModal.vue';
+import CalendarProfileModal from '@/features/calendar/components/modals/CalendarProfileModal.vue';
 import CalendarEventScopeDialog from '@/features/calendar/components/modals/CalendarEventScopeDialog.vue';
 import CalendarLayersPanel from '@/features/calendar/components/side/CalendarLayersPanel.vue';
 import CalendarDayPanel from '@/features/calendar/components/side/CalendarDayPanel.vue';
@@ -35,6 +36,8 @@ import {
     type CalendarEvent,
     type CalendarEventScope,
     type CalendarOccurrence,
+    type CalendarProfile,
+    type CalendarSourceList,
     type CalendarViewMode
 } from '@/features/calendar/types';
 import type { PlacedSpan } from '@/features/calendar/timegrid';
@@ -97,14 +100,38 @@ const { items: allItems, loading, error, reload } = useCalendarOccurrences(from,
 
 /** Couches proposées : événements + sources activées (réglages, onglet Sources). Toutes si la lecture échoue. */
 const layerKeys = ref<string[] | undefined>(undefined);
+const profileOpen = ref(false);
+const profileSaving = ref(false);
+const profileError = ref<string | null>(null);
+
+function applySources(list: CalendarSourceList) {
+    layerKeys.value = [EVENTS_LAYER, ...list.items.filter((item) => item.isEnabled).map((item) => item.key)];
+}
+
 onMounted(async () => {
     try {
         const list = await calendarApi.sources();
-        layerKeys.value = [EVENTS_LAYER, ...list.items.filter((item) => item.isEnabled).map((item) => item.key)];
+        applySources(list);
+        // Premier passage : proposer le profil de départ (jamais en mode démo ni si l'API ne le dit pas).
+        profileOpen.value = list.profileChosen === false;
     } catch {
         layerKeys.value = undefined;
     }
 });
+
+async function chooseProfile(profile: CalendarProfile) {
+    profileSaving.value = true;
+    profileError.value = null;
+    try {
+        applySources(await calendarApi.setSourceProfile(profile));
+        profileOpen.value = false;
+        await reload();
+    } catch {
+        profileError.value = t('calendarPage.firstOpen.error');
+    } finally {
+        profileSaving.value = false;
+    }
+}
 
 const hiddenLayers = ref<Set<string>>(loadHiddenLayers());
 const layerCounts = computed(() => countByLayer(allItems.value));
@@ -503,6 +530,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
             </button>
             <CalendarDayPanel :title="selectedTitle" :items="selectedItems" @open="openEvent" @view-all="viewDay()" />
         </aside>
+
+        <CalendarProfileModal v-model="profileOpen" :saving="profileSaving" :error="profileError" @choose="chooseProfile" />
 
         <CalendarDayModal
             v-model="dayModalOpen"

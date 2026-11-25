@@ -4469,6 +4469,16 @@
         },
         "filters": "Filtres",
         "closeDay": "Fermer le détail du jour",
+        "firstOpen": {
+            "title": "Que voulez-vous voir dans votre calendrier ?",
+            "hint": "Choisissez un point de départ. Vous pourrez tout ajuster source par source dans les réglages.",
+            "minimal": "Seulement vos événements. Aucune échéance des autres modules.",
+            "equilibre": "Vos événements, les revenus et les échéances importantes (dépenses récurrentes dès 50 CHF).",
+            "complet": "Tout : récurrences, impôts, dettes, objectifs et le total des transactions de chaque jour.",
+            "confirm": "Valider ce choix",
+            "later": "Plus tard",
+            "error": "Impossible d’enregistrer ce choix."
+        },
         "status": { "paid": "Payé", "upcoming": "À venir", "overdue": "En retard" },
         "openSource": "Ouvrir dans le module",
         "newEvent": "Nouvel événement",
