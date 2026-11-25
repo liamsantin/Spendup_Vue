@@ -4464,7 +4464,8 @@
             "sharedDebt": "Dette partagée",
             "personalLoan": "Prêt entre proches",
             "liability": "Dette",
-            "taxInstallment": "Acompte d’impôt"
+            "taxInstallment": "Acompte d’impôt",
+            "transactions": "Transactions"
         },
         "filters": "Filtres",
         "closeDay": "Fermer le détail du jour",

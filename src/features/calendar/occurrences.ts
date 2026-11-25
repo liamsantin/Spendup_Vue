@@ -36,7 +36,8 @@ const SOURCE_ROUTES: Record<string, (entityPublicId: string) => string> = {
     sharedDebt: (id) => `/app/patrimoine/dettes/amis/${id}`,
     personalLoan: (id) => `/app/patrimoine/dettes/prets/${id}`,
     liability: (id) => `/app/patrimoine/dettes/${id}`,
-    taxInstallment: (id) => `/app/planning/impots/${id}`
+    taxInstallment: (id) => `/app/planning/impots/${id}`,
+    transactions: () => '/app/finances/transactions'
 };
 
 /** Page du module d'origine d'une occurrence virtuelle ; null si la source n'a pas de page connue. */

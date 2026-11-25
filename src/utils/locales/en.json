@@ -4464,7 +4464,8 @@
             "sharedDebt": "Shared debt",
             "personalLoan": "Personal loan",
             "liability": "Debt",
-            "taxInstallment": "Tax instalment"
+            "taxInstallment": "Tax instalment",
+            "transactions": "Transactions"
         },
         "filters": "Filters",
         "closeDay": "Close day details",
