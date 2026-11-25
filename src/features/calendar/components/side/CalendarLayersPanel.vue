@@ -6,6 +6,8 @@ import { CALENDAR_LAYER_KEYS, EVENTS_LAYER, layerTone } from '@/features/calenda
 defineProps<{
     hidden: ReadonlySet<string>;
     counts: ReadonlyMap<string, number>;
+    /** Couches proposées ; absent = toutes. */
+    keys?: readonly string[];
 }>();
 
 const emit = defineEmits<{ toggle: [key: string] }>();
@@ -23,7 +25,7 @@ function label(key: string): string {
             <h2>{{ t('calendarPage.layers.title') }}</h2>
         </header>
         <ul class="cal-list">
-            <li v-for="key in CALENDAR_LAYER_KEYS" :key="key" class="cal-list__item" :class="`cal-tone--${layerTone(key)}`">
+            <li v-for="key in keys ?? CALENDAR_LAYER_KEYS" :key="key" class="cal-list__item" :class="`cal-tone--${layerTone(key)}`">
                 <label class="cal-layer" :class="{ 'cal-layer--off': hidden.has(key) }">
                     <input type="checkbox" class="cal-layer__input" :checked="!hidden.has(key)" @change="emit('toggle', key)" />
                     <span class="su-sq cal-list__sq" aria-hidden="true" />

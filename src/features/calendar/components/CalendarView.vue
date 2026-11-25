@@ -23,7 +23,7 @@ import CalendarTimeGrid from '@/features/calendar/components/week/CalendarTimeGr
 import { useCalendarOccurrences } from '@/features/calendar/composables/useCalendarOccurrences';
 import { useCalendarPreferences } from '@/features/calendar/composables/useCalendarPreferences';
 import { addDaysYmd, monthGrid, parseYmd, toYmd, visibleDays, weekDays, ymdOf } from '@/features/calendar/dates';
-import { countByLayer, filterByLayers, loadHiddenLayers, saveHiddenLayers } from '@/features/calendar/layers';
+import { EVENTS_LAYER, countByLayer, filterByLayers, loadHiddenLayers, saveHiddenLayers } from '@/features/calendar/layers';
 import { groupByDay, monthSummary, upcomingOutflows } from '@/features/calendar/occurrences';
 import { buildUpdateEventPayload, eventToFormFields, occurrenceStartOf } from '@/features/calendar/payload';
 import {
@@ -88,6 +88,17 @@ const range = computed(() => {
 const from = computed(() => range.value.from);
 const to = computed(() => range.value.to);
 const { items: allItems, loading, error, reload } = useCalendarOccurrences(from, to);
+
+/** Couches proposées : événements + sources activées (réglages, onglet Sources). Toutes si la lecture échoue. */
+const layerKeys = ref<string[] | undefined>(undefined);
+onMounted(async () => {
+    try {
+        const list = await calendarApi.sources();
+        layerKeys.value = [EVENTS_LAYER, ...list.items.filter((item) => item.isEnabled).map((item) => item.key)];
+    } catch {
+        layerKeys.value = undefined;
+    }
+});
 
 const hiddenLayers = ref<Set<string>>(loadHiddenLayers());
 const layerCounts = computed(() => countByLayer(allItems.value));
@@ -378,7 +389,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
 
             <aside class="cal__side su-stack su-stack--tight">
                 <CalendarDayPanel :title="selectedTitle" :items="selectedItems" @open="openEvent" />
-                <CalendarLayersPanel :hidden="hiddenLayers" :counts="layerCounts" @toggle="toggleLayer" />
+                <CalendarLayersPanel :keys="layerKeys" :hidden="hiddenLayers" :counts="layerCounts" @toggle="toggleLayer" />
                 <CalendarMonthSummary :summary="summary" :upcoming="upcoming" />
             </aside>
         </div>

@@ -1,5 +1,8 @@
 import { occurrenceDays, parseYmd, toYmd } from '@/features/calendar/dates';
 import type {
+    CalendarProfile,
+    CalendarSourceSetting,
+    UpdateCalendarSourcePayload,
     CalendarOccurrence,
     CalendarOccurrencesResult,
     CreateCalendarEventPayload,
@@ -251,6 +254,43 @@ function applyDemoPreferences(prefs: DemoPreferences, patch: UpdateCalendarPrefe
     else if (patch.secondTimezone) prefs.secondTimezone = patch.secondTimezone;
 }
 
+const DEMO_SOURCE_LABELS: Record<string, string> = {
+    recurringExpense: 'Dépenses récurrentes',
+    recurringIncome: 'Revenus récurrents',
+    savingsGoal: "Objectifs d'épargne",
+    sharedDebt: 'Dettes partagées',
+    personalLoan: 'Prêts entre proches',
+    liability: 'Dettes'
+};
+
+type DemoSources = { profile: CalendarProfile; items: CalendarSourceSetting[] };
+
+function freshDemoSources(profile: CalendarProfile): DemoSources {
+    const items = Object.entries(DEMO_SOURCE_LABELS).map(([key, label]) => ({
+        key,
+        label,
+        color: '#64748b',
+        isEnabled: profile !== 'minimal' || key === 'liability',
+        displayMode: 'detailed' as const,
+        minAmount: profile === 'equilibre' && key === 'recurringExpense' ? 50 : null,
+        isCustom: false,
+        includeInFeed: false,
+        shareWithFamily: false
+    }));
+    return { profile, items };
+}
+
+const sourcesByDb = new WeakMap<object, DemoSources>();
+
+function demoSources(): DemoSources {
+    const db = demoDb();
+    const current = sourcesByDb.get(db);
+    if (current) return current;
+    const fresh = freshDemoSources('equilibre');
+    sourcesByDb.set(db, fresh);
+    return fresh;
+}
+
 type Result = { status: number; body: unknown };
 
 /** Routes calendrier du mode démo : occurrences, calendrier « Personnel » et événements saisis ; le reste demande un compte. */
@@ -271,6 +311,26 @@ export function routeCalendar(method: string, path: string, query: URLSearchPara
         const prefs = demoPreferences();
         applyDemoPreferences(prefs, (body ?? {}) as UpdateCalendarPreferencesPayload);
         return { status: 200, body: preferencesBody(prefs) };
+    }
+    if (path === '/api/calendar/sources' && method === 'GET') return { status: 200, body: demoSources() };
+    if (path === '/api/calendar/sources/profile' && method === 'PUT') {
+        const profile = (body as { profile?: string } | undefined)?.profile;
+        if (profile !== 'minimal' && profile !== 'equilibre' && profile !== 'complet') throw new AppError('Profil invalide.', 400);
+        const fresh = freshDemoSources(profile);
+        sourcesByDb.set(demoDb(), fresh);
+        return { status: 200, body: fresh };
+    }
+    const sourceKey = /^\/api\/calendar\/sources\/([^/]+)$/.exec(path)?.[1];
+    if (sourceKey && method === 'PATCH') {
+        const source = demoSources().items.find((item) => item.key === decodeURIComponent(sourceKey));
+        if (!source) throw new AppError('Source inconnue.', 404);
+        const patch = (body ?? {}) as UpdateCalendarSourcePayload;
+        if (patch.isEnabled != null) source.isEnabled = patch.isEnabled;
+        if (patch.displayMode) source.displayMode = patch.displayMode;
+        if (patch.clearMinAmount) source.minAmount = null;
+        else if (patch.minAmount != null) source.minAmount = patch.minAmount;
+        source.isCustom = true;
+        return { status: 200, body: source };
     }
     if (path === '/api/calendar-events' && method === 'POST') {
         const payload = body as CreateCalendarEventPayload;

@@ -3,6 +3,7 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { CalendarIcon } from 'vue-tabler-icons';
 import CalendarSettingsForm from '@/features/calendar/components/settings/CalendarSettingsForm.vue';
+import CalendarSourcesSettings from '@/features/calendar/components/settings/CalendarSourcesSettings.vue';
 import AppSettingsFormPage from '@/views/app/parametres/AppSettingsFormPage.vue';
 
 const { t } = useI18n();
@@ -34,5 +35,6 @@ function onCancel() {
         @discard="onCancel"
     >
         <CalendarSettingsForm ref="formRef" @dirty="dirty = $event" />
+        <CalendarSourcesSettings />
     </AppSettingsFormPage>
 </template>

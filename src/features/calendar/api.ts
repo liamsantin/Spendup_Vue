@@ -6,6 +6,10 @@ import type {
     CalendarOccurrencesQuery,
     CalendarOccurrencesResult,
     CalendarPreferences,
+    CalendarProfile,
+    CalendarSourceList,
+    CalendarSourceSetting,
+    UpdateCalendarSourcePayload,
     CreateCalendarEventPayload,
     UpdateCalendarPreferencesPayload,
     UpdateCalendarEventPayload
@@ -29,6 +33,18 @@ export const calendarApi = {
 
     updatePreferences(payload: UpdateCalendarPreferencesPayload) {
         return fetchWrapper.patch('/api/calendar/preferences', payload) as Promise<CalendarPreferences>;
+    },
+
+    sources() {
+        return fetchWrapper.get('/api/calendar/sources') as Promise<CalendarSourceList>;
+    },
+
+    updateSource(key: string, payload: UpdateCalendarSourcePayload) {
+        return fetchWrapper.patch(`/api/calendar/sources/${encodeURIComponent(key)}`, payload) as Promise<CalendarSourceSetting>;
+    },
+
+    setSourceProfile(profile: CalendarProfile) {
+        return fetchWrapper.put('/api/calendar/sources/profile', { profile }) as Promise<CalendarSourceList>;
     },
 
     getEvent(publicId: string) {

@@ -158,3 +158,25 @@ describe('routeCalendar', () => {
         expect(titlesOn('2026-12-23')).not.toContain('Cours de natation');
     });
 });
+
+describe('routeCalendar : sources', () => {
+    beforeEach(() => {
+        resetDemoDb();
+    });
+
+    it('liste, modifie et réinitialise par profil', () => {
+        const query = new URLSearchParams();
+        const list = routeCalendar('GET', '/api/calendar/sources', query)?.body as { profile: string; items: { key: string }[] };
+        expect(list.profile).toBe('equilibre');
+        expect(list.items).toHaveLength(6);
+
+        const patched = routeCalendar('PATCH', '/api/calendar/sources/savingsGoal', query, { isEnabled: false })?.body;
+        expect(patched).toMatchObject({ isEnabled: false, isCustom: true });
+
+        const reset = routeCalendar('PUT', '/api/calendar/sources/profile', query, { profile: 'minimal' })?.body as {
+            items: { key: string; isEnabled: boolean }[];
+        };
+        expect(reset.items.filter((item) => item.isEnabled).map((item) => item.key)).toEqual(['liability']);
+        expect(() => routeCalendar('PATCH', '/api/calendar/sources/nope', query, {})).toThrow();
+    });
+});

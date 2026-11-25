@@ -171,3 +171,31 @@ export type CalendarOccurrencesQuery = {
     /** Couches séparées par des virgules (`events`, clés de source) ; absent = toutes les couches activées. */
     layers?: string;
 };
+
+export const CALENDAR_DISPLAY_MODES = ['detailed', 'dailyTotal', 'markerOnly'] as const;
+export type CalendarDisplayMode = (typeof CALENDAR_DISPLAY_MODES)[number];
+export const CALENDAR_PROFILES = ['minimal', 'equilibre', 'complet'] as const;
+export type CalendarProfile = (typeof CALENDAR_PROFILES)[number];
+
+/** Réglage effectif d'une source (`GET /api/calendar/sources`). */
+export type CalendarSourceSetting = {
+    key: string;
+    label: string;
+    color: string;
+    isEnabled: boolean;
+    displayMode: CalendarDisplayMode;
+    minAmount: number | null;
+    /** Réglé à la main (différent des valeurs du profil). */
+    isCustom: boolean;
+    includeInFeed: boolean;
+    shareWithFamily: boolean;
+};
+
+export type CalendarSourceList = { profile: CalendarProfile; items: CalendarSourceSetting[] };
+
+export type UpdateCalendarSourcePayload = {
+    isEnabled?: boolean;
+    displayMode?: CalendarDisplayMode;
+    minAmount?: number;
+    clearMinAmount?: boolean;
+};
