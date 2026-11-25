@@ -4486,6 +4486,7 @@
         },
         "status": { "paid": "Payé", "upcoming": "À venir", "overdue": "En retard" },
         "openSource": "Ouvrir dans le module",
+        "addNote": "Ajouter une note, un rappel ou des invités",
         "newEvent": "Nouvel événement",
         "settings": {
             "hiddenTitle": "Éléments masqués",

@@ -56,6 +56,14 @@ export const calendarApi = {
         return fetchWrapper.post('/api/calendar/exclusions', { sourceKey, entityPublicId }) as Promise<CalendarSourceExclusion>;
     },
 
+    /** Événement d'une journée ancré sur une occurrence de source (créé au besoin) : note, rappel, invités. */
+    anchor(sourceKey: string, entityPublicId: string, date: string) {
+        return fetchWrapper.post(`/api/calendar/sources/${encodeURIComponent(sourceKey)}/anchor`, {
+            entityPublicId,
+            date
+        }) as Promise<CalendarEvent>;
+    },
+
     include(sourceKey: string, entityPublicId: string) {
         return fetchWrapper.delete(
             `/api/calendar/exclusions/${encodeURIComponent(sourceKey)}/${encodeURIComponent(entityPublicId)}`

@@ -10,6 +10,8 @@ export {
     monthSummary,
     occurrenceTime,
     occurrenceTimeRange,
+    canAnchor,
+    occurrenceFromEvent,
     paymentStatus,
     sourceRoute,
     occurrenceTone,

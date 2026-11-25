@@ -1,12 +1,16 @@
 <script setup lang="ts">
 /** Ligne d'une occurrence : heure ou « journée entière », source, membre qui partage, montant. Un événement saisi s'ouvre au clic. */
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { NotesIcon as NotePlusIcon } from 'vue-tabler-icons';
+import { calendarApi } from '@/features/calendar/api';
 import {
     formatOccurrenceAmount,
     isCanceled,
+    canAnchor,
     isEditableOccurrence,
+    occurrenceFromEvent,
     occurrenceTimeRange,
     occurrenceTone,
     occurrenceToneStyle,
@@ -27,6 +31,22 @@ const editable = computed(() => isEditableOccurrence(props.occurrence));
 const route = computed(() => sourceRoute(props.occurrence));
 const status = computed(() => paymentStatus(props.occurrence));
 const actionable = computed(() => editable.value || !!route.value);
+
+const anchorable = computed(() => canAnchor(props.occurrence));
+const anchoring = ref(false);
+
+async function addNote() {
+    const o = props.occurrence;
+    if (anchoring.value || !o.sourceKey || !o.entityPublicId || !o.startDate) return;
+    anchoring.value = true;
+    try {
+        emit('open', occurrenceFromEvent(await calendarApi.anchor(o.sourceKey, o.entityPublicId, o.startDate)));
+    } catch {
+        // ouverture impossible : l'occurrence reste telle quelle
+    } finally {
+        anchoring.value = false;
+    }
+}
 
 function activate() {
     if (editable.value) emit('open', props.occurrence);
@@ -67,5 +87,16 @@ const meta = computed(() => {
                 >{{ formatOccurrenceAmount(occurrence.amount, occurrence.currency) }}</span
             >
         </component>
+        <button
+            v-if="anchorable"
+            type="button"
+            class="cal-list__note"
+            :disabled="anchoring"
+            :title="t('calendarPage.addNote')"
+            :aria-label="t('calendarPage.addNote')"
+            @click="addNote"
+        >
+            <NotePlusIcon :size="18" stroke-width="1.8" aria-hidden="true" />
+        </button>
     </li>
 </template>

@@ -1,6 +1,6 @@
 import { formatSwissNumber } from '@/features/accounts/format';
 import { occurrenceDays } from '@/features/calendar/dates';
-import type { CalendarOccurrence, CalendarTone } from '@/features/calendar/types';
+import type { CalendarEvent, CalendarOccurrence, CalendarTone } from '@/features/calendar/types';
 
 const SOURCE_TONES: Record<string, CalendarTone> = {
     recurringIncome: 'income',
@@ -44,6 +44,41 @@ const SOURCE_ROUTES: Record<string, (entityPublicId: string) => string> = {
 export function sourceRoute(occurrence: CalendarOccurrence): string | null {
     if (!occurrence.sourceKey || !occurrence.entityPublicId) return null;
     return SOURCE_ROUTES[occurrence.sourceKey]?.(encodeURIComponent(occurrence.entityPublicId)) ?? null;
+}
+
+/** Sources dont une occurrence accepte un événement ancré (note, rappel, invités). */
+const ANCHORABLE_SOURCES = ['recurringExpense', 'recurringIncome'];
+
+export function canAnchor(occurrence: CalendarOccurrence): boolean {
+    return (
+        !!occurrence.sourceKey &&
+        !!occurrence.entityPublicId &&
+        !!occurrence.startDate &&
+        !occurrence.sharedBy &&
+        ANCHORABLE_SOURCES.includes(occurrence.sourceKey)
+    );
+}
+
+/** Occurrence éditable construite depuis l'événement ancré renvoyé par l'API. */
+export function occurrenceFromEvent(event: CalendarEvent): CalendarOccurrence {
+    return {
+        id: `${event.publicId}:${event.startDate ?? ''}`,
+        sourceKey: null,
+        eventPublicId: event.publicId,
+        entityPublicId: null,
+        title: event.title,
+        isFullDay: event.isFullDay,
+        startUtc: event.startUtc,
+        endUtc: event.endUtc,
+        startDate: event.startDate,
+        endDate: event.endDate,
+        amount: null,
+        currency: null,
+        status: event.status,
+        color: null,
+        isRecurring: false,
+        isModified: false
+    };
 }
 
 /** Seuls les événements saisis s'ouvrent dans le calendrier ; une occurrence de source se gère dans son module. */

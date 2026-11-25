@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+    canAnchor,
+    occurrenceFromEvent,
     dayTotal,
     formatOccurrenceAmount,
     groupByDay,
@@ -164,5 +166,56 @@ describe('statut de règlement et module d’origine', () => {
         expect(sourceRoute(occurrence('g', { sourceKey: 'transactions', entityPublicId: 'in-CHF' }))).toBe('/app/finances/transactions');
         expect(sourceRoute(occurrence('d', { sourceKey: 'inconnue', entityPublicId: 'x4' }))).toBeNull();
         expect(sourceRoute(occurrence('e', { sourceKey: null, entityPublicId: null }))).toBeNull();
+    });
+});
+
+describe('ancrage', () => {
+    const base = {
+        id: 'recurringExpense:e1:2026-03-01',
+        sourceKey: 'recurringExpense',
+        eventPublicId: null,
+        entityPublicId: 'e1',
+        title: 'Loyer',
+        isFullDay: true,
+        startUtc: null,
+        endUtc: null,
+        startDate: '2026-03-01',
+        endDate: '2026-03-01',
+        amount: -1800,
+        currency: 'CHF',
+        status: 'upcoming',
+        color: null,
+        isRecurring: false,
+        isModified: false
+    };
+
+    it('canAnchor : récurrences seulement, jamais une source partagée', () => {
+        expect(canAnchor(base)).toBe(true);
+        expect(canAnchor({ ...base, sourceKey: 'transactions' })).toBe(false);
+        expect(canAnchor({ ...base, sharedBy: 'Alex' })).toBe(false);
+        expect(canAnchor({ ...base, sourceKey: null })).toBe(false);
+    });
+
+    it('occurrenceFromEvent : occurrence saisie, éditable', () => {
+        const o = occurrenceFromEvent({
+            publicId: 'ev1',
+            calendarPublicId: 'c',
+            title: 'Loyer',
+            description: null,
+            lieu: null,
+            isFullDay: true,
+            startUtc: null,
+            endUtc: null,
+            timezone: null,
+            startDate: '2026-03-01',
+            endDate: '2026-03-01',
+            recurrenceRule: null,
+            visibilite: 'prive',
+            status: 'planifie',
+            reminders: [],
+            rowVersion: 1
+        });
+        expect(o.eventPublicId).toBe('ev1');
+        expect(isEditableOccurrence(o)).toBe(true);
     });
 });

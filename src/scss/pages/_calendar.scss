@@ -86,6 +86,22 @@
     }
 }
 
+.cal-list__note {
+    flex: none;
+    padding: 4px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: inherit;
+    opacity: 0.55;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+        opacity: 1;
+    }
+}
+
 .cal-list__sq {
     flex: none;
 }
