@@ -438,6 +438,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
             :can-load-more="agendaSpan < AGENDA_MAX_DAYS"
             :loading="loading"
             @open="openEvent"
+            @hide="hideOccurrence"
             @more="loadMoreAgenda"
         />
 
