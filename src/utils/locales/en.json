@@ -4469,6 +4469,11 @@
         },
         "filters": "Filters",
         "closeDay": "Close day details",
+        "newSources": {
+            "text": "New source available: {names}. | New sources available: {names}.",
+            "show": "Show",
+            "ignore": "Dismiss"
+        },
         "firstOpen": {
             "title": "What do you want to see in your calendar?",
             "hint": "Pick a starting point. You can fine-tune every source in the settings.",

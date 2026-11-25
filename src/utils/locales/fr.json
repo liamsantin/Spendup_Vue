@@ -4469,6 +4469,11 @@
         },
         "filters": "Filtres",
         "closeDay": "Fermer le détail du jour",
+        "newSources": {
+            "text": "Nouvelle source disponible : {names}. | Nouvelles sources disponibles : {names}.",
+            "show": "Afficher",
+            "ignore": "Ignorer"
+        },
         "firstOpen": {
             "title": "Que voulez-vous voir dans votre calendrier ?",
             "hint": "Choisissez un point de départ. Vous pourrez tout ajuster source par source dans les réglages.",

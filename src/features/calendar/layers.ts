@@ -53,3 +53,30 @@ export function saveHiddenLayers(hidden: ReadonlySet<string>): void {
         // stockage indisponible : le choix vaut pour la session seulement
     }
 }
+
+const SEEN_SOURCES_KEY = 'spendup.calendar.seenSources';
+
+/** Sources déjà connues de cet appareil ; null tant qu'aucune liste n'a été enregistrée. */
+export function loadSeenSources(): string[] | null {
+    try {
+        const raw = localStorage.getItem(SEEN_SOURCES_KEY);
+        const parsed: unknown = raw ? JSON.parse(raw) : null;
+        return Array.isArray(parsed) ? parsed.filter((value): value is string => typeof value === 'string') : null;
+    } catch {
+        return null;
+    }
+}
+
+export function saveSeenSources(keys: readonly string[]): void {
+    try {
+        localStorage.setItem(SEEN_SOURCES_KEY, JSON.stringify([...keys]));
+    } catch {
+        // stockage indisponible : le bandeau pourra revenir à la prochaine ouverture
+    }
+}
+
+/** Sources apparues depuis la dernière visite et pas encore affichées (bandeau « nouvelle source »). Vide à la première visite. */
+export function newSourceKeys(seen: readonly string[] | null, sources: readonly { key: string; isEnabled: boolean }[]): string[] {
+    if (seen === null) return [];
+    return sources.filter((source) => !source.isEnabled && !seen.includes(source.key)).map((source) => source.key);
+}

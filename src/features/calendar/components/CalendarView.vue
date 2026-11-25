@@ -28,7 +28,16 @@ import CalendarTimeGrid from '@/features/calendar/components/week/CalendarTimeGr
 import { useCalendarOccurrences } from '@/features/calendar/composables/useCalendarOccurrences';
 import { useCalendarPreferences } from '@/features/calendar/composables/useCalendarPreferences';
 import { addDaysYmd, monthGrid, parseYmd, visibleDays, weekDays, ymdOf } from '@/features/calendar/dates';
-import { EVENTS_LAYER, countByLayer, filterByLayers, loadHiddenLayers, saveHiddenLayers } from '@/features/calendar/layers';
+import {
+    EVENTS_LAYER,
+    countByLayer,
+    filterByLayers,
+    loadHiddenLayers,
+    loadSeenSources,
+    newSourceKeys,
+    saveHiddenLayers,
+    saveSeenSources
+} from '@/features/calendar/layers';
 import { groupByDay } from '@/features/calendar/occurrences';
 import { buildUpdateEventPayload, eventToFormFields, occurrenceStartOf } from '@/features/calendar/payload';
 import {
@@ -114,16 +123,51 @@ onMounted(async () => {
         applySources(list);
         // Premier passage : proposer le profil de départ (jamais en mode démo ni si l'API ne le dit pas).
         profileOpen.value = list.profileChosen === false;
+        if (!profileOpen.value) detectNewSources(list);
     } catch {
         layerKeys.value = undefined;
     }
 });
 
+/** Sources apparues depuis la dernière visite (désactivées par le profil) : bandeau pour les afficher ou les ignorer. */
+const newSources = ref<{ key: string; label: string }[]>([]);
+const newSourcesBusy = ref(false);
+let allSourceKeys: string[] = [];
+
+function detectNewSources(list: CalendarSourceList) {
+    allSourceKeys = list.items.map((item) => item.key);
+    const fresh = newSourceKeys(loadSeenSources(), list.items);
+    newSources.value = list.items.filter((item) => fresh.includes(item.key)).map((item) => ({ key: item.key, label: item.label }));
+    // Première visite sur cet appareil, ou rien de nouveau : on mémorise la liste sans bandeau.
+    if (!newSources.value.length) saveSeenSources(allSourceKeys);
+}
+
+function ignoreNewSources() {
+    saveSeenSources(allSourceKeys);
+    newSources.value = [];
+}
+
+async function showNewSources() {
+    newSourcesBusy.value = true;
+    try {
+        for (const source of newSources.value) await calendarApi.updateSource(source.key, { isEnabled: true });
+        applySources(await calendarApi.sources());
+        ignoreNewSources();
+        await reload();
+    } catch {
+        profileError.value = t('calendarPage.firstOpen.error');
+    } finally {
+        newSourcesBusy.value = false;
+    }
+}
+
 async function chooseProfile(profile: CalendarProfile) {
     profileSaving.value = true;
     profileError.value = null;
     try {
-        applySources(await calendarApi.setSourceProfile(profile));
+        const list = await calendarApi.setSourceProfile(profile);
+        applySources(list);
+        saveSeenSources(list.items.map((item) => item.key));
         profileOpen.value = false;
         await reload();
     } catch {
@@ -401,6 +445,15 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
         </AppAlert>
         <AppAlert v-if="dragError" type="error" class="cal-alert">
             {{ dragError }}
+        </AppAlert>
+        <AppAlert v-if="newSources.length" type="info" class="cal-alert">
+            <span>{{ t('calendarPage.newSources.text', { names: newSources.map((s) => s.label).join(', ') }, newSources.length) }}</span>
+            <button type="button" class="su-btn su-btn--ink cal-alert__btn" :disabled="newSourcesBusy" @click="showNewSources">
+                {{ t('calendarPage.newSources.show') }}
+            </button>
+            <button type="button" class="su-btn cal-alert__btn" :disabled="newSourcesBusy" @click="ignoreNewSources">
+                {{ t('calendarPage.newSources.ignore') }}
+            </button>
         </AppAlert>
 
         <!-- Navigation : boutons-icônes carrés, titre de la période 16 px 700, « Aujourd’hui » discret. -->
