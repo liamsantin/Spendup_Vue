@@ -130,3 +130,13 @@
 .cal-list__meta--overdue {
     color: var(--red, #dc2626);
 }
+
+// Statut de règlement d'une échéance (pastilles du mois, puces de la semaine) : payé estompé, en retard en rouge.
+.cal-pay--paid {
+    opacity: 0.55;
+}
+
+.cal-pay--overdue {
+    --tone-ink: var(--red, #dc2626);
+    color: var(--red, #dc2626);
+}

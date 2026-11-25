@@ -7,7 +7,14 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { isoWeek, parseYmd } from '@/features/calendar/dates';
-import { dayTotal, formatOccurrenceAmount, isCanceled, occurrenceTone, occurrenceToneStyle } from '@/features/calendar/occurrences';
+import {
+    dayTotal,
+    formatOccurrenceAmount,
+    isCanceled,
+    occurrenceTone,
+    occurrenceToneStyle,
+    paymentStatus
+} from '@/features/calendar/occurrences';
 import type { CalendarOccurrence } from '@/features/calendar/types';
 
 /** Pastilles visibles par jour avant « +N » (cellules hautes, pleine largeur). */
@@ -48,7 +55,8 @@ const cells = computed(() =>
 );
 
 function toneClass(occurrence: CalendarOccurrence) {
-    return [`cal-tone--${occurrenceTone(occurrence)}`, { 'cal-is-canceled': isCanceled(occurrence) }];
+    const status = paymentStatus(occurrence);
+    return [`cal-tone--${occurrenceTone(occurrence)}`, { 'cal-is-canceled': isCanceled(occurrence) }, status ? `cal-pay--${status}` : ''];
 }
 
 const toneStyle = occurrenceToneStyle;

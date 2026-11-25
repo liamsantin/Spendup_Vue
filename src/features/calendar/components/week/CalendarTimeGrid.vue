@@ -12,6 +12,7 @@ import { isoWeek, parseYmd, ymdOf } from '@/features/calendar/dates';
 import {
     isCanceled,
     isEditableOccurrence,
+    paymentStatus,
     occurrenceTimeRange,
     occurrenceTone,
     occurrenceToneStyle
@@ -34,6 +35,12 @@ const DRAG_THRESHOLD_PX = 4;
 
 /** Hauteur d'une heure : assez haute pour lire les détails d'un créneau. */
 const HOUR_PX = 72;
+
+/** Classe de statut de règlement (payé, en retard) d'une échéance de source. */
+function statusClass(occurrence: CalendarOccurrence) {
+    const status = paymentStatus(occurrence);
+    return status ? `cal-pay--${status}` : '';
+}
 const MAX_BAND_ITEMS = 3;
 /** À partir de 19 h, l'encart de création rapide s'ouvre au-dessus du créneau pour rester dans la grille. */
 const QUICK_ABOVE_FROM = 19 * 60;
@@ -427,7 +434,11 @@ onBeforeUnmount(() => {
                         :key="occurrence.id"
                         :type="isEditableOccurrence(occurrence) ? 'button' : undefined"
                         class="cal-week__chip"
-                        :class="[`cal-tone--${occurrenceTone(occurrence)}`, { 'is-action': isEditableOccurrence(occurrence) }]"
+                        :class="[
+                            `cal-tone--${occurrenceTone(occurrence)}`,
+                            { 'is-action': isEditableOccurrence(occurrence) },
+                            statusClass(occurrence)
+                        ]"
                         :style="occurrenceToneStyle(occurrence)"
                         :title="occurrence.title"
                         @click="isEditableOccurrence(occurrence) && emit('open', occurrence)"
