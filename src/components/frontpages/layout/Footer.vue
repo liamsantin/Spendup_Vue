@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { ArrowRightIcon, ArrowUpRightIcon, BrandInstagramIcon, MailIcon } from 'vue-tabler-icons';
+import { crossHref } from '@/utils/helpers/app-target';
 import { isPricingPageEnabled } from '@/utils/helpers/pricing-helpers';
 import { contactEmail } from '@/components/frontpages/contact/contact-form';
 
@@ -18,8 +19,8 @@ const columns = computed(() => [
         links: [
             { label: 'Fonctionnalités', to: '/fonctionnalites' },
             ...(isPricingPageEnabled() ? [{ label: 'Tarifs', to: '/tarifs' }] : []),
-            { label: 'Créer un compte', to: '/auth?tab=register' },
-            { label: 'Se connecter', to: '/auth?tab=login' }
+            { label: 'Créer un compte', href: crossHref('app', '/auth?tab=register') },
+            { label: 'Se connecter', href: crossHref('app', '/auth?tab=login') }
         ]
     },
     {
@@ -85,7 +86,10 @@ const year = new Date().getFullYear();
                 <div class="footer-columns">
                     <nav v-for="column in columns" :key="column.title" class="footer-column" :aria-label="column.title">
                         <h3>{{ column.title }}</h3>
-                        <RouterLink v-for="item in column.links" :key="item.label" :to="item.to">{{ item.label }}</RouterLink>
+                        <template v-for="item in column.links" :key="item.label">
+                            <a v-if="'href' in item" :href="item.href">{{ item.label }}</a>
+                            <RouterLink v-else :to="item.to">{{ item.label }}</RouterLink>
+                        </template>
                     </nav>
                 </div>
             </div>

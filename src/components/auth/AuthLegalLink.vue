@@ -7,11 +7,12 @@
  */
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { isTauri } from '@/utils/helpers/platform-helpers';
+import { crossHref } from '@/utils/helpers/app-target';
 
 const props = defineProps<{ to: string }>();
 
 const desktop = isTauri();
-const siteUrl = String(import.meta.env.VITE_PUBLIC_SITE_URL ?? '')
+const siteUrl = String(import.meta.env.VITE_PUBLIC_SITE_URL || import.meta.env.VITE_LANDING_URL || '')
     .trim()
     .replace(/\/$/, '');
 
@@ -25,7 +26,7 @@ async function openOnDesktop() {
 </script>
 
 <template>
-    <a v-if="!desktop" class="auth-legal-link" :href="to" target="_blank" rel="noopener"><slot /></a>
+    <a v-if="!desktop" class="auth-legal-link" :href="crossHref('landing', to)" target="_blank" rel="noopener"><slot /></a>
     <button v-else-if="siteUrl" type="button" class="auth-legal-link" @click.stop.prevent="openOnDesktop"><slot /></button>
     <span v-else><slot /></span>
 </template>

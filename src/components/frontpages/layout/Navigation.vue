@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 import Logo from '@/layouts/full/logo/Logo.vue';
 import { isPricingPageEnabled } from '@/utils/helpers/pricing-helpers';
+import { APP_TARGET, crossHref } from '@/utils/helpers/app-target';
 
 const props = withDefaults(
     defineProps<{
@@ -29,7 +30,11 @@ const navigation = computed(() => {
     return items;
 });
 
-const isActive = (href: string) => (href === '/' ? route.path === '/' : route.path.startsWith(href));
+/** Sur les cibles `app` et `demo`, les pages publiques vivent sur un autre domaine : lien classique, pas de routeur. */
+const external = APP_TARGET === 'app' || APP_TARGET === 'demo';
+const linkProps = (href: string) => (external ? { href: crossHref('landing', href) } : { to: href });
+
+const isActive = (href: string) => !external && (href === '/' ? route.path === '/' : route.path.startsWith(href));
 
 const linkClass = (href: string) => [
     'text-15 font-weight-medium text-decoration-none text-hover-primary d-flex align-center ga-2 px-3 py-lg-1 py-2',
@@ -40,30 +45,48 @@ const linkClass = (href: string) => [
 
 <template>
     <nav v-if="!mobile && !dropdown" class="front-nav front-nav--desktop d-flex align-center flex-wrap ga-2">
-        <RouterLink v-for="(item, i) in navigation" :key="i" :to="item.href" :class="linkClass(item.href)">
+        <component
+            :is="external ? 'a' : RouterLink"
+            v-for="(item, i) in navigation"
+            :key="i"
+            v-bind="linkProps(item.href)"
+            :class="linkClass(item.href)"
+        >
             {{ item.menu }}
             <v-chip v-if="item.badge" rounded="md" class="font-weight-semibold h-23" color="primary" size="small" label> New </v-chip>
-        </RouterLink>
+        </component>
     </nav>
 
     <nav v-else-if="dropdown" class="front-nav-dropdown" aria-label="Menu principal">
         <ul class="front-nav-dropdown__links">
             <li v-for="(item, i) in navigation" :key="i">
-                <RouterLink
-                    :to="item.href"
+                <component
+                    :is="external ? 'a' : RouterLink"
+                    v-bind="linkProps(item.href)"
                     :aria-current="isActive(item.href) ? 'page' : undefined"
                     :class="{ 'is-active': isActive(item.href) }"
                     @click="emit('navigate')"
                 >
                     {{ item.menu }}
-                </RouterLink>
+                </component>
             </li>
         </ul>
 
         <div class="front-nav-dropdown__actions">
-            <v-btn class="text-none" size="x-large" variant="outlined" block to="/demo" @click="emit('navigate')">Démo</v-btn>
-            <v-btn class="text-none" size="x-large" flat block to="/auth?tab=register" @click="emit('navigate')">Créer un compte</v-btn>
-            <v-btn class="text-none" size="x-large" variant="outlined" block to="/auth?tab=login" @click="emit('navigate')">
+            <v-btn class="text-none" size="x-large" variant="outlined" block :href="$crossHref('demo', '/demo')" @click="emit('navigate')"
+                >Démo</v-btn
+            >
+            <v-btn class="text-none" size="x-large" flat block :href="$crossHref('app', '/auth?tab=register')" @click="emit('navigate')"
+                >Créer un compte</v-btn
+            >
+            <v-btn
+                class="text-none"
+                size="x-large"
+                variant="outlined"
+                block
+                :href="$crossHref('app', '/auth?tab=login')"
+                @click="emit('navigate')"
+            >
                 Connexion
             </v-btn>
         </div>
@@ -74,12 +97,22 @@ const linkClass = (href: string) => [
             <Logo home-to="/" />
         </div>
 
-        <RouterLink v-for="(item, i) in navigation" :key="i" :to="item.href" :class="linkClass(item.href)">
+        <component
+            :is="external ? 'a' : RouterLink"
+            v-for="(item, i) in navigation"
+            :key="i"
+            v-bind="linkProps(item.href)"
+            :class="linkClass(item.href)"
+        >
             {{ item.menu }}
             <v-chip v-if="item.badge" rounded="md" class="font-weight-semibold h-23" color="primary" size="small" label> New </v-chip>
-        </RouterLink>
+        </component>
 
-        <v-btn class="custom-hover-primary bg-primary d-flex w-100 text-white h-43 px-5 transform-none mt-2" flat to="/auth?tab=login">
+        <v-btn
+            class="custom-hover-primary bg-primary d-flex w-100 text-white h-43 px-5 transform-none mt-2"
+            flat
+            :href="$crossHref('app', '/auth?tab=login')"
+        >
             <span class="text-white">Connexion</span>
         </v-btn>
     </div>

@@ -4,9 +4,10 @@ import AuthRoutes from './AuthRoutes';
 import DemoRoutes from './DemoRoutes';
 import FrontPagesRoutes from './FrontPagesRoutes';
 import { authGuard } from '@/app/guards/auth-guard';
-import { isDemoSession } from '@/features/demo/session';
+import { appToDemoPath, isDemoSession } from '@/features/demo/session';
 import { isTauri } from '@/utils/helpers/platform-helpers';
 import { SECURITY_PATHS } from '@/features/user-settings/settings-paths';
+import { APP_TARGET, crossHref } from '@/utils/helpers/app-target';
 
 const tauriHomeRedirect: RouteRecordRaw = {
     path: '/',
@@ -22,6 +23,32 @@ const securityAliasRoutes: RouteRecordRaw[] = [
     { path: SECURITY_PATHS.transparencyAlias, redirect: SECURITY_PATHS.transparency }
 ];
 
+const notFoundRoute: RouteRecordRaw = {
+    path: '/:pathMatch(.*)*',
+    component: () => import('@/views/authentication/Error.vue')
+};
+
+/** Routes embarquées selon la cible du build (`VITE_TARGET`) : les autres ne sont pas dans le bundle. */
+function routesForTarget(): RouteRecordRaw[] {
+    switch (APP_TARGET) {
+        case 'landing':
+            return [FrontPagesRoutes, notFoundRoute];
+        case 'demo':
+            return [DemoRoutes, notFoundRoute];
+        case 'app':
+            return [tauriHomeRedirect, AppRoutes, AuthRoutes, ...securityAliasRoutes, notFoundRoute];
+        default:
+            return [
+                ...(isTauri() ? [tauriHomeRedirect] : [FrontPagesRoutes]),
+                AppRoutes,
+                DemoRoutes,
+                AuthRoutes,
+                ...securityAliasRoutes,
+                notFoundRoute
+            ];
+    }
+}
+
 export const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
     scrollBehavior(to, from, savedPosition) {
@@ -31,28 +58,29 @@ export const router = createRouter({
         if (from.path.startsWith('/auth/') && to.path.startsWith('/auth/')) return false;
         return { top: 0, left: 0 };
     },
-    routes: [
-        ...(isTauri() ? [tauriHomeRedirect] : [FrontPagesRoutes]),
-        AppRoutes,
-        DemoRoutes,
-        AuthRoutes,
-        ...securityAliasRoutes,
-        {
-            path: '/:pathMatch(.*)*',
-            component: () => import('@/views/authentication/Error.vue')
-        }
-    ]
+    routes: routesForTarget()
 });
 
 router.beforeEach((to) => {
     if (!isDemoSession()) return;
     if (to.path !== '/app' && !to.path.startsWith('/app/')) return;
     return {
-        path: `/demo${to.path.slice('/app'.length)}`,
+        path: appToDemoPath(to.path),
         query: to.query,
         hash: to.hash,
         replace: true
     };
 });
 
-router.beforeEach(authGuard);
+if (APP_TARGET === 'landing') {
+    // Anciennes adresses (e-mails, favoris) : /auth, /app, /demo, /security vivent sur d'autres domaines.
+    router.beforeEach((to) => {
+        const first = to.path.split('/')[1];
+        const target = first === 'demo' ? 'demo' : first === 'auth' || first === 'app' || first === 'security' ? 'app' : null;
+        if (!target) return;
+        window.location.replace(crossHref(target, to.fullPath));
+        return false;
+    });
+} else {
+    router.beforeEach(authGuard);
+}

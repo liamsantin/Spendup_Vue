@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/features/auth';
 import { IMPORTS_BASE } from '@/features/imports/paths';
-import { asAppPath } from '@/features/demo/session';
+import { asAppPath, DEMO_HOME } from '@/features/demo/session';
+import { crossHref } from '@/utils/helpers/app-target';
 
 const { t } = useI18n();
 const auth = useAuthStore();
 const route = useRoute();
-const router = useRouter();
 
 /** Pages d'import : le bandeau rappelle que le relevé ne quitte pas le navigateur. */
 const onImports = computed(() => {
@@ -18,12 +18,12 @@ const onImports = computed(() => {
 });
 
 function reset() {
-    window.location.assign('/demo');
+    window.location.assign(DEMO_HOME);
 }
 
-async function exit() {
+function exit() {
     auth.exitDemo();
-    await router.push('/');
+    window.location.assign(crossHref('landing', '/'));
 }
 </script>
 
@@ -38,7 +38,7 @@ async function exit() {
         </p>
         <div class="demo-banner__actions">
             <button type="button" class="su-link" @click="reset">{{ t('demo.reset') }}</button>
-            <router-link class="su-link" to="/auth?tab=register">{{ t('demo.signup') }}</router-link>
+            <a class="su-link" :href="crossHref('app', '/auth?tab=register')">{{ t('demo.signup') }}</a>
             <button type="button" class="su-link" @click="exit">{{ t('demo.exit') }}</button>
         </div>
     </section>

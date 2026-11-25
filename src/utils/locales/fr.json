@@ -204,6 +204,7 @@
             "title": "Profil utilisateur",
             "fallbackName": "Utilisateur",
             "logout": "Se déconnecter",
+            "backHome": "Revenir à l'accueil",
             "menu": {
                 "preferences": {
                     "title": "Mon compte",

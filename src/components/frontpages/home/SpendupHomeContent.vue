@@ -186,11 +186,13 @@ const demoPoints = [
                             jamais accéder à vos comptes bancaires.
                         </p>
                         <div class="s-actions su-hero-in" style="--su-in-delay: 180ms">
-                            <v-btn color="primary" size="x-large" flat class="text-none" to="/auth?tab=register">
+                            <v-btn color="primary" size="x-large" flat class="text-none" :href="$crossHref('app', '/auth?tab=register')">
                                 Commencer gratuitement
                                 <ArrowRightIcon size="18" class="ms-3" />
                             </v-btn>
-                            <v-btn variant="outlined" size="x-large" flat class="text-none" to="/demo">Essayer la démo</v-btn>
+                            <v-btn variant="outlined" size="x-large" flat class="text-none" :href="$crossHref('demo', '/demo')"
+                                >Essayer la démo</v-btn
+                            >
                             <RouterLink to="/fonctionnalites" class="home-link">Voir les fonctionnalités</RouterLink>
                         </div>
                         <p class="home-hero__note su-hero-in" style="--su-in-delay: 240ms">
@@ -377,7 +379,7 @@ const demoPoints = [
                     <div class="tax-note__copy">
                         <h3>Un brouillon de travail, pas un logiciel officiel.</h3>
                         <div class="s-actions">
-                            <v-btn color="white" size="large" flat class="text-none" to="/demo/planning/impots">
+                            <v-btn color="white" size="large" flat class="text-none" :href="$crossHref('demo', '/demo/planning/impots')">
                                 Essayer dans la démo
                                 <ArrowRightIcon size="18" class="ms-3" />
                             </v-btn>
@@ -426,7 +428,7 @@ const demoPoints = [
                                 <BrandWindowsIcon size="18" class="me-2" />
                                 Télécharger pour Windows
                             </v-btn>
-                            <RouterLink to="/app" class="home-link">Ouvrir l’application web</RouterLink>
+                            <a :href="$crossHref('app', '/app')" class="home-link">Ouvrir l’application web</a>
                         </div>
                     </div>
                     <dl class="anywhere__platforms">
@@ -451,7 +453,7 @@ const demoPoints = [
                             importer votre propre relevé. Rien n’est enregistré sur nos serveurs.
                         </p>
                         <div class="s-actions">
-                            <v-btn color="primary" size="x-large" flat class="text-none" to="/demo">
+                            <v-btn color="primary" size="x-large" flat class="text-none" :href="$crossHref('demo', '/demo')">
                                 Essayer la démo
                                 <ArrowRightIcon size="18" class="ms-3" />
                             </v-btn>
@@ -481,7 +483,7 @@ const demoPoints = [
                             }}
                         </p>
                         <div class="s-actions">
-                            <v-btn color="white" size="x-large" flat class="text-none" to="/auth?tab=register">
+                            <v-btn color="white" size="x-large" flat class="text-none" :href="$crossHref('app', '/auth?tab=register')">
                                 Commencer gratuitement
                                 <ArrowRightIcon size="18" class="ms-3" />
                             </v-btn>

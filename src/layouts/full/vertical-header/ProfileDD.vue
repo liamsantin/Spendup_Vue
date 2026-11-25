@@ -8,6 +8,7 @@ import {
     CheckIcon,
     CopyIcon,
     HashIcon,
+    HomeIcon,
     LogoutIcon,
     MailIcon,
     PhoneIcon,
@@ -18,6 +19,8 @@ import {
 import { useI18n } from 'vue-i18n';
 import { SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
 import { useAuthStore, useProfileAvatarUrl } from '@/features/auth';
+import { isDemoSession } from '@/features/demo/session';
+import { APP_TARGET, crossHref } from '@/utils/helpers/app-target';
 import { useHeaderMenuOverlay } from './useHeaderMenuOverlay';
 
 const { t } = useI18n();
@@ -91,9 +94,13 @@ onUnmounted(() => {
     if (copyTimer) clearTimeout(copyTimer);
 });
 
+const demo = isDemoSession();
+
 async function onLogout() {
     closeMenu();
     await authStore.logout();
+    // Démo : hébergée sur son propre sous-domaine, « quitter » = retourner sur le site public.
+    if (demo && APP_TARGET !== 'all') window.location.assign(crossHref('landing', '/'));
 }
 </script>
 
@@ -136,8 +143,11 @@ async function onLogout() {
             </router-link>
 
             <button type="button" class="su-menu-item profile-dd__logout" @click="onLogout">
-                <span class="su-menu-item__icon"><LogoutIcon :size="18" stroke-width="1.6" /></span>
-                <span class="su-menu-item__title">{{ t('header.profile.logout') }}</span>
+                <span class="su-menu-item__icon">
+                    <HomeIcon v-if="demo" :size="18" stroke-width="1.6" />
+                    <LogoutIcon v-else :size="18" stroke-width="1.6" />
+                </span>
+                <span class="su-menu-item__title">{{ demo ? t('header.profile.backHome') : t('header.profile.logout') }}</span>
             </button>
         </v-sheet>
     </v-menu>

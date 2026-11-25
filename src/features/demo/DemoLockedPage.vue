@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { DEMO_HOME } from '@/features/demo/session';
+import { crossHref } from '@/utils/helpers/app-target';
 
 const { t } = useI18n();
 const router = useRouter();
 
 function back() {
-    void router.push('/demo');
+    void router.push(DEMO_HOME);
 }
 </script>
 
@@ -15,7 +17,7 @@ function back() {
         <h1>{{ t('demo.lockedTitle') }}</h1>
         <p>{{ t('demo.lockedText') }}</p>
         <div class="demo-locked__actions">
-            <router-link class="su-btn su-btn--ink" to="/auth?tab=register">{{ t('demo.signup') }}</router-link>
+            <a class="su-btn su-btn--ink" :href="crossHref('app', '/auth?tab=register')">{{ t('demo.signup') }}</a>
             <button type="button" class="su-btn" @click="back">{{ t('demo.back') }}</button>
         </div>
     </section>

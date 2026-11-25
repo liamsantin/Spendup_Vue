@@ -204,6 +204,7 @@
             "title": "User profile",
             "fallbackName": "User",
             "logout": "Sign out",
+            "backHome": "Back to home",
             "menu": {
                 "preferences": {
                     "title": "My account",

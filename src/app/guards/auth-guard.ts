@@ -24,7 +24,8 @@ import { useNetWorthStore } from '@/features/net-worth/stores/net-worth-store';
 import { useNotificationsStore } from '@/features/notifications';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { isDevAppEnv } from '@/utils/helpers/env-helpers';
-import { isDemoSession } from '@/features/demo/session';
+import { isDemoPath, isDemoSession } from '@/features/demo/session';
+import { APP_TARGET } from '@/utils/helpers/app-target';
 
 const MAINTENANCE_ROUTE = '/auth/maintenance';
 
@@ -46,8 +47,8 @@ export const authGuard: NavigationGuard = async (to, _from, next) => {
         return next();
     }
 
-    if ((to.path === '/demo' || to.path.startsWith('/demo/')) && !isDemoSession()) {
-        if (auth.isAuthenticated) {
+    if (isDemoPath(to.path) && !isDemoSession()) {
+        if (auth.isAuthenticated && APP_TARGET !== 'demo') {
             return next({ path: `/app${to.path.slice('/demo'.length)}`, query: to.query, hash: to.hash, replace: true });
         }
         auth.enterDemo();

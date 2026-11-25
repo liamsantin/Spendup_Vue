@@ -5,6 +5,10 @@
     "scripts": {
         "dev": "vite",
         "build": "vue-tsc --noEmit && vite build",
+        "build:landing": "vite build --mode landing",
+        "build:demo": "vite build --mode demo",
+        "build:app": "vite build --mode app",
+        "build:web": "vue-tsc --noEmit && npm run build:landing && npm run build:demo && npm run build:app",
         "preview": "vite preview --port 5050",
         "typecheck": "vue-tsc --noEmit",
         "test": "vitest run",
