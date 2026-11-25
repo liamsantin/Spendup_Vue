@@ -194,6 +194,8 @@ export type CalendarSourceSetting = {
     isCustom: boolean;
     includeInFeed: boolean;
     shareWithFamily: boolean;
+    /** Minutes avant 08:00 le jour de l'échéance ; null = aucun rappel. */
+    reminderMinutes?: number | null;
 };
 
 /** `profileChosen` : faux tant que l'utilisateur n'a jamais choisi de profil (absent en mode démo). */
@@ -204,6 +206,8 @@ export type UpdateCalendarSourcePayload = {
     displayMode?: CalendarDisplayMode;
     minAmount?: number;
     clearMinAmount?: boolean;
+    reminderMinutes?: number;
+    clearReminder?: boolean;
 };
 
 /** Élément d'une source masqué par l'utilisateur (`GET /api/calendar/exclusions`). */

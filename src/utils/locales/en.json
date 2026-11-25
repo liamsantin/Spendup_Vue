@@ -4504,6 +4504,7 @@
             "profiles": { "minimal": "Minimal", "equilibre": "Balanced", "complet": "Complete" },
             "displayMode": "Display",
             "displayModes": { "detailed": "Detailed", "dailyTotal": "Daily total", "markerOnly": "Marker only" },
+            "reminderSource": { "label": "Reminder", "none": "No reminder", "days": "Same day | 1 day before | {n} days before" },
             "minAmount": "Minimum amount",
             "customized": "Customized",
             "sourceSaveError": "Could not save this setting.",

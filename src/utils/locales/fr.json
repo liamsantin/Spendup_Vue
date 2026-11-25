@@ -4504,6 +4504,7 @@
             "profiles": { "minimal": "Minimal", "equilibre": "Équilibré", "complet": "Complet" },
             "displayMode": "Affichage",
             "displayModes": { "detailed": "Détaillé", "dailyTotal": "Total par jour", "markerOnly": "Marqueur seul" },
+            "reminderSource": { "label": "Rappel", "none": "Aucun rappel", "days": "Le jour même | La veille | {n} jours avant" },
             "minAmount": "Montant minimum",
             "customized": "Personnalisé",
             "sourceSaveError": "Impossible d’enregistrer ce réglage.",

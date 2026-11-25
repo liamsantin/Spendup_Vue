@@ -31,6 +31,26 @@ const modeItems = computed(() =>
     CALENDAR_DISPLAY_MODES.map((value) => ({ title: t(`calendarPage.settings.displayModes.${value}`), value }))
 );
 
+/** Délais de rappel proposés, en jours avant l'échéance ('' = aucun). */
+const REMINDER_DAYS = [0, 1, 3, 7, 14];
+const reminderItems = computed(() => [
+    { title: t('calendarPage.settings.reminderSource.none'), value: '' },
+    ...REMINDER_DAYS.map((days) => ({ title: t('calendarPage.settings.reminderSource.days', { n: days }, days), value: String(days) }))
+]);
+
+/** Les totaux de transactions n'ont pas d'échéance à rappeler. */
+function hasReminder(source: CalendarSourceSetting): boolean {
+    return source.key !== 'transactions';
+}
+
+function reminderValue(source: CalendarSourceSetting): string {
+    return source.reminderMinutes == null ? '' : String(Math.round(source.reminderMinutes / 1440));
+}
+
+function onReminder(source: CalendarSourceSetting, raw: string) {
+    void patch(source, raw === '' ? { clearReminder: true } : { reminderMinutes: Number(raw) * 1440 });
+}
+
 function sourceLabel(source: CalendarSourceSetting): string {
     const key = `calendarPage.sources.${source.key}`;
     return t(key) === key ? source.label : t(key);
@@ -162,6 +182,22 @@ onMounted(async () => {
                             hide-details
                             :disabled="busy"
                             @change="onMinAmount(source, ($event.target as HTMLInputElement).value)"
+                        />
+                    </div>
+                    <div v-if="hasReminder(source)" class="su-field">
+                        <label class="su-field__label" :for="`cal-source-reminder-${source.key}`">{{
+                            t('calendarPage.settings.reminderSource.label')
+                        }}</label>
+                        <AppSelect
+                            :id="`cal-source-reminder-${source.key}`"
+                            :model-value="reminderValue(source)"
+                            :items="reminderItems"
+                            item-title="title"
+                            item-value="value"
+                            :label="t('calendarPage.settings.reminderSource.label')"
+                            :disabled="busy"
+                            hide-details
+                            @update:model-value="onReminder(source, String($event ?? ''))"
                         />
                     </div>
                 </div>
