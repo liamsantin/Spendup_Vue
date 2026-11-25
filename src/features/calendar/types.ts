@@ -7,6 +7,8 @@ export const CALENDAR_SOURCE_KEYS = [
     'personalLoan',
     'liability',
     'taxInstallment',
+    'realEstate',
+    'budget',
     'transactions'
 ] as const;
 
@@ -47,6 +49,8 @@ export type CalendarOccurrence = {
     isModified: boolean;
     /** Membre de la famille qui partage la source ; null pour ses propres éléments. */
     sharedBy?: string | null;
+    /** Présent sur l'occurrence d'un événement ancré ouvert depuis une source : sert à libérer l'ancrage resté vide. */
+    anchoredFrom?: { sourceKey: string; entityPublicId: string; date: string } | null;
 };
 
 export type CalendarOccurrencesResult = {
@@ -87,6 +91,8 @@ export type CalendarPreferences = {
     discreetMode: boolean;
     /** Affiche le solde projeté sous chaque jour du mois. */
     showProjectedBalance?: boolean;
+    /** Compte (publicId) sur lequel porte le solde projeté ; null : tous les comptes. */
+    referenceAccountId?: string | null;
 };
 
 /** Modification partielle. Chaîne vide pour `defaultCalendarId` ou `secondTimezone` : effacer. */
@@ -107,6 +113,8 @@ export type UpdateCalendarPreferencesPayload = {
     secondTimezone?: string;
     discreetMode?: boolean;
     showProjectedBalance?: boolean;
+    /** Chaîne vide : tous les comptes. */
+    referenceAccountId?: string;
 };
 
 /** Solde projeté à la fin d'un jour (`GET /api/calendar/forecast`). */

@@ -10,6 +10,7 @@ import { useI18n } from 'vue-i18n';
 import CalendarQuickCreate from '@/features/calendar/components/week/CalendarQuickCreate.vue';
 import { isoWeek, parseYmd, ymdOf } from '@/features/calendar/dates';
 import {
+    formatOccurrenceAmount,
     isCanceled,
     isEditableOccurrence,
     paymentStatus,
@@ -59,6 +60,9 @@ const props = defineProps<{
     defaultDuration?: number;
     secondTimezone?: string | null;
     showWeekNumbers?: boolean;
+    /** Solde projeté par jour (réglage « Solde projeté »). */
+    forecast?: Map<string, { balance: number; atRisk: boolean }>;
+    currency?: string | null;
     /** Incrémenté pour annuler un glisser qui n'a pas été enregistré. */
     release?: number;
     /** Vrai pendant l'enregistrement ou le choix de portée : un second glisser n'est pas pris. */
@@ -421,6 +425,13 @@ onBeforeUnmount(() => {
                         {{ column.day }}
                         <span v-if="column.ymd === today" class="cal-week__today-mark" aria-hidden="true" />
                     </span>
+                    <span
+                        v-if="forecast?.get(column.ymd)"
+                        class="cal-week__balance"
+                        :class="{ 'cal-week__balance--risk': forecast.get(column.ymd)!.atRisk }"
+                        :title="t('calendarPage.projectedBalance')"
+                        >{{ formatOccurrenceAmount(forecast.get(column.ymd)!.balance, currency ?? '', false) }}</span
+                    >
                 </component>
             </div>
 
@@ -588,6 +599,19 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+.cal-week__balance {
+    display: block;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    opacity: 0.7;
+}
+
+.cal-week__balance--risk {
+    color: var(--danger, #9b2c2c);
+    opacity: 1;
+    font-weight: 600;
+}
+
 /* ── grille horaire : même filets fins que la vue Mois, heures en gris à gauche ── */
 .cal-week {
     display: flex;

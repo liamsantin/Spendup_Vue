@@ -9,7 +9,9 @@ const SOURCE_TONES: Record<string, CalendarTone> = {
     sharedDebt: 'due',
     personalLoan: 'due',
     liability: 'due',
-    taxInstallment: 'due'
+    taxInstallment: 'due',
+    realEstate: 'due',
+    budget: 'goal'
 };
 
 export function occurrenceTone(occurrence: CalendarOccurrence): CalendarTone {
@@ -37,6 +39,8 @@ const SOURCE_ROUTES: Record<string, (entityPublicId: string) => string> = {
     personalLoan: (id) => `/app/patrimoine/dettes/prets/${id}`,
     liability: (id) => `/app/patrimoine/dettes/${id}`,
     taxInstallment: (id) => `/app/planning/impots/${id}`,
+    realEstate: (id) => `/app/patrimoine/immobilier/${id}`,
+    budget: (id) => `/app/planning/budgets/${id}`,
     transactions: () => '/app/finances/transactions'
 };
 

@@ -7,6 +7,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
+import { accountsApi } from '@/features/accounts/api';
 import { calendarApi } from '@/features/calendar/api';
 import { useCalendarPreferences } from '@/features/calendar/composables/useCalendarPreferences';
 import { CALENDAR_VIEWS, type CalendarPreferences, type UpdateCalendarPreferencesPayload } from '@/features/calendar/types';
@@ -34,6 +35,8 @@ type Draft = {
     secondTimezone: string;
     discreetMode: boolean;
     showProjectedBalance: boolean;
+    /** Chaîne vide : tous les comptes. */
+    referenceAccountId: string;
 };
 
 const emit = defineEmits<{ dirty: [value: boolean] }>();
@@ -44,6 +47,7 @@ const { load, save } = useCalendarPreferences();
 const draft = ref<Draft | null>(null);
 const baseline = ref('');
 const calendars = ref<{ title: string; value: string }[]>([]);
+const accounts = ref<{ title: string; value: string }[]>([]);
 const loading = ref(true);
 const saving = ref(false);
 const error = ref<string | null>(null);
@@ -87,6 +91,7 @@ const secondTimezoneItems = computed(() => [
     { title: t('calendarPage.settings.noSecondTimezone'), value: NONE },
     ...timezoneItems.value.map((value) => ({ title: value, value }))
 ]);
+const accountItems = computed(() => [{ title: t('calendarPage.settings.allAccounts'), value: NONE }, ...accounts.value]);
 const calendarItems = computed(() => [{ title: t('calendarPage.settings.firstCalendar'), value: NONE }, ...calendars.value]);
 
 function reminderLabel(minutes: number): string {
@@ -112,7 +117,8 @@ function toDraft(prefs: CalendarPreferences): Draft {
         timezone: prefs.timezone,
         secondTimezone: prefs.secondTimezone ?? NONE,
         discreetMode: prefs.discreetMode ?? false,
-        showProjectedBalance: prefs.showProjectedBalance ?? false
+        showProjectedBalance: prefs.showProjectedBalance ?? false,
+        referenceAccountId: prefs.referenceAccountId ?? NONE
     };
 }
 
@@ -124,8 +130,9 @@ async function reload() {
     loading.value = true;
     error.value = null;
     try {
-        const [prefs, list] = await Promise.all([load(), calendarApi.calendars()]);
+        const [prefs, list, accountList] = await Promise.all([load(), calendarApi.calendars(), accountsApi.list()]);
         calendars.value = list.items.map((item) => ({ title: item.name, value: item.publicId }));
+        accounts.value = accountList.items.filter((a) => a.isActive !== false).map((a) => ({ title: a.name, value: a.publicId }));
         const next = toDraft(prefs);
         draft.value = next;
         baseline.value = snapshot(next);
@@ -153,7 +160,8 @@ function payloadOf(value: Draft): UpdateCalendarPreferencesPayload {
         timezone: value.timezone,
         secondTimezone: value.secondTimezone,
         discreetMode: value.discreetMode,
-        showProjectedBalance: value.showProjectedBalance
+        showProjectedBalance: value.showProjectedBalance,
+        referenceAccountId: value.referenceAccountId
     };
 }
 
@@ -368,6 +376,20 @@ defineExpose({
                         </div>
                         <AppSwitch id="cal-pref-projected" v-model="draft.showProjectedBalance" />
                     </div>
+                </div>
+                <div class="su-field">
+                    <label class="su-field__label" for="cal-pref-reference">{{ t('calendarPage.settings.referenceAccount') }}</label>
+                    <AppSelect
+                        id="cal-pref-reference"
+                        v-model="draft.referenceAccountId"
+                        :items="accountItems"
+                        item-title="title"
+                        item-value="value"
+                        :label="t('calendarPage.settings.referenceAccount')"
+                        :hint="t('calendarPage.settings.referenceAccountHint')"
+                        persistent-hint
+                        :disabled="!draft.showProjectedBalance"
+                    />
                 </div>
             </div>
         </section>

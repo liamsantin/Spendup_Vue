@@ -326,6 +326,13 @@
             "monthLabel": "Current budget · {month}",
             "summary": "{spent} spent of {limit} · {remaining} left"
         },
+        "calendar": {
+            "title": "Upcoming events",
+            "empty": "Nothing scheduled in the next {days} days.",
+            "allDay": "All day",
+            "failed": "The calendar could not be loaded.",
+            "risk": "Projected balance negative from {date}"
+        },
         "savingsGoals": {
             "title": "Savings goals",
             "subtitle": "Opening amount plus linked transactions.",
@@ -4465,6 +4472,8 @@
             "personalLoan": "Personal loan",
             "liability": "Debt",
             "taxInstallment": "Tax instalment",
+            "realEstate": "Real estate",
+            "budget": "Budgets",
             "transactions": "Transactions"
         },
         "filters": "Filters",
@@ -4525,6 +4534,9 @@
             "financeHint": "Amounts from the financial sources in the calendar.",
             "discreetMode": "Discreet mode",
             "projectedBalance": "Projected balance",
+            "referenceAccount": "Reference account",
+            "referenceAccountHint": "The projected balance only counts this account.",
+            "allAccounts": "All accounts",
             "projectedBalanceHint": "Shows the estimated balance of your accounts under each day of the month (upcoming expenses, income and taxes). A negative balance is flagged.",
             "discreetModeHint": "Hides every amount (handy when sharing your screen). The server sends none.",
             "creation": "Creation",

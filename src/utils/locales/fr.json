@@ -326,6 +326,13 @@
             "monthLabel": "Budget en cours · {month}",
             "summary": "{spent} dépensé sur {limit} · reste {remaining}"
         },
+        "calendar": {
+            "title": "Prochains événements",
+            "empty": "Rien d’agendé dans les {days} prochains jours.",
+            "allDay": "Journée entière",
+            "failed": "Le calendrier n’a pas pu être chargé.",
+            "risk": "Solde projeté négatif dès le {date}"
+        },
         "savingsGoals": {
             "title": "Objectifs d’épargne",
             "subtitle": "Versement initial et transactions liées.",
@@ -4465,6 +4472,8 @@
             "personalLoan": "Prêt entre proches",
             "liability": "Dette",
             "taxInstallment": "Acompte d’impôt",
+            "realEstate": "Immobilier",
+            "budget": "Budgets",
             "transactions": "Transactions"
         },
         "filters": "Filtres",
@@ -4525,6 +4534,9 @@
             "financeHint": "Les montants des sources financières dans le calendrier.",
             "discreetMode": "Mode discret",
             "projectedBalance": "Solde projeté",
+            "referenceAccount": "Compte de référence",
+            "referenceAccountHint": "Le solde projeté ne tient compte que de ce compte.",
+            "allAccounts": "Tous les comptes",
             "projectedBalanceHint": "Affiche, sous chaque jour du mois, le solde estimé de vos comptes (charges, revenus et impôts à venir). Un solde négatif est signalé.",
             "discreetModeHint": "Masque tous les montants (utile en présentant votre écran). Rien n’est envoyé par le serveur.",
             "creation": "Création",

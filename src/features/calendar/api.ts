@@ -61,6 +61,14 @@ export const calendarApi = {
         return fetchWrapper.post('/api/calendar/exclusions', { sourceKey, entityPublicId }) as Promise<CalendarSourceExclusion>;
     },
 
+    /** Supprime l'événement ancré d'une journée s'il est resté vide (aucune note, aucun invité, aucun rappel). */
+    releaseAnchor(sourceKey: string, entityPublicId: string, date: string) {
+        return fetchWrapper.post(`/api/calendar/sources/${encodeURIComponent(sourceKey)}/anchor/release`, {
+            entityPublicId,
+            date
+        }) as Promise<void>;
+    },
+
     /** Événement d'une journée ancré sur une occurrence de source (créé au besoin) : note, rappel, invités. */
     anchor(sourceKey: string, entityPublicId: string, date: string) {
         return fetchWrapper.post(`/api/calendar/sources/${encodeURIComponent(sourceKey)}/anchor`, {

@@ -113,9 +113,9 @@ const from = computed(() => range.value.from);
 const to = computed(() => range.value.to);
 const { items: allItems, loading, error, reload } = useCalendarOccurrences(from, to);
 
-// ── solde projeté (vue Mois, réglage « Solde projeté ») ──
+// ── solde projeté (vues Mois, Semaine et Jour, réglage « Solde projeté ») ──
 const forecast = ref<CalendarForecast | null>(null);
-const showForecast = computed(() => view.value === 'month' && !!preferences.value?.showProjectedBalance);
+const showForecast = computed(() => !!preferences.value?.showProjectedBalance && view.value !== 'agenda');
 const forecastByDay = computed(() =>
     showForecast.value && forecast.value ? new Map(forecast.value.days.map((d) => [d.date, d])) : undefined
 );
@@ -389,6 +389,18 @@ function openEvent(occurrence: CalendarOccurrence) {
     formOpen.value = true;
 }
 
+// Un ancrage ouvert puis refermé sans rien saisir est supprimé côté serveur (jamais s'il porte une note, un invité ou un rappel).
+watch(formOpen, async (open) => {
+    const anchor = editing.value?.anchoredFrom;
+    if (open || !anchor) return;
+    try {
+        await calendarApi.releaseAnchor(anchor.sourceKey, anchor.entityPublicId, anchor.date);
+    } catch {
+        // l'événement reste en place : sans conséquence
+    }
+    reload();
+});
+
 // ── glisser-déposer : le calcul d'horaire est dans la grille, l'enregistrement ici ──
 type Reschedule = { occurrence: CalendarOccurrence } & PlacedSpan;
 
@@ -620,6 +632,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
                 :default-duration="defaultDuration"
                 :second-timezone="secondTimezone"
                 :show-week-numbers="showWeekNumbers"
+                :forecast="forecastByDay"
+                :currency="forecast?.currency ?? null"
                 :release="dragRelease"
                 :locked="dragLocked"
                 @open="openEvent"

@@ -138,6 +138,8 @@
                     </ul>
                 </section>
 
+                <DashboardCalendarCard :hide-amounts="hideAmounts" />
+
                 <section class="su-section">
                     <header class="su-section__head">
                         <h2>{{ t('dashboard.accounts.title') }}</h2>
@@ -178,6 +180,7 @@ import { useI18n } from 'vue-i18n';
 import { formatAccountBalance, isBalanceHidden, safeAccountColor } from '@/features/accounts/format';
 import type { Account, Currency } from '@/features/accounts/types';
 import { DashboardBudgetsCard } from '@/features/budgets';
+import { DashboardCalendarCard } from '@/features/calendar';
 import { BUDGETS_PATHS } from '@/features/budgets/paths';
 import { DashboardSavingsGoalsCard } from '@/features/savings-goals';
 import { SAVINGS_GOALS_PATHS } from '@/features/savings-goals/paths';

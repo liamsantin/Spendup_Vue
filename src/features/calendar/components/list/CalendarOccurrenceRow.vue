@@ -45,7 +45,11 @@ async function addNote() {
     if (anchoring.value || !o.sourceKey || !o.entityPublicId || !o.startDate) return;
     anchoring.value = true;
     try {
-        emit('open', occurrenceFromEvent(await calendarApi.anchor(o.sourceKey, o.entityPublicId, o.startDate)));
+        const event = await calendarApi.anchor(o.sourceKey, o.entityPublicId, o.startDate);
+        emit('open', {
+            ...occurrenceFromEvent(event),
+            anchoredFrom: { sourceKey: o.sourceKey, entityPublicId: o.entityPublicId, date: o.startDate }
+        });
     } catch {
         // ouverture impossible : l'occurrence reste telle quelle
     } finally {

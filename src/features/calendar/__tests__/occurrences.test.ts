@@ -165,6 +165,8 @@ describe('statut de règlement et module d’origine', () => {
         expect(sourceRoute(occurrence('c', { sourceKey: 'savingsGoal', entityPublicId: 'x3' }))).toBe('/app/planning/objectifs/x3');
         expect(sourceRoute(occurrence('f', { sourceKey: 'taxInstallment', entityPublicId: 'x5' }))).toBe('/app/planning/impots/x5');
         expect(sourceRoute(occurrence('g', { sourceKey: 'transactions', entityPublicId: 'in-CHF' }))).toBe('/app/finances/transactions');
+        expect(sourceRoute(occurrence('h', { sourceKey: 'realEstate', entityPublicId: 'bien1' }))).toBe('/app/patrimoine/immobilier/bien1');
+        expect(sourceRoute(occurrence('i', { sourceKey: 'budget', entityPublicId: 'bud1' }))).toBe('/app/planning/budgets/bud1');
         expect(sourceRoute(occurrence('d', { sourceKey: 'inconnue', entityPublicId: 'x4' }))).toBeNull();
         expect(sourceRoute(occurrence('e', { sourceKey: null, entityPublicId: null }))).toBeNull();
     });
