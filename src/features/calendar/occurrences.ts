@@ -1,5 +1,6 @@
 import { formatSwissNumber } from '@/features/accounts/format';
 import { occurrenceDays } from '@/features/calendar/dates';
+import { LAMAL_COMPARISON_PATH } from '@/features/insurance/lamal';
 import type { CalendarEvent, CalendarOccurrence, CalendarTone } from '@/features/calendar/types';
 
 const SOURCE_TONES: Record<string, CalendarTone> = {
@@ -12,7 +13,8 @@ const SOURCE_TONES: Record<string, CalendarTone> = {
     taxInstallment: 'due',
     realEstate: 'due',
     budget: 'goal',
-    contract: 'due'
+    contract: 'due',
+    lamal: 'due'
 };
 
 export function occurrenceTone(occurrence: CalendarOccurrence): CalendarTone {
@@ -42,6 +44,7 @@ const SOURCE_ROUTES: Record<string, (entityPublicId: string) => string> = {
     taxInstallment: (id) => `/app/planning/impots/${id}`,
     realEstate: (id) => `/app/patrimoine/immobilier/${id}`,
     budget: (id) => `/app/planning/budgets/${id}`,
+    lamal: () => LAMAL_COMPARISON_PATH,
     transactions: () => '/app/finances/transactions'
 };
 

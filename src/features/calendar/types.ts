@@ -10,6 +10,7 @@ export const CALENDAR_SOURCE_KEYS = [
     'realEstate',
     'budget',
     'contract',
+    'lamal',
     'transactions'
 ] as const;
 
