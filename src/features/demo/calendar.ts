@@ -360,6 +360,8 @@ export function routeCalendar(method: string, path: string, query: URLSearchPara
         if (patch.displayMode) source.displayMode = patch.displayMode;
         if (patch.clearMinAmount) source.minAmount = null;
         else if (patch.minAmount != null) source.minAmount = patch.minAmount;
+        if (patch.accountIds) source.accountIds = patch.accountIds.length ? patch.accountIds : null;
+        if (patch.categoryIds) source.categoryIds = patch.categoryIds.length ? patch.categoryIds : null;
         source.isCustom = true;
         return { status: 200, body: source };
     }

@@ -4474,6 +4474,7 @@
             "taxInstallment": "Tax instalment",
             "realEstate": "Real estate",
             "budget": "Budgets",
+            "contract": "Contracts & insurance",
             "transactions": "Transactions"
         },
         "budget": {
@@ -4540,6 +4541,12 @@
             "displayMode": "Display",
             "displayModes": { "detailed": "Detailed", "dailyTotal": "Daily total", "markerOnly": "Marker only" },
             "reminderSource": { "label": "Reminder", "none": "No reminder", "days": "Same day | 1 day before | {n} days before" },
+            "sourceFilters": {
+                "accounts": "Accounts",
+                "allAccounts": "All accounts",
+                "categories": "Categories",
+                "allCategories": "All categories"
+            },
             "minAmount": "Minimum amount",
             "customized": "Customized",
             "sourceSaveError": "Could not save this setting.",

@@ -4474,6 +4474,7 @@
             "taxInstallment": "Acompte d’impôt",
             "realEstate": "Immobilier",
             "budget": "Budgets",
+            "contract": "Contrats et assurances",
             "transactions": "Transactions"
         },
         "budget": {
@@ -4540,6 +4541,12 @@
             "displayMode": "Affichage",
             "displayModes": { "detailed": "Détaillé", "dailyTotal": "Total par jour", "markerOnly": "Marqueur seul" },
             "reminderSource": { "label": "Rappel", "none": "Aucun rappel", "days": "Le jour même | La veille | {n} jours avant" },
+            "sourceFilters": {
+                "accounts": "Comptes",
+                "allAccounts": "Tous les comptes",
+                "categories": "Catégories",
+                "allCategories": "Toutes les catégories"
+            },
             "minAmount": "Montant minimum",
             "customized": "Personnalisé",
             "sourceSaveError": "Impossible d’enregistrer ce réglage.",

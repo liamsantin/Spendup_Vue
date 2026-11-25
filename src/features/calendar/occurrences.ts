@@ -11,7 +11,8 @@ const SOURCE_TONES: Record<string, CalendarTone> = {
     liability: 'due',
     taxInstallment: 'due',
     realEstate: 'due',
-    budget: 'goal'
+    budget: 'goal',
+    contract: 'due'
 };
 
 export function occurrenceTone(occurrence: CalendarOccurrence): CalendarTone {

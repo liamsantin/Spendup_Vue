@@ -9,6 +9,7 @@ export const CALENDAR_SOURCE_KEYS = [
     'taxInstallment',
     'realEstate',
     'budget',
+    'contract',
     'transactions'
 ] as const;
 
@@ -219,6 +220,10 @@ export type CalendarSourceSetting = {
     shareWithFamily: boolean;
     /** Minutes avant 08:00 le jour de l'échéance ; null = aucun rappel. */
     reminderMinutes?: number | null;
+    /** Comptes (publicId) retenus ; absent ou vide = tous. */
+    accountIds?: string[] | null;
+    /** Catégories (publicId) retenues ; absent ou vide = toutes. */
+    categoryIds?: string[] | null;
 };
 
 /** `profileChosen` : faux tant que l'utilisateur n'a jamais choisi de profil (absent en mode démo). */
@@ -231,6 +236,9 @@ export type UpdateCalendarSourcePayload = {
     clearMinAmount?: boolean;
     reminderMinutes?: number;
     clearReminder?: boolean;
+    /** Liste vide : retirer le filtre. */
+    accountIds?: string[];
+    categoryIds?: string[];
 };
 
 /** Élément d'une source masqué par l'utilisateur (`GET /api/calendar/exclusions`). */

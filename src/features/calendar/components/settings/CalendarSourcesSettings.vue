@@ -7,7 +7,11 @@ import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
+import { accountsApi } from '@/features/accounts/api';
 import { calendarApi } from '@/features/calendar/api';
+import { categoriesApi } from '@/features/categories/api';
+import { filterCategoryTreeByType } from '@/features/categories/format';
+import type { Category, CategoryType } from '@/features/categories/types';
 import {
     CALENDAR_DISPLAY_MODES,
     CALENDAR_PROFILES,
@@ -41,6 +45,39 @@ const reminderItems = computed(() => [
 /** Les totaux de transactions n'ont pas d'échéance à rappeler. */
 function hasReminder(source: CalendarSourceSetting): boolean {
     return source.key !== 'transactions';
+}
+
+/** Seules les échéances récurrentes se filtrent par compte et par catégorie. */
+const FILTERABLE_TYPES: Record<string, CategoryType> = { recurringExpense: 'depense', recurringIncome: 'revenu' };
+
+function hasFilters(source: CalendarSourceSetting): boolean {
+    return source.key in FILTERABLE_TYPES;
+}
+
+const accountItems = ref<{ title: string; value: string }[]>([]);
+const categoryItems = ref<Record<string, { title: string; value: string }[]>>({});
+
+/** Catégories d'un type, sous-catégories à plat, triées par nom. */
+function flattenCategories(roots: readonly Category[], type: CategoryType) {
+    return filterCategoryTreeByType(roots, type)
+        .flatMap((root) => [root, ...(root.children ?? [])])
+        .map((c) => ({ title: c.name, value: c.publicId }));
+}
+
+async function loadFilterChoices() {
+    try {
+        const [accountList, categoryList] = await Promise.all([accountsApi.list(), categoriesApi.list()]);
+        accountItems.value = accountList.items.filter((a) => a.isActive !== false).map((a) => ({ title: a.name, value: a.publicId }));
+        categoryItems.value = Object.fromEntries(
+            Object.entries(FILTERABLE_TYPES).map(([key, type]) => [key, flattenCategories(categoryList.items, type)])
+        );
+    } catch {
+        /* les filtres restent masqués faute de choix */
+    }
+}
+
+function onFilter(source: CalendarSourceSetting, field: 'accountIds' | 'categoryIds', value: string[]) {
+    void patch(source, { [field]: value });
 }
 
 function reminderValue(source: CalendarSourceSetting): string {
@@ -103,7 +140,7 @@ function onMinAmount(source: CalendarSourceSetting, raw: string) {
 }
 
 onMounted(async () => {
-    await reload();
+    await Promise.all([reload(), loadFilterChoices()]);
     loading.value = false;
 });
 </script>
@@ -200,6 +237,46 @@ onMounted(async () => {
                             @update:model-value="onReminder(source, String($event ?? ''))"
                         />
                     </div>
+                    <template v-if="hasFilters(source)">
+                        <div v-if="accountItems.length" class="su-field">
+                            <label class="su-field__label" :for="`cal-source-accounts-${source.key}`">{{
+                                t('calendarPage.settings.sourceFilters.accounts')
+                            }}</label>
+                            <v-select
+                                :id="`cal-source-accounts-${source.key}`"
+                                :model-value="source.accountIds ?? []"
+                                :items="accountItems"
+                                multiple
+                                chips
+                                closable-chips
+                                :placeholder="t('calendarPage.settings.sourceFilters.allAccounts')"
+                                color="primary"
+                                variant="outlined"
+                                hide-details
+                                :disabled="busy"
+                                @update:model-value="onFilter(source, 'accountIds', $event as string[])"
+                            />
+                        </div>
+                        <div v-if="categoryItems[source.key]?.length" class="su-field">
+                            <label class="su-field__label" :for="`cal-source-categories-${source.key}`">{{
+                                t('calendarPage.settings.sourceFilters.categories')
+                            }}</label>
+                            <v-select
+                                :id="`cal-source-categories-${source.key}`"
+                                :model-value="source.categoryIds ?? []"
+                                :items="categoryItems[source.key]"
+                                multiple
+                                chips
+                                closable-chips
+                                :placeholder="t('calendarPage.settings.sourceFilters.allCategories')"
+                                color="primary"
+                                variant="outlined"
+                                hide-details
+                                :disabled="busy"
+                                @update:model-value="onFilter(source, 'categoryIds', $event as string[])"
+                            />
+                        </div>
+                    </template>
                 </div>
             </article>
         </div>

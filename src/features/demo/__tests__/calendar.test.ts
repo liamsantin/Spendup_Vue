@@ -183,6 +183,11 @@ describe('routeCalendar : sources', () => {
         const patched = routeCalendar('PATCH', '/api/calendar/sources/savingsGoal', query, { isEnabled: false })?.body;
         expect(patched).toMatchObject({ isEnabled: false, isCustom: true });
 
+        const filtered = routeCalendar('PATCH', '/api/calendar/sources/recurringExpense', query, { accountIds: ['a1'] })?.body;
+        expect(filtered).toMatchObject({ accountIds: ['a1'] });
+        const cleared = routeCalendar('PATCH', '/api/calendar/sources/recurringExpense', query, { accountIds: [] })?.body;
+        expect(cleared).toMatchObject({ accountIds: null });
+
         const reset = routeCalendar('PUT', '/api/calendar/sources/profile', query, { profile: 'minimal' })?.body as {
             items: { key: string; isEnabled: boolean }[];
         };
