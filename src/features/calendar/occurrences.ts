@@ -20,6 +20,29 @@ export function isCanceled(occurrence: CalendarOccurrence): boolean {
     return occurrence.status === 'annule';
 }
 
+export type PaymentStatus = 'paid' | 'upcoming' | 'overdue';
+
+/** Statut de règlement d'une échéance financière (sources récurrentes) ; null pour les autres occurrences. */
+export function paymentStatus(occurrence: CalendarOccurrence): PaymentStatus | null {
+    const status = occurrence.status;
+    return occurrence.sourceKey && (status === 'paid' || status === 'upcoming' || status === 'overdue') ? status : null;
+}
+
+const SOURCE_ROUTES: Record<string, (entityPublicId: string) => string> = {
+    recurringExpense: (id) => `/app/finances/recurrences/charges/${id}`,
+    recurringIncome: (id) => `/app/finances/recurrences/revenus/${id}`,
+    savingsGoal: (id) => `/app/planning/objectifs/${id}`,
+    sharedDebt: (id) => `/app/patrimoine/dettes/amis/${id}`,
+    personalLoan: (id) => `/app/patrimoine/dettes/prets/${id}`,
+    liability: (id) => `/app/patrimoine/dettes/${id}`
+};
+
+/** Page du module d'origine d'une occurrence virtuelle ; null si la source n'a pas de page connue. */
+export function sourceRoute(occurrence: CalendarOccurrence): string | null {
+    if (!occurrence.sourceKey || !occurrence.entityPublicId) return null;
+    return SOURCE_ROUTES[occurrence.sourceKey]?.(encodeURIComponent(occurrence.entityPublicId)) ?? null;
+}
+
 /** Seuls les événements saisis s'ouvrent dans le calendrier ; une occurrence de source se gère dans son module. */
 export function isEditableOccurrence(occurrence: CalendarOccurrence): boolean {
     return !!occurrence.eventPublicId && !occurrence.sourceKey && !occurrence.sharedBy;

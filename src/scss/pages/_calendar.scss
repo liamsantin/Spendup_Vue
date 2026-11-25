@@ -126,3 +126,7 @@
     color: var(--gray);
     font-size: 14px;
 }
+
+.cal-list__meta--overdue {
+    color: var(--red, #dc2626);
+}

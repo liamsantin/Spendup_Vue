@@ -4467,6 +4467,8 @@
         },
         "filters": "Filters",
         "closeDay": "Close day details",
+        "status": { "paid": "Paid", "upcoming": "Upcoming", "overdue": "Overdue" },
+        "openSource": "Open in module",
         "newEvent": "New event",
         "settings": {
             "hiddenTitle": "Hidden items",

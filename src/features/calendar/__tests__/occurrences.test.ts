@@ -7,6 +7,8 @@ import {
     monthSummary,
     occurrenceTimeRange,
     occurrenceTone,
+    paymentStatus,
+    sourceRoute,
     upcomingOutflows
 } from '@/features/calendar/occurrences';
 import type { CalendarOccurrence } from '@/features/calendar/types';
@@ -138,5 +140,27 @@ describe('formatOccurrenceAmount', () => {
         expect(formatOccurrenceAmount(-1850, 'CHF')).toMatch(/^−1.850\.00 CHF$/);
         expect(formatOccurrenceAmount(6200, 'CHF')).toMatch(/^\+6.200\.00 CHF$/);
         expect(formatOccurrenceAmount(-1850, 'CHF', false)).toMatch(/^1.850\.00 CHF$/);
+    });
+});
+
+describe('statut de règlement et module d’origine', () => {
+    it('reconnaît les statuts d’une échéance de source uniquement', () => {
+        expect(paymentStatus(occurrence('a', { sourceKey: 'recurringExpense', status: 'overdue' }))).toBe('overdue');
+        expect(paymentStatus(occurrence('b', { sourceKey: 'recurringIncome', status: 'paid' }))).toBe('paid');
+        expect(paymentStatus(occurrence('c', { sourceKey: 'recurringExpense', status: 'upcoming' }))).toBe('upcoming');
+        expect(paymentStatus(occurrence('d', { sourceKey: null, status: 'paid' }))).toBeNull();
+        expect(paymentStatus(occurrence('e', { sourceKey: 'recurringExpense', status: 'annule' }))).toBeNull();
+    });
+
+    it('route vers la page du module d’origine', () => {
+        expect(sourceRoute(occurrence('a', { sourceKey: 'recurringExpense', entityPublicId: 'x1' }))).toBe(
+            '/app/finances/recurrences/charges/x1'
+        );
+        expect(sourceRoute(occurrence('b', { sourceKey: 'recurringIncome', entityPublicId: 'x2' }))).toBe(
+            '/app/finances/recurrences/revenus/x2'
+        );
+        expect(sourceRoute(occurrence('c', { sourceKey: 'savingsGoal', entityPublicId: 'x3' }))).toBe('/app/planning/objectifs/x3');
+        expect(sourceRoute(occurrence('d', { sourceKey: 'inconnue', entityPublicId: 'x4' }))).toBeNull();
+        expect(sourceRoute(occurrence('e', { sourceKey: null, entityPublicId: null }))).toBeNull();
     });
 });
