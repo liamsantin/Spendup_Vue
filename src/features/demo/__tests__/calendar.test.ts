@@ -180,3 +180,29 @@ describe('routeCalendar : sources', () => {
         expect(() => routeCalendar('PATCH', '/api/calendar/sources/nope', query, {})).toThrow();
     });
 });
+
+describe('routeCalendar : éléments masqués', () => {
+    beforeEach(() => {
+        resetDemoDb();
+    });
+
+    it('masque un élément de source, le liste, puis le réaffiche', () => {
+        const query = new URLSearchParams();
+        const now = new Date();
+        const pad = (n: number) => String(n).padStart(2, '0');
+        const from = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-01`;
+        const to = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-28`;
+        const target = demoOccurrences(from, to).items.find((o) => o.sourceKey && o.entityPublicId);
+        expect(target).toBeDefined();
+        const { sourceKey, entityPublicId } = target!;
+
+        const created = routeCalendar('POST', '/api/calendar/exclusions', query, { sourceKey, entityPublicId })?.body;
+        expect(created).toMatchObject({ sourceKey, entityPublicId });
+        expect(demoOccurrences(from, to).items.some((o) => o.sourceKey === sourceKey && o.entityPublicId === entityPublicId)).toBe(false);
+        expect((routeCalendar('GET', '/api/calendar/exclusions', query)?.body as { items: unknown[] }).items).toHaveLength(1);
+
+        routeCalendar('DELETE', `/api/calendar/exclusions/${sourceKey}/${entityPublicId}`, query);
+        expect(demoOccurrences(from, to).items.some((o) => o.entityPublicId === entityPublicId)).toBe(true);
+        expect(() => routeCalendar('POST', '/api/calendar/exclusions', query, { sourceKey: 'nope', entityPublicId: 'x' })).toThrow();
+    });
+});

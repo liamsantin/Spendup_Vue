@@ -9,7 +9,7 @@ defineProps<{
     items: CalendarOccurrence[];
 }>();
 
-const emit = defineEmits<{ open: [occurrence: CalendarOccurrence] }>();
+const emit = defineEmits<{ open: [occurrence: CalendarOccurrence]; hide: [occurrence: CalendarOccurrence] }>();
 
 const { t } = useI18n();
 </script>
@@ -23,7 +23,13 @@ const { t } = useI18n();
             </div>
         </header>
         <ul v-if="items.length" class="cal-list">
-            <CalendarOccurrenceRow v-for="occurrence in items" :key="occurrence.id" :occurrence="occurrence" @open="emit('open', $event)" />
+            <CalendarOccurrenceRow
+                v-for="occurrence in items"
+                :key="occurrence.id"
+                :occurrence="occurrence"
+                @open="emit('open', $event)"
+                @hide="emit('hide', $event)"
+            />
         </ul>
         <p v-else class="cal-side__empty">{{ t('calendarPage.emptyDay') }}</p>
     </section>

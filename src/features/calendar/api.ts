@@ -6,6 +6,7 @@ import type {
     CalendarOccurrencesQuery,
     CalendarOccurrencesResult,
     CalendarPreferences,
+    CalendarSourceExclusion,
     CalendarProfile,
     CalendarSourceList,
     CalendarSourceSetting,
@@ -45,6 +46,20 @@ export const calendarApi = {
 
     setSourceProfile(profile: CalendarProfile) {
         return fetchWrapper.put('/api/calendar/sources/profile', { profile }) as Promise<CalendarSourceList>;
+    },
+
+    exclusions() {
+        return fetchWrapper.get('/api/calendar/exclusions') as Promise<{ items: CalendarSourceExclusion[] }>;
+    },
+
+    exclude(sourceKey: string, entityPublicId: string) {
+        return fetchWrapper.post('/api/calendar/exclusions', { sourceKey, entityPublicId }) as Promise<CalendarSourceExclusion>;
+    },
+
+    include(sourceKey: string, entityPublicId: string) {
+        return fetchWrapper.delete(
+            `/api/calendar/exclusions/${encodeURIComponent(sourceKey)}/${encodeURIComponent(entityPublicId)}`
+        ) as Promise<void>;
     },
 
     getEvent(publicId: string) {

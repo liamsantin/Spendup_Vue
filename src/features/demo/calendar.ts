@@ -1,5 +1,6 @@
 import { occurrenceDays, parseYmd, toYmd } from '@/features/calendar/dates';
 import type {
+    CalendarSourceExclusion,
     CalendarProfile,
     CalendarSourceSetting,
     UpdateCalendarSourcePayload,
@@ -177,7 +178,9 @@ export function demoOccurrences(from: string, to: string): CalendarOccurrencesRe
     }
     const sources = items.filter((o) => occurrenceDays(o).some((day) => day >= from && day <= to));
     const agenda = demoDb().calendarEvents.flatMap((evt) => expandDemoEvent(evt, from, to));
-    return { from, to, items: [...agenda, ...sources] };
+    const hidden = demoExclusions();
+    const visible = sources.filter((o) => !hidden.some((x) => x.sourceKey === o.sourceKey && x.entityPublicId === o.entityPublicId));
+    return { from, to, items: [...agenda, ...visible] };
 }
 
 type DemoPreferences = {
@@ -263,6 +266,18 @@ const DEMO_SOURCE_LABELS: Record<string, string> = {
     liability: 'Dettes'
 };
 
+/** Une occurrence de source connue de la démo, pour nommer un élément masqué. */
+function demoEntry(sourceKey: string, entityPublicId: string): CalendarOccurrence | null {
+    const now = new Date();
+    for (let delta = -1; delta <= 1; delta++) {
+        const found = demoEventsForMonth(now.getFullYear(), now.getMonth() + delta)
+            .map(toOccurrence)
+            .find((o) => o.sourceKey === sourceKey && o.entityPublicId === entityPublicId);
+        if (found) return found;
+    }
+    return null;
+}
+
 type DemoSources = { profile: CalendarProfile; items: CalendarSourceSetting[] };
 
 function freshDemoSources(profile: CalendarProfile): DemoSources {
@@ -288,6 +303,17 @@ function demoSources(): DemoSources {
     if (current) return current;
     const fresh = freshDemoSources('equilibre');
     sourcesByDb.set(db, fresh);
+    return fresh;
+}
+
+const exclusionsByDb = new WeakMap<object, CalendarSourceExclusion[]>();
+
+function demoExclusions(): CalendarSourceExclusion[] {
+    const db = demoDb();
+    const current = exclusionsByDb.get(db);
+    if (current) return current;
+    const fresh: CalendarSourceExclusion[] = [];
+    exclusionsByDb.set(db, fresh);
     return fresh;
 }
 
@@ -331,6 +357,28 @@ export function routeCalendar(method: string, path: string, query: URLSearchPara
         else if (patch.minAmount != null) source.minAmount = patch.minAmount;
         source.isCustom = true;
         return { status: 200, body: source };
+    }
+    if (path === '/api/calendar/exclusions' && method === 'GET') return { status: 200, body: { items: demoExclusions() } };
+    if (path === '/api/calendar/exclusions' && method === 'POST') {
+        const { sourceKey, entityPublicId } = (body ?? {}) as { sourceKey?: string; entityPublicId?: string };
+        const found = sourceKey && entityPublicId ? demoEntry(sourceKey, entityPublicId) : null;
+        if (!sourceKey || !entityPublicId || !found) throw new AppError('Élément introuvable.', 404);
+        const list = demoExclusions();
+        const existing = list.find((x) => x.sourceKey === sourceKey && x.entityPublicId === entityPublicId);
+        if (existing) return { status: 200, body: existing };
+        const created = { sourceKey, entityPublicId, label: found.title };
+        list.push(created);
+        return { status: 200, body: created };
+    }
+    const exclusion = /^\/api\/calendar\/exclusions\/([^/]+)\/([^/]+)$/.exec(path);
+    if (exclusion && method === 'DELETE') {
+        const list = demoExclusions();
+        const index = list.findIndex(
+            (x) => x.sourceKey === decodeURIComponent(exclusion[1] ?? '') && x.entityPublicId === decodeURIComponent(exclusion[2] ?? '')
+        );
+        if (index < 0) throw new AppError('Élément introuvable.', 404);
+        list.splice(index, 1);
+        return { status: 204, body: undefined };
     }
     if (path === '/api/calendar-events' && method === 'POST') {
         const payload = body as CreateCalendarEventPayload;

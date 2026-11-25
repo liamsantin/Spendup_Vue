@@ -221,6 +221,18 @@ function createEvent(ymd = selected.value, time: string | null = null, eventTitl
     formOpen.value = true;
 }
 
+/** « Ne plus afficher cet élément » : masque l'élément de sa source puis recharge la fenêtre. */
+async function hideOccurrence(occurrence: CalendarOccurrence) {
+    if (!occurrence.sourceKey || !occurrence.entityPublicId) return;
+    dragError.value = null;
+    try {
+        await calendarApi.exclude(occurrence.sourceKey, occurrence.entityPublicId);
+        await reload();
+    } catch {
+        dragError.value = t('calendarPage.hide.failed');
+    }
+}
+
 function openEvent(occurrence: CalendarOccurrence) {
     editing.value = occurrence;
     formOpen.value = true;
@@ -388,7 +400,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
             />
 
             <aside class="cal__side su-stack su-stack--tight">
-                <CalendarDayPanel :title="selectedTitle" :items="selectedItems" @open="openEvent" />
+                <CalendarDayPanel :title="selectedTitle" :items="selectedItems" @open="openEvent" @hide="hideOccurrence" />
                 <CalendarLayersPanel :keys="layerKeys" :hidden="hiddenLayers" :counts="layerCounts" @toggle="toggleLayer" />
                 <CalendarMonthSummary :summary="summary" :upcoming="upcoming" />
             </aside>

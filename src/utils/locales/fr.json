@@ -4402,6 +4402,7 @@
         }
     },
     "calendarPage": {
+        "hide": { "action": "Ne plus afficher « {title} »", "failed": "Impossible de masquer cet élément." },
         "title": "Calendrier",
         "previous": "Période précédente",
         "next": "Période suivante",
@@ -4466,6 +4467,10 @@
         },
         "newEvent": "Nouvel événement",
         "settings": {
+            "hiddenTitle": "Éléments masqués",
+            "hiddenHint": "Ces éléments n’apparaissent plus dans votre calendrier. Les réafficher ne modifie pas leur module d’origine.",
+            "hiddenEmpty": "Aucun élément masqué.",
+            "show": "Réafficher",
             "sourceEnabled": "Afficher dans le calendrier",
             "sourcesTitle": "Sources du calendrier",
             "sourcesHint": "Choisissez ce que les autres modules affichent dans votre calendrier. Chaque réglage s’applique tout de suite.",

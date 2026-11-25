@@ -19,7 +19,7 @@ const props = defineProps<{
     loading: boolean;
 }>();
 
-const emit = defineEmits<{ open: [occurrence: CalendarOccurrence]; more: [] }>();
+const emit = defineEmits<{ open: [occurrence: CalendarOccurrence]; hide: [occurrence: CalendarOccurrence]; more: [] }>();
 
 const { t, locale } = useI18n();
 
@@ -83,6 +83,7 @@ onBeforeUnmount(() => observer?.disconnect());
                         :key="occurrence.id"
                         :occurrence="occurrence"
                         @open="emit('open', $event)"
+                        @hide="emit('hide', $event)"
                     />
                 </ul>
             </li>

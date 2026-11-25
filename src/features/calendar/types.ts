@@ -199,3 +199,6 @@ export type UpdateCalendarSourcePayload = {
     minAmount?: number;
     clearMinAmount?: boolean;
 };
+
+/** Élément d'une source masqué par l'utilisateur (`GET /api/calendar/exclusions`). */
+export type CalendarSourceExclusion = { sourceKey: string; entityPublicId: string; label: string };

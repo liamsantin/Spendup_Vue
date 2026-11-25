@@ -4402,6 +4402,7 @@
         }
     },
     "calendarPage": {
+        "hide": { "action": "Stop showing “{title}”", "failed": "Could not hide this item." },
         "title": "Calendar",
         "previous": "Previous period",
         "next": "Next period",
@@ -4466,6 +4467,10 @@
         },
         "newEvent": "New event",
         "settings": {
+            "hiddenTitle": "Hidden items",
+            "hiddenHint": "These items no longer appear in your calendar. Showing them again does not change their original module.",
+            "hiddenEmpty": "No hidden items.",
+            "show": "Show again",
             "sourceEnabled": "Show in calendar",
             "sourcesTitle": "Calendar sources",
             "sourcesHint": "Choose what other modules show in your calendar. Each setting applies immediately.",
