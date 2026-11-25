@@ -4402,7 +4402,6 @@
         }
     },
     "calendarPage": {
-        "hide": { "action": "Ne plus afficher « {title} »", "failed": "Impossible de masquer cet élément." },
         "title": "Calendrier",
         "previous": "Période précédente",
         "next": "Période suivante",
@@ -4433,6 +4432,7 @@
             "until": "Agenda affiché jusqu’au {date}."
         },
         "selectedDay": "Jour sélectionné",
+        "viewDay": "Voir tout le jour",
         "emptyDay": "Rien de prévu ce jour-là.",
         "loadError": "Impossible de charger le calendrier. Réessayez dans un instant.",
         "allDay": "Journée entière",
@@ -4466,8 +4466,6 @@
             "liability": "Dette"
         },
         "filters": "Filtres",
-        "expand": "Étendre",
-        "collapse": "Réduire",
         "closeDay": "Fermer le détail du jour",
         "newEvent": "Nouvel événement",
         "settings": {

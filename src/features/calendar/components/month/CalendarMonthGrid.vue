@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * Grille mensuelle : semaines selon le premier jour réglé, trois pastilles par jour puis « +N ».
+ * Grille mensuelle : semaines selon le premier jour réglé, six pastilles par jour puis « +N ».
  * Les jours hors du mois restent cliquables (ils font changer de mois) et affichent leurs occurrences en grisé.
  * Double-clic : nouvel événement ce jour-là.
  */
@@ -10,13 +10,10 @@ import { isoWeek, parseYmd } from '@/features/calendar/dates';
 import { dayTotal, formatOccurrenceAmount, isCanceled, occurrenceTone, occurrenceToneStyle } from '@/features/calendar/occurrences';
 import type { CalendarOccurrence } from '@/features/calendar/types';
 
-const MAX_PILLS_DEFAULT = 3;
-/** Mode étendu : cellules plus hautes, donc plus de pastilles avant « +N ». */
-const MAX_PILLS_EXPANDED = 6;
+/** Pastilles visibles par jour avant « +N » (cellules hautes, pleine largeur). */
+const MAX_PILLS = 6;
 
 const props = defineProps<{
-    /** Mode étendu : pleine largeur, cellules plus hautes. */
-    expanded?: boolean;
     /** Mois affiché, `yyyy-MM`. */
     monthPrefix: string;
     days: string[];
@@ -30,13 +27,11 @@ const props = defineProps<{
     label: string;
 }>();
 
-const emit = defineEmits<{ select: [ymd: string]; create: [ymd: string] }>();
+const emit = defineEmits<{ select: [ymd: string]; create: [ymd: string]; viewAll: [ymd: string] }>();
 
 const { t, locale } = useI18n();
 
 const columnCount = computed(() => props.columns ?? 7);
-const MAX_PILLS = computed(() => (props.expanded ? MAX_PILLS_EXPANDED : MAX_PILLS_DEFAULT));
-
 /** Libellés de la première semaine affichée, dans l'ordre des colonnes. */
 const weekdays = computed(() =>
     props.days.slice(0, columnCount.value).map((ymd) => new Intl.DateTimeFormat(locale.value, { weekday: 'short' }).format(parseYmd(ymd)))
@@ -64,7 +59,7 @@ const toneStyle = occurrenceToneStyle;
         <div class="cal-month__weekdays" aria-hidden="true">
             <span v-for="(weekday, index) in weekdays" :key="index">{{ weekday }}</span>
         </div>
-        <div class="cal-month__grid" role="grid" :style="{ '--weeks': weekCount, '--row-min': expanded ? '148px' : '104px' }">
+        <div class="cal-month__grid" role="grid" :style="{ '--weeks': weekCount }">
             <button
                 v-for="(cell, index) in cells"
                 :key="cell.ymd"
@@ -103,7 +98,12 @@ const toneStyle = occurrenceToneStyle;
                         <span class="su-sq" aria-hidden="true" />
                         <span class="cal-month__event-title">{{ occurrence.title }}</span>
                     </span>
-                    <span v-if="cell.occurrences.length > MAX_PILLS" class="cal-month__more">
+                    <span
+                        v-if="cell.occurrences.length > MAX_PILLS"
+                        class="cal-month__more"
+                        :title="t('calendarPage.viewDay')"
+                        @click.stop="emit('viewAll', cell.ymd)"
+                    >
                         {{ t('calendarPage.more', { count: cell.occurrences.length - MAX_PILLS }) }}
                     </span>
                 </span>
@@ -146,7 +146,7 @@ const toneStyle = occurrenceToneStyle;
 .cal-month__grid {
     display: grid;
     grid-template-columns: repeat(var(--cols, 7), minmax(0, 1fr));
-    grid-template-rows: repeat(var(--weeks, 6), minmax(var(--row-min, 104px), auto));
+    grid-template-rows: repeat(var(--weeks, 6), minmax(148px, auto));
     border-left: 1px solid var(--line);
 }
 
@@ -249,6 +249,7 @@ const toneStyle = occurrenceToneStyle;
 }
 
 .cal-month__more {
+    cursor: pointer;
     padding-left: 13px;
     color: var(--gray);
     font-size: 12.5px;

@@ -4402,7 +4402,6 @@
         }
     },
     "calendarPage": {
-        "hide": { "action": "Stop showing “{title}”", "failed": "Could not hide this item." },
         "title": "Calendar",
         "previous": "Previous period",
         "next": "Next period",
@@ -4433,6 +4432,7 @@
             "until": "Agenda shown until {date}."
         },
         "selectedDay": "Selected day",
+        "viewDay": "See the whole day",
         "emptyDay": "Nothing planned that day.",
         "loadError": "The calendar could not be loaded. Try again in a moment.",
         "allDay": "All day",
@@ -4466,8 +4466,6 @@
             "liability": "Debt"
         },
         "filters": "Filters",
-        "expand": "Expand",
-        "collapse": "Collapse",
         "closeDay": "Close day details",
         "newEvent": "New event",
         "settings": {

@@ -2,7 +2,6 @@
 /** Ligne d'une occurrence : heure ou « journée entière », source, membre qui partage, montant. Un événement saisi s'ouvre au clic. */
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { EyeOffIcon } from 'vue-tabler-icons';
 import {
     formatOccurrenceAmount,
     isCanceled,
@@ -15,13 +14,11 @@ import { CALENDAR_SOURCE_KEYS, type CalendarOccurrence } from '@/features/calend
 
 const props = defineProps<{ occurrence: CalendarOccurrence }>();
 
-const emit = defineEmits<{ open: [occurrence: CalendarOccurrence]; hide: [occurrence: CalendarOccurrence] }>();
+const emit = defineEmits<{ open: [occurrence: CalendarOccurrence] }>();
 
 const { t, locale } = useI18n();
 
 const editable = computed(() => isEditableOccurrence(props.occurrence));
-/** Élément d'une source propre à l'utilisateur : peut être masqué (pas ceux partagés par la famille, sans identifiant). */
-const hideable = computed(() => !!props.occurrence.sourceKey && !!props.occurrence.entityPublicId && !props.occurrence.sharedBy);
 
 const meta = computed(() => {
     const occurrence = props.occurrence;
@@ -55,34 +52,5 @@ const meta = computed(() => {
                 >{{ formatOccurrenceAmount(occurrence.amount, occurrence.currency) }}</span
             >
         </component>
-        <button
-            v-if="hideable"
-            type="button"
-            class="cal-list__hide su-btn su-btn--ghost"
-            :aria-label="t('calendarPage.hide.action', { title: occurrence.title })"
-            :title="t('calendarPage.hide.action', { title: occurrence.title })"
-            @click="emit('hide', occurrence)"
-        >
-            <EyeOffIcon :size="16" stroke-width="1.8" />
-        </button>
     </li>
 </template>
-
-<style scoped>
-.cal-list__hide {
-    flex: none;
-    padding: 4px;
-    opacity: 0;
-}
-
-.cal-list__item:hover .cal-list__hide,
-.cal-list__hide:focus-visible {
-    opacity: 1;
-}
-
-@media (hover: none) {
-    .cal-list__hide {
-        opacity: 1;
-    }
-}
-</style>
