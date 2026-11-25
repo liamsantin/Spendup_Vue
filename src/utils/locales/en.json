@@ -4452,6 +4452,10 @@
             "due": "Due",
             "goal": "Goal"
         },
+        "layers": {
+            "title": "Layers",
+            "events": "Events"
+        },
         "sources": {
             "recurringExpense": "Recurring expense",
             "recurringIncome": "Recurring income",

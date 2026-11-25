@@ -4452,6 +4452,10 @@
             "due": "Échéance",
             "goal": "Objectif"
         },
+        "layers": {
+            "title": "Couches",
+            "events": "Événements"
+        },
         "sources": {
             "recurringExpense": "Dépense récurrente",
             "recurringIncome": "Revenu récurrent",

@@ -16,12 +16,14 @@ import CalendarMonthGrid from '@/features/calendar/components/month/CalendarMont
 import { calendarApi } from '@/features/calendar/api';
 import CalendarEventFormModal from '@/features/calendar/components/modals/CalendarEventFormModal.vue';
 import CalendarEventScopeDialog from '@/features/calendar/components/modals/CalendarEventScopeDialog.vue';
+import CalendarLayersPanel from '@/features/calendar/components/side/CalendarLayersPanel.vue';
 import CalendarDayPanel from '@/features/calendar/components/side/CalendarDayPanel.vue';
 import CalendarMonthSummary from '@/features/calendar/components/side/CalendarMonthSummary.vue';
 import CalendarTimeGrid from '@/features/calendar/components/week/CalendarTimeGrid.vue';
 import { useCalendarOccurrences } from '@/features/calendar/composables/useCalendarOccurrences';
 import { useCalendarPreferences } from '@/features/calendar/composables/useCalendarPreferences';
 import { addDaysYmd, monthGrid, parseYmd, toYmd, visibleDays, weekDays, ymdOf } from '@/features/calendar/dates';
+import { countByLayer, filterByLayers, loadHiddenLayers, saveHiddenLayers } from '@/features/calendar/layers';
 import { groupByDay, monthSummary, upcomingOutflows } from '@/features/calendar/occurrences';
 import { buildUpdateEventPayload, eventToFormFields, occurrenceStartOf } from '@/features/calendar/payload';
 import {
@@ -85,7 +87,18 @@ const range = computed(() => {
 });
 const from = computed(() => range.value.from);
 const to = computed(() => range.value.to);
-const { items, loading, error, reload } = useCalendarOccurrences(from, to);
+const { items: allItems, loading, error, reload } = useCalendarOccurrences(from, to);
+
+const hiddenLayers = ref<Set<string>>(loadHiddenLayers());
+const layerCounts = computed(() => countByLayer(allItems.value));
+const items = computed(() => filterByLayers(allItems.value, hiddenLayers.value));
+
+function toggleLayer(key: string) {
+    const next = new Set(hiddenLayers.value);
+    if (!next.delete(key)) next.add(key);
+    hiddenLayers.value = next;
+    saveHiddenLayers(next);
+}
 
 watch(view, () => (agendaSpan.value = AGENDA_STEP_DAYS));
 
@@ -365,6 +378,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
 
             <aside class="cal__side su-stack su-stack--tight">
                 <CalendarDayPanel :title="selectedTitle" :items="selectedItems" @open="openEvent" />
+                <CalendarLayersPanel :hidden="hiddenLayers" :counts="layerCounts" @toggle="toggleLayer" />
                 <CalendarMonthSummary :summary="summary" :upcoming="upcoming" />
             </aside>
         </div>

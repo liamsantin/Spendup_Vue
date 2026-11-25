@@ -26,3 +26,4 @@ export type {
     CalendarViewMode
 } from '@/features/calendar/types';
 export { default as CalendarView } from '@/features/calendar/components/CalendarView.vue';
+export { CALENDAR_LAYER_KEYS, EVENTS_LAYER, countByLayer, filterByLayers } from '@/features/calendar/layers';
