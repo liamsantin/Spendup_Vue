@@ -4486,6 +4486,9 @@
         },
         "status": { "paid": "Paid", "upcoming": "Upcoming", "overdue": "Overdue" },
         "openSource": "Open in module",
+        "openNote": "Open note",
+        "markPaid": "Mark as paid",
+        "payError": "Due not found: open the module to settle it.",
         "addNote": "Add a note, reminder or guests",
         "newEvent": "New event",
         "settings": {

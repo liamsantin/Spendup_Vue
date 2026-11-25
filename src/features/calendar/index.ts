@@ -11,6 +11,7 @@ export {
     occurrenceTime,
     occurrenceTimeRange,
     canAnchor,
+    canPay,
     occurrenceFromEvent,
     paymentStatus,
     sourceRoute,

@@ -59,6 +59,18 @@ export function canAnchor(occurrence: CalendarOccurrence): boolean {
     );
 }
 
+/** Échéance récurrente non réglée, que l'on peut marquer comme payée depuis le calendrier. */
+export function canPay(occurrence: CalendarOccurrence): boolean {
+    const status = paymentStatus(occurrence);
+    return (
+        (occurrence.sourceKey === 'recurringExpense' || occurrence.sourceKey === 'recurringIncome') &&
+        !!occurrence.entityPublicId &&
+        !!occurrence.startDate &&
+        !occurrence.sharedBy &&
+        (status === 'upcoming' || status === 'overdue')
+    );
+}
+
 /** Occurrence éditable construite depuis l'événement ancré renvoyé par l'API. */
 export function occurrenceFromEvent(event: CalendarEvent): CalendarOccurrence {
     return {

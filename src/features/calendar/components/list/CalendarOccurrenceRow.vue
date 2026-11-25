@@ -1,14 +1,16 @@
 <script setup lang="ts">
 /** Ligne d'une occurrence : heure ou « journée entière », source, membre qui partage, montant. Un événement saisi s'ouvre au clic. */
-import { computed, ref } from 'vue';
+import { computed, inject, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { NotesIcon as NotePlusIcon } from 'vue-tabler-icons';
+import { CheckIcon, NotesIcon as NotePlusIcon } from 'vue-tabler-icons';
+import { CALENDAR_PAY_KEY } from '@/features/calendar/pay';
 import { calendarApi } from '@/features/calendar/api';
 import {
     formatOccurrenceAmount,
     isCanceled,
     canAnchor,
+    canPay,
     isEditableOccurrence,
     occurrenceFromEvent,
     occurrenceTimeRange,
@@ -32,6 +34,9 @@ const route = computed(() => sourceRoute(props.occurrence));
 const status = computed(() => paymentStatus(props.occurrence));
 const actionable = computed(() => editable.value || !!route.value);
 
+const pay = inject(CALENDAR_PAY_KEY, null);
+const payable = computed(() => !!pay && canPay(props.occurrence));
+const hasNote = computed(() => !!props.occurrence.eventPublicId && !!props.occurrence.sourceKey);
 const anchorable = computed(() => canAnchor(props.occurrence));
 const anchoring = ref(false);
 
@@ -92,11 +97,22 @@ const meta = computed(() => {
             type="button"
             class="cal-list__note"
             :disabled="anchoring"
-            :title="t('calendarPage.addNote')"
-            :aria-label="t('calendarPage.addNote')"
+            :class="{ 'cal-list__note--on': hasNote }"
+            :title="hasNote ? t('calendarPage.openNote') : t('calendarPage.addNote')"
+            :aria-label="hasNote ? t('calendarPage.openNote') : t('calendarPage.addNote')"
             @click="addNote"
         >
             <NotePlusIcon :size="18" stroke-width="1.8" aria-hidden="true" />
+        </button>
+        <button
+            v-if="payable"
+            type="button"
+            class="cal-list__note"
+            :title="t('calendarPage.markPaid')"
+            :aria-label="t('calendarPage.markPaid')"
+            @click="pay?.(occurrence)"
+        >
+            <CheckIcon :size="18" stroke-width="1.8" aria-hidden="true" />
         </button>
     </li>
 </template>

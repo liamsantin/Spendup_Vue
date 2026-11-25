@@ -9,7 +9,7 @@
  *
  * Raccourcis : `T` aujourd'hui, `J` / `K` période précédente / suivante, `C` nouvel événement, `1` à `4` les vues.
  */
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, provide, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { ChevronLeftIcon, ChevronRightIcon, PlusIcon, SettingsIcon, XIcon } from 'vue-tabler-icons';
@@ -18,6 +18,11 @@ import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFi
 import CalendarAgendaList from '@/features/calendar/components/agenda/CalendarAgendaList.vue';
 import CalendarMonthGrid from '@/features/calendar/components/month/CalendarMonthGrid.vue';
 import { calendarApi } from '@/features/calendar/api';
+import { CALENDAR_PAY_KEY } from '@/features/calendar/pay';
+import { recurringExpensesApi, recurringIncomesApi } from '@/features/recurring-payments/api';
+import RecurringDueConfirmModal from '@/features/recurring-payments/components/modals/RecurringDueConfirmModal.vue';
+import { isDueOpen } from '@/features/recurring-payments/format';
+import type { RecurringDue, RecurringKind } from '@/features/recurring-payments/types';
 import CalendarDayModal from '@/features/calendar/components/modals/CalendarDayModal.vue';
 import CalendarEventFormModal from '@/features/calendar/components/modals/CalendarEventFormModal.vue';
 import CalendarProfileModal from '@/features/calendar/components/modals/CalendarProfileModal.vue';
@@ -323,6 +328,41 @@ function createEvent(ymd = selected.value, time: string | null = null, eventTitl
     formOpen.value = true;
 }
 
+// ── règlement d'une échéance récurrente (même fenêtre de confirmation que le module) ──
+const payOpen = ref(false);
+const payKind = ref<RecurringKind>('expense');
+const payTemplateId = ref('');
+const payAccountId = ref('');
+const payMethodId = ref<string | null>(null);
+const payDue = ref<RecurringDue | null>(null);
+const payError = ref<string | null>(null);
+
+async function startPay(occurrence: CalendarOccurrence) {
+    const id = occurrence.entityPublicId;
+    const date = occurrence.startDate;
+    if (!id || !date) return;
+    payError.value = null;
+    const kind: RecurringKind = occurrence.sourceKey === 'recurringIncome' ? 'income' : 'expense';
+    const api = kind === 'income' ? recurringIncomesApi : recurringExpensesApi;
+    try {
+        const [template, dues] = await Promise.all([api.get(id), api.listDues(id, { from: date, to: date })]);
+        const due = dues.items.find((d) => d.scheduledAt === date && isDueOpen(d, kind));
+        if (!due) {
+            payError.value = t('calendarPage.payError');
+            return;
+        }
+        payKind.value = kind;
+        payTemplateId.value = id;
+        payAccountId.value = template.accountPublicId ?? '';
+        payMethodId.value = template.paymentMethodPublicId ?? null;
+        payDue.value = due;
+        payOpen.value = true;
+    } catch {
+        payError.value = t('calendarPage.payError');
+    }
+}
+provide(CALENDAR_PAY_KEY, (occurrence) => void startPay(occurrence));
+
 function openEvent(occurrence: CalendarOccurrence) {
     editing.value = occurrence;
     formOpen.value = true;
@@ -442,6 +482,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
     <div class="cal-root">
         <AppAlert v-if="error" type="error" class="cal-alert">
             {{ t('calendarPage.loadError') }}
+        </AppAlert>
+        <AppAlert v-if="payError" type="warning" class="cal-alert" closable :dismiss-ms="6000" @dismiss="payError = null">
+            {{ payError }}
         </AppAlert>
         <AppAlert v-if="dragError" type="error" class="cal-alert">
             {{ dragError }}
@@ -584,6 +627,15 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
             <CalendarDayPanel :title="selectedTitle" :items="selectedItems" @open="openEvent" @view-all="viewDay()" />
         </aside>
 
+        <RecurringDueConfirmModal
+            v-model="payOpen"
+            :kind="payKind"
+            :template-public-id="payTemplateId"
+            :account-public-id="payAccountId"
+            :due="payDue"
+            :default-payment-method-public-id="payMethodId"
+            @confirmed="reload"
+        />
         <CalendarProfileModal v-model="profileOpen" :saving="profileSaving" :error="profileError" @choose="chooseProfile" />
 
         <CalendarDayModal

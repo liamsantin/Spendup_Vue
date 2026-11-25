@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
     canAnchor,
+    canPay,
     occurrenceFromEvent,
     dayTotal,
     formatOccurrenceAmount,
@@ -217,5 +218,34 @@ describe('ancrage', () => {
         });
         expect(o.eventPublicId).toBe('ev1');
         expect(isEditableOccurrence(o)).toBe(true);
+    });
+});
+
+describe('canPay', () => {
+    const due = {
+        id: 'recurringExpense:e1:2026-03-01',
+        sourceKey: 'recurringExpense',
+        eventPublicId: null,
+        entityPublicId: 'e1',
+        title: 'Loyer',
+        isFullDay: true,
+        startUtc: null,
+        endUtc: null,
+        startDate: '2026-03-01',
+        endDate: '2026-03-01',
+        amount: -1800,
+        currency: 'CHF',
+        status: 'overdue',
+        color: null,
+        isRecurring: false,
+        isModified: false
+    };
+
+    it('seulement une échéance récurrente non réglée', () => {
+        expect(canPay(due)).toBe(true);
+        expect(canPay({ ...due, status: 'upcoming' })).toBe(true);
+        expect(canPay({ ...due, status: 'paid' })).toBe(false);
+        expect(canPay({ ...due, sourceKey: 'savingsGoal' })).toBe(false);
+        expect(canPay({ ...due, sharedBy: 'Alex' })).toBe(false);
     });
 });

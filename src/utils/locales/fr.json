@@ -4486,6 +4486,9 @@
         },
         "status": { "paid": "Payé", "upcoming": "À venir", "overdue": "En retard" },
         "openSource": "Ouvrir dans le module",
+        "openNote": "Ouvrir la note",
+        "markPaid": "Marquer comme payé",
+        "payError": "Échéance introuvable : ouvrez le module pour la régler.",
         "addNote": "Ajouter une note, un rappel ou des invités",
         "newEvent": "Nouvel événement",
         "settings": {
