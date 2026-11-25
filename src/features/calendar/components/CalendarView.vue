@@ -4,13 +4,15 @@
  * période affichée (en vue Mois, toute la grille, jours des mois voisins compris) ; en mode démo, la même requête
  * est servie par `features/demo/calendar.ts`.
  *
- * Raccourcis : `T` aujourd'hui, `J` / `K` période précédente / suivante, `C` nouvel événement, `1` à `4` les vues.
+ * Raccourcis : `T` aujourd'hui, `J` / `K` période précédente / suivante, `C` nouvel événement, `1` à `4` les vues,
+ * `E` mode étendu (Échap pour en sortir).
  */
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { ChevronLeftIcon, ChevronRightIcon, PlusIcon, SettingsIcon } from 'vue-tabler-icons';
+import { ArrowsMaximizeIcon, ArrowsMinimizeIcon, ChevronLeftIcon, ChevronRightIcon, PlusIcon, SettingsIcon, XIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
+import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
 import CalendarAgendaList from '@/features/calendar/components/agenda/CalendarAgendaList.vue';
 import CalendarMonthGrid from '@/features/calendar/components/month/CalendarMonthGrid.vue';
 import { calendarApi } from '@/features/calendar/api';
@@ -42,6 +44,10 @@ const AGENDA_STEP_DAYS = 30;
 const AGENDA_MAX_DAYS = 365;
 
 const view = defineModel<CalendarViewMode>('view', { required: true });
+/** Mode étendu : le calendrier prend tout l'espace (le parent replie le titre de page). */
+const extended = defineModel<boolean>('extended', { default: false });
+/** Mois étendu : détail du jour dans un panneau flottant, ouvert au clic sur un jour. */
+const dayOpen = ref(false);
 
 const { t, locale } = useI18n();
 const route = useRoute();
@@ -104,6 +110,11 @@ const hiddenLayers = ref<Set<string>>(loadHiddenLayers());
 const layerCounts = computed(() => countByLayer(allItems.value));
 const items = computed(() => filterByLayers(allItems.value, hiddenLayers.value));
 
+function resetLayers() {
+    hiddenLayers.value = new Set();
+    saveHiddenLayers(hiddenLayers.value);
+}
+
 function toggleLayer(key: string) {
     const next = new Set(hiddenLayers.value);
     if (!next.delete(key)) next.add(key);
@@ -111,7 +122,11 @@ function toggleLayer(key: string) {
     saveHiddenLayers(next);
 }
 
-watch(view, () => (agendaSpan.value = AGENDA_STEP_DAYS));
+watch(view, () => {
+    agendaSpan.value = AGENDA_STEP_DAYS;
+    dayOpen.value = false;
+});
+watch(extended, () => (dayOpen.value = false));
 
 const byDay = computed(() => groupByDay(items.value));
 
@@ -197,6 +212,11 @@ function goToday() {
 
 function select(ymd: string) {
     selected.value = ymd;
+}
+
+function onSelectDay(ymd: string) {
+    select(ymd);
+    dayOpen.value = true;
 }
 
 function openDay(ymd: string) {
@@ -323,12 +343,21 @@ function onKeydown(event: KeyboardEvent) {
     if (target?.closest('input, textarea, select, [contenteditable="true"], [role="dialog"]')) return;
     if (formOpen.value || dragScopeOpen.value || document.querySelector('.v-overlay--active')) return;
 
+    if (event.key === 'Escape') {
+        if (!extended.value) return;
+        if (dayOpen.value) dayOpen.value = false;
+        else extended.value = false;
+        event.preventDefault();
+        return;
+    }
+
     const key = event.key.toLowerCase();
     const viewIndex = ['1', '2', '3', '4'].indexOf(key);
     if (key === 't') goToday();
     else if (key === 'j') shift(-1);
     else if (key === 'k') shift(1);
     else if (key === 'c') createEvent();
+    else if (key === 'e') extended.value = !extended.value;
     else if (viewIndex !== -1) view.value = CALENDAR_VIEWS[viewIndex];
     else return;
     event.preventDefault();
@@ -342,7 +371,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
 </script>
 
 <template>
-    <div>
+    <div class="cal-root">
         <AppAlert v-if="error" type="error" class="cal-alert">
             {{ t('calendarPage.loadError') }}
         </AppAlert>
@@ -361,7 +390,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
             >
                 <ChevronLeftIcon :size="18" stroke-width="1.8" />
             </button>
-            <h2 class="cal-bar__title" aria-live="polite">{{ title }}</h2>
+            <h2 class="cal-bar__title" :class="`cal-bar__title--${view}`" aria-live="polite">{{ title }}</h2>
             <button
                 type="button"
                 class="su-orb"
@@ -371,8 +400,44 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
             >
                 <ChevronRightIcon :size="18" stroke-width="1.8" />
             </button>
+            <!-- Mode étendu : le titre de page (et ses onglets) est replié, les vues se choisissent ici. -->
+            <nav v-if="extended" class="su-tabs su-tabs--links cal-bar__views" :aria-label="t('calendarPage.views.label')">
+                <button
+                    v-for="(mode, index) in CALENDAR_VIEWS"
+                    :key="mode"
+                    type="button"
+                    class="su-tab"
+                    :class="{ 'is-active': view === mode }"
+                    :aria-pressed="view === mode"
+                    :title="`${t(`calendarPage.views.${mode}`)} (${index + 1})`"
+                    @click="view = mode"
+                >
+                    <span class="su-tab__label" :data-label="t(`calendarPage.views.${mode}`)">{{ t(`calendarPage.views.${mode}`) }}</span>
+                </button>
+            </nav>
             <button type="button" class="su-btn su-btn--ghost cal-bar__today" :title="`${t('calendarPage.today')} (T)`" @click="goToday">
                 {{ t('calendarPage.today') }}
+            </button>
+            <AppDropdownFilter
+                class="cal-bar__filters"
+                :label="t('calendarPage.filters')"
+                :count="hiddenLayers.size"
+                :reset-disabled="hiddenLayers.size === 0"
+                :min-width="280"
+                mobile-sheet
+                @reset="resetLayers"
+            >
+                <CalendarLayersPanel :keys="layerKeys" :hidden="hiddenLayers" :counts="layerCounts" hide-title @toggle="toggleLayer" />
+            </AppDropdownFilter>
+            <button
+                type="button"
+                class="su-orb cal-bar__expand"
+                :aria-pressed="extended"
+                :aria-label="extended ? t('calendarPage.collapse') : t('calendarPage.expand')"
+                :title="`${extended ? t('calendarPage.collapse') : t('calendarPage.expand')} (E)`"
+                @click="extended = !extended"
+            >
+                <component :is="extended ? ArrowsMinimizeIcon : ArrowsMaximizeIcon" :size="18" stroke-width="1.8" aria-hidden="true" />
             </button>
             <button type="button" class="su-orb cal-bar__settings" :aria-label="t('calendarPage.settings.open')" @click="openSettings">
                 <SettingsIcon :size="18" stroke-width="1.8" aria-hidden="true" />
@@ -383,64 +448,77 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
             </button>
         </div>
 
-        <div v-if="view === 'month'" class="su-g12 cal">
-            <CalendarMonthGrid
-                class="cal__month"
-                :month-prefix="monthPrefix"
-                :days="monthDays"
-                :columns="monthColumns"
-                :week-count="grid.weekCount"
-                :show-week-numbers="showWeekNumbers"
+        <!-- Seule cette zone défile : la barre ci-dessus reste fixe et la barre de défilement commence dessous. -->
+        <div class="cal-scroll" :class="{ 'cal-scroll--fill': view === 'week' || view === 'day' }">
+            <div v-if="view === 'month'" class="su-g12 cal">
+                <CalendarMonthGrid
+                    class="cal__month"
+                    :class="{ 'cal__month--wide': extended }"
+                    :expanded="extended"
+                    :month-prefix="monthPrefix"
+                    :days="monthDays"
+                    :columns="monthColumns"
+                    :week-count="grid.weekCount"
+                    :show-week-numbers="showWeekNumbers"
+                    :by-day="byDay"
+                    :selected="selected"
+                    :today="todayYmd"
+                    :label="title"
+                    @select="extended ? onSelectDay($event) : select($event)"
+                    @create="createEvent"
+                />
+
+                <aside v-if="!extended" class="cal__side su-stack su-stack--tight">
+                    <CalendarDayPanel :title="selectedTitle" :items="selectedItems" @open="openEvent" @hide="hideOccurrence" />
+                    <CalendarMonthSummary :summary="summary" :upcoming="upcoming" />
+                </aside>
+            </div>
+
+            <CalendarTimeGrid
+                v-else-if="view === 'week' || view === 'day'"
+                :key="view"
+                :days="view === 'week' ? week : [selected]"
                 :by-day="byDay"
-                :selected="selected"
                 :today="todayYmd"
                 :label="title"
-                @select="select"
-                @create="createEvent"
+                :day-links="view === 'week'"
+                :hour24="hour24"
+                :day-start-hour="dayStartHour"
+                :day-end-hour="dayEndHour"
+                :default-duration="defaultDuration"
+                :second-timezone="secondTimezone"
+                :show-week-numbers="showWeekNumbers"
+                :release="dragRelease"
+                :locked="dragLocked"
+                :expanded="extended"
+                @open="openEvent"
+                @day="openDay"
+                @more="createEvent($event.ymd, $event.time, $event.title, $event.endTime)"
+                @created="reload"
+                @reschedule="onReschedule"
             />
 
-            <aside class="cal__side su-stack su-stack--tight">
-                <CalendarDayPanel :title="selectedTitle" :items="selectedItems" @open="openEvent" @hide="hideOccurrence" />
-                <CalendarLayersPanel :keys="layerKeys" :hidden="hiddenLayers" :counts="layerCounts" @toggle="toggleLayer" />
-                <CalendarMonthSummary :summary="summary" :upcoming="upcoming" />
-            </aside>
+            <CalendarAgendaList
+                v-else
+                :days="agendaDays"
+                :today="todayYmd"
+                :label="title"
+                :until="to"
+                :can-load-more="agendaSpan < AGENDA_MAX_DAYS"
+                :loading="loading"
+                @open="openEvent"
+                @hide="hideOccurrence"
+                @more="loadMoreAgenda"
+            />
         </div>
 
-        <CalendarTimeGrid
-            v-else-if="view === 'week' || view === 'day'"
-            :key="view"
-            :days="view === 'week' ? week : [selected]"
-            :by-day="byDay"
-            :today="todayYmd"
-            :label="title"
-            :day-links="view === 'week'"
-            :hour24="hour24"
-            :day-start-hour="dayStartHour"
-            :day-end-hour="dayEndHour"
-            :default-duration="defaultDuration"
-            :second-timezone="secondTimezone"
-            :show-week-numbers="showWeekNumbers"
-            :release="dragRelease"
-            :locked="dragLocked"
-            @open="openEvent"
-            @day="openDay"
-            @more="createEvent($event.ymd, $event.time, $event.title, $event.endTime)"
-            @created="reload"
-            @reschedule="onReschedule"
-        />
-
-        <CalendarAgendaList
-            v-else
-            :days="agendaDays"
-            :today="todayYmd"
-            :label="title"
-            :until="to"
-            :can-load-more="agendaSpan < AGENDA_MAX_DAYS"
-            :loading="loading"
-            @open="openEvent"
-            @hide="hideOccurrence"
-            @more="loadMoreAgenda"
-        />
+        <!-- Mois étendu : détail du jour choisi, flottant au-dessus de la grille. -->
+        <aside v-if="extended && view === 'month' && dayOpen" class="cal-float">
+            <button type="button" class="su-orb cal-float__close" :aria-label="t('calendarPage.closeDay')" @click="dayOpen = false">
+                <XIcon :size="16" stroke-width="1.8" aria-hidden="true" />
+            </button>
+            <CalendarDayPanel :title="selectedTitle" :items="selectedItems" @open="openEvent" @hide="hideOccurrence" />
+        </aside>
 
         <CalendarEventFormModal
             v-model="formOpen"
@@ -469,26 +547,76 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
     margin: 0 0 16px;
 }
 
-/* ── barre de navigation ─────────────────────────────── */
-.cal-bar {
+/* ── structure : barre fixe, zone de vues défilante ──────────
+   Sur bureau, la racine remplit le corps de page (voir AppCalendarPage) : la barre garde sa
+   hauteur et seule `.cal-scroll` défile, sa barre de défilement démarre donc sous la barre. */
+.cal-root {
+    position: relative;
     display: flex;
-    align-items: center;
-    gap: 4px;
-    margin: 0 0 24px;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
 }
 
-.cal-bar__settings {
+.cal-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding-bottom: 16px;
+    scrollbar-width: thin;
+    overscroll-behavior: contain;
+}
+
+/* Semaine et Jour : la grille horaire gère son propre défilement (en-têtes fixes). */
+.cal-scroll--fill {
+    display: flex;
+    flex-direction: column;
+    overflow-y: hidden;
+    padding-bottom: 0;
+}
+
+/* ── barre de navigation ─────────────────────────────── */
+.cal-bar {
+    flex: none;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    margin: 0 0 8px;
+    padding: 8px 0;
+    background: var(--bg);
+}
+
+.cal-bar__filters {
     margin-left: auto;
 }
 
 .cal-bar__title {
     margin: 0 8px;
-    min-width: 13em;
+    flex: none;
+    width: 19em;
+    overflow: hidden;
+    text-overflow: ellipsis;
     font-size: 16px;
     font-weight: 700;
     letter-spacing: -0.025em;
     text-align: center;
     white-space: nowrap;
+}
+
+/* Largeur fixe par vue, calée sur le texte le plus long de cette vue (Agenda garde la valeur par défaut). */
+.cal-bar__title--month {
+    width: 11em;
+}
+
+.cal-bar__title--day {
+    width: 15em;
+}
+
+.cal-bar__title--week {
+    width: 16em;
 }
 
 .cal-bar__today {
@@ -500,18 +628,70 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
     grid-column: span 8;
 }
 
+.cal__month--wide {
+    grid-column: 1 / -1;
+}
+
 .cal__side {
     grid-column: span 4;
     min-width: 0;
 }
 
+.cal-bar__views {
+    flex: none;
+    margin-left: 8px;
+}
+
+/* détail du jour flottant (Mois étendu) */
+.cal-float {
+    position: absolute;
+    right: 24px;
+    bottom: 24px;
+    z-index: 4;
+    width: min(380px, calc(100% - 48px));
+    max-height: 60%;
+    overflow-y: auto;
+    padding: 12px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    box-shadow: 0 8px 32px color-mix(in srgb, var(--ink) 18%, transparent);
+}
+
+.cal-float__close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 1;
+}
+
 @media (max-width: 767px) {
+    /* mobile : la page entière défile, seule la barre reste collée en haut */
+    .cal-root {
+        display: block;
+        height: auto;
+    }
+
+    .cal-scroll,
+    .cal-scroll--fill {
+        display: block;
+        overflow: visible;
+        padding-bottom: 0;
+    }
+
     .cal-bar {
+        position: sticky;
+        top: 0;
+        z-index: 5;
         flex-wrap: wrap;
+    }
+
+    .cal-bar__expand {
+        display: none;
     }
 
     .cal-bar__title {
         flex: 1 1 auto;
+        width: auto;
         min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;

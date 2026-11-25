@@ -8,6 +8,8 @@ defineProps<{
     counts: ReadonlyMap<string, number>;
     /** Couches proposées ; absent = toutes. */
     keys?: readonly string[];
+    /** Titre masqué quand le panneau est déjà sous un libellé (menu « Filtres »). */
+    hideTitle?: boolean;
 }>();
 
 const emit = defineEmits<{ toggle: [key: string] }>();
@@ -21,7 +23,7 @@ function label(key: string): string {
 
 <template>
     <section class="su-section">
-        <header class="su-section__head">
+        <header v-if="!hideTitle" class="su-section__head">
             <h2>{{ t('calendarPage.layers.title') }}</h2>
         </header>
         <ul class="cal-list">

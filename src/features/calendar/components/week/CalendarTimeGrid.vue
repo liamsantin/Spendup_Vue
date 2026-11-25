@@ -32,7 +32,9 @@ import type { CalendarOccurrence } from '@/features/calendar/types';
 
 const DRAG_THRESHOLD_PX = 4;
 
-const HOUR_PX = 48;
+const HOUR_PX_DEFAULT = 48;
+/** Mode étendu : heures plus hautes, pour lire davantage de détails par créneau. */
+const HOUR_PX_EXPANDED = 72;
 const MAX_BAND_ITEMS = 3;
 /** À partir de 19 h, l'encart de création rapide s'ouvre au-dessus du créneau pour rester dans la grille. */
 const QUICK_ABOVE_FROM = 19 * 60;
@@ -55,6 +57,8 @@ const props = defineProps<{
     release?: number;
     /** Vrai pendant l'enregistrement ou le choix de portée : un second glisser n'est pas pris. */
     locked?: boolean;
+    /** Mode étendu : hauteur d'heure agrandie. */
+    expanded?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -76,6 +80,7 @@ const now = ref(new Date());
 let timer: ReturnType<typeof setInterval> | undefined;
 let swallowClick: ((event: MouseEvent) => void) | null = null;
 
+const HOUR_PX = computed(() => (props.expanded ? HOUR_PX_EXPANDED : HOUR_PX_DEFAULT));
 const duration = computed(() => props.defaultDuration ?? 60);
 const openAtHour = computed(() => props.dayStartHour ?? 7);
 
@@ -96,7 +101,7 @@ const hours = computed(() =>
         const hour = i + 1;
         return {
             hour,
-            top: hour * HOUR_PX,
+            top: hour * HOUR_PX.value,
             label: hourLabel(hour),
             alt: props.secondTimezone ? hourLabel(hour, props.secondTimezone) : null
         };
@@ -116,11 +121,11 @@ const columns = computed(() =>
     })
 );
 
-const nowTop = computed(() => (wallMinutes(now.value) * HOUR_PX) / 60);
+const nowTop = computed(() => (wallMinutes(now.value) * HOUR_PX.value) / 60);
 const nowYmd = computed(() => ymdOf(now.value));
 
 function px(minutes: number): string {
-    return `${(minutes * HOUR_PX) / 60}px`;
+    return `${(minutes * HOUR_PX.value) / 60}px`;
 }
 
 function blockStyle(block: { startMin: number; endMin: number; column: number; columns: number; occurrence: CalendarOccurrence }) {
@@ -156,7 +161,7 @@ function onColumnDown(event: PointerEvent, ymd: string) {
     stopSelectListeners();
     selecting.value = {
         ymd,
-        anchor: ((event.clientY - column.getBoundingClientRect().top) / HOUR_PX) * 60,
+        anchor: ((event.clientY - column.getBoundingClientRect().top) / HOUR_PX.value) * 60,
         pointerMin: 0,
         x: event.clientX,
         y: event.clientY,
@@ -262,7 +267,7 @@ function previewLabel(item: DragPreview): string {
 }
 
 function minutesAt(event: PointerEvent, column: HTMLElement): number {
-    return ((event.clientY - column.getBoundingClientRect().top) / HOUR_PX) * 60;
+    return ((event.clientY - column.getBoundingClientRect().top) / HOUR_PX.value) * 60;
 }
 
 function columnAt(event: PointerEvent): HTMLElement | null {
@@ -365,7 +370,7 @@ watch(
 );
 
 function scrollToOpen() {
-    if (scroller.value) scroller.value.scrollTop = openAtHour.value * HOUR_PX - 8;
+    if (scroller.value) scroller.value.scrollTop = openAtHour.value * HOUR_PX.value - 8;
 }
 
 onMounted(() => {
@@ -578,12 +583,26 @@ onBeforeUnmount(() => {
 <style scoped>
 /* ── grille horaire : même filets fins que la vue Mois, heures en gris à gauche ── */
 .cal-week {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
     min-width: 0;
+    min-height: 0;
     overflow-x: auto;
 }
 
+/* en-têtes fixes, seule la grille des heures défile (elle remplit la hauteur restante) */
 .cal-week__frame {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
     min-width: calc(var(--gutter, 56px) + var(--days) * 88px);
+}
+
+.cal-week__head,
+.cal-week__band {
+    flex: none;
 }
 
 .cal-week__row {
@@ -724,8 +743,17 @@ onBeforeUnmount(() => {
 
 /* ── heures ── */
 .cal-week__scroll {
-    max-height: min(68vh, 720px);
+    flex: 1 1 auto;
+    min-height: 0;
     overflow-y: auto;
+}
+
+/* mobile : la page défile, la grille garde une hauteur bornée */
+@media (max-width: 767px) {
+    .cal-week__scroll {
+        flex: none;
+        max-height: min(68vh, 720px);
+    }
 }
 
 .cal-week__body {

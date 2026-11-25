@@ -4465,6 +4465,10 @@
             "personalLoan": "Prêt entre proches",
             "liability": "Dette"
         },
+        "filters": "Filtres",
+        "expand": "Étendre",
+        "collapse": "Réduire",
+        "closeDay": "Fermer le détail du jour",
         "newEvent": "Nouvel événement",
         "settings": {
             "hiddenTitle": "Éléments masqués",

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import { CALENDAR_VIEWS, CalendarView, type CalendarViewMode } from '@/features/calendar';
@@ -12,6 +12,24 @@ const { load } = useCalendarPreferences();
 const narrow = typeof window !== 'undefined' && window.matchMedia?.('(max-width: 767px)').matches;
 const view = ref<CalendarViewMode>(narrow ? 'agenda' : 'month');
 const initial = view.value;
+
+/** Mode étendu : le calendrier prend tout l'espace (titre de page replié). Mémorisé par navigateur. */
+const EXTENDED_KEY = 'spendup.calendar.extended';
+function loadExtended(): boolean {
+    try {
+        return !narrow && localStorage.getItem(EXTENDED_KEY) === '1';
+    } catch {
+        return false;
+    }
+}
+const extended = ref(loadExtended());
+watch(extended, (value) => {
+    try {
+        localStorage.setItem(EXTENDED_KEY, value ? '1' : '0');
+    } catch {
+        /* préférence non mémorisée */
+    }
+});
 
 onMounted(async () => {
     if (narrow) return;
@@ -27,7 +45,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <AppPageShell :title="t('calendarPage.title')">
+    <AppPageShell :title="t('calendarPage.title')" :body-scroll="false" class="cal-page" :class="{ 'cal-page--extended': extended }">
         <template #tabs>
             <nav class="su-tabs su-tabs--links" :aria-label="t('calendarPage.views.label')">
                 <button
@@ -46,6 +64,28 @@ onMounted(async () => {
             </nav>
         </template>
 
-        <CalendarView v-model:view="view" />
+        <CalendarView v-model:view="view" v-model:extended="extended" />
     </AppPageShell>
 </template>
+
+<style scoped>
+/* Bureau : le corps de page ne défile pas, c'est la zone des vues du calendrier qui défile. */
+@media (min-width: 768px) {
+    .cal-page :deep(.su-body) {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        padding-bottom: 16px;
+    }
+
+    /* Étendu : titre et onglets repliés, le calendrier occupe toute la page. */
+    .cal-page--extended :deep(.su-hero) {
+        display: none;
+    }
+
+    .cal-page--extended :deep(.su-body) {
+        padding-top: 0;
+        padding-bottom: 8px;
+    }
+}
+</style>

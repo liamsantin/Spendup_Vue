@@ -4465,6 +4465,10 @@
             "personalLoan": "Personal loan",
             "liability": "Debt"
         },
+        "filters": "Filters",
+        "expand": "Expand",
+        "collapse": "Collapse",
+        "closeDay": "Close day details",
         "newEvent": "New event",
         "settings": {
             "hiddenTitle": "Hidden items",
