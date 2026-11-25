@@ -5,7 +5,8 @@ export const CALENDAR_SOURCE_KEYS = [
     'savingsGoal',
     'sharedDebt',
     'personalLoan',
-    'liability'
+    'liability',
+    'taxInstallment'
 ] as const;
 
 export type CalendarSourceKey = (typeof CALENDAR_SOURCE_KEYS)[number];

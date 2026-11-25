@@ -4463,7 +4463,8 @@
             "savingsGoal": "Objectif d’épargne",
             "sharedDebt": "Dette partagée",
             "personalLoan": "Prêt entre proches",
-            "liability": "Dette"
+            "liability": "Dette",
+            "taxInstallment": "Acompte d’impôt"
         },
         "filters": "Filtres",
         "closeDay": "Fermer le détail du jour",

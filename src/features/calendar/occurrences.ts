@@ -8,7 +8,8 @@ const SOURCE_TONES: Record<string, CalendarTone> = {
     savingsGoal: 'goal',
     sharedDebt: 'due',
     personalLoan: 'due',
-    liability: 'due'
+    liability: 'due',
+    taxInstallment: 'due'
 };
 
 export function occurrenceTone(occurrence: CalendarOccurrence): CalendarTone {
@@ -34,7 +35,8 @@ const SOURCE_ROUTES: Record<string, (entityPublicId: string) => string> = {
     savingsGoal: (id) => `/app/planning/objectifs/${id}`,
     sharedDebt: (id) => `/app/patrimoine/dettes/amis/${id}`,
     personalLoan: (id) => `/app/patrimoine/dettes/prets/${id}`,
-    liability: (id) => `/app/patrimoine/dettes/${id}`
+    liability: (id) => `/app/patrimoine/dettes/${id}`,
+    taxInstallment: (id) => `/app/planning/impots/${id}`
 };
 
 /** Page du module d'origine d'une occurrence virtuelle ; null si la source n'a pas de page connue. */

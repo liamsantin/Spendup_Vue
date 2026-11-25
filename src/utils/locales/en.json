@@ -4463,7 +4463,8 @@
             "savingsGoal": "Savings goal",
             "sharedDebt": "Shared debt",
             "personalLoan": "Personal loan",
-            "liability": "Debt"
+            "liability": "Debt",
+            "taxInstallment": "Tax instalment"
         },
         "filters": "Filters",
         "closeDay": "Close day details",
