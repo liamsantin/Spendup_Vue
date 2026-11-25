@@ -5,6 +5,8 @@ import { computed } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 import { APP_HOME_ROUTE } from '@/features/auth';
 import { useAppHomeTarget } from '@/utils/helpers/navigation-helpers';
+import { APP_TARGET, crossHref } from '@/utils/helpers/app-target';
+import { isTauri } from '@/utils/helpers/platform-helpers';
 
 /**
  * Logo Spend.Up : pictogramme (cartes empilées) + mot-symbole « Spend.Up » dont le point est bleu.
@@ -28,13 +30,21 @@ const publicHome = useAppHomeTarget(props.homeTo);
 
 /** Sous /app → dashboard ; ailleurs → home plateforme (login en Tauri, landings en web). */
 const logoTo = computed(() => (route.path.startsWith('/app') ? APP_HOME_ROUTE : publicHome.value));
+
+/** Header public affiché sur app.spendup.ch (ex. /auth) : l'accueil est sur le domaine du site, pas dans cette app. */
+const landingHref = computed(() =>
+    APP_TARGET === 'app' && !isTauri() && props.homeTo !== undefined && !route.path.startsWith('/app')
+        ? crossHref('landing', props.homeTo)
+        : null
+);
+const linkAttrs = computed(() => (props.plain ? {} : landingHref.value ? { href: landingHref.value } : { to: logoTo.value }));
 </script>
 
 <template>
     <div class="logo">
         <component
-            :is="plain ? 'span' : RouterLink"
-            :to="plain ? undefined : logoTo"
+            :is="plain ? 'span' : landingHref ? 'a' : RouterLink"
+            v-bind="linkAttrs"
             class="spendup-logo"
             :class="{ 'spendup-logo--icon': iconOnly }"
             :aria-label="plain ? undefined : 'Spend.Up'"
