@@ -33,6 +33,7 @@ type Draft = {
     timezone: string;
     secondTimezone: string;
     discreetMode: boolean;
+    showProjectedBalance: boolean;
 };
 
 const emit = defineEmits<{ dirty: [value: boolean] }>();
@@ -110,7 +111,8 @@ function toDraft(prefs: CalendarPreferences): Draft {
         reminder: prefs.defaultReminderMinutes == null ? NONE : String(prefs.defaultReminderMinutes),
         timezone: prefs.timezone,
         secondTimezone: prefs.secondTimezone ?? NONE,
-        discreetMode: prefs.discreetMode ?? false
+        discreetMode: prefs.discreetMode ?? false,
+        showProjectedBalance: prefs.showProjectedBalance ?? false
     };
 }
 
@@ -150,7 +152,8 @@ function payloadOf(value: Draft): UpdateCalendarPreferencesPayload {
         ...(value.reminder === NONE ? { clearDefaultReminder: true } : { defaultReminderMinutes: Number(value.reminder) }),
         timezone: value.timezone,
         secondTimezone: value.secondTimezone,
-        discreetMode: value.discreetMode
+        discreetMode: value.discreetMode,
+        showProjectedBalance: value.showProjectedBalance
     };
 }
 
@@ -353,6 +356,17 @@ defineExpose({
                             <p class="su-switch-row__hint">{{ t('calendarPage.settings.discreetModeHint') }}</p>
                         </div>
                         <AppSwitch id="cal-pref-discreet" v-model="draft.discreetMode" />
+                    </div>
+                </div>
+                <div class="is-full">
+                    <div class="su-switch-row">
+                        <div class="su-switch-row__text">
+                            <label class="su-switch-row__label" for="cal-pref-projected">{{
+                                t('calendarPage.settings.projectedBalance')
+                            }}</label>
+                            <p class="su-switch-row__hint">{{ t('calendarPage.settings.projectedBalanceHint') }}</p>
+                        </div>
+                        <AppSwitch id="cal-pref-projected" v-model="draft.showProjectedBalance" />
                     </div>
                 </div>
             </div>

@@ -4485,6 +4485,7 @@
             "error": "Could not save this choice."
         },
         "status": { "paid": "Paid", "upcoming": "Upcoming", "overdue": "Overdue" },
+        "projectedBalance": "Projected end-of-day balance",
         "openSource": "Open in module",
         "openNote": "Open note",
         "markPaid": "Mark as paid",
@@ -4523,6 +4524,8 @@
             "finance": "Finance",
             "financeHint": "Amounts from the financial sources in the calendar.",
             "discreetMode": "Discreet mode",
+            "projectedBalance": "Projected balance",
+            "projectedBalanceHint": "Shows the estimated balance of your accounts under each day of the month (upcoming expenses, income and taxes). A negative balance is flagged.",
             "discreetModeHint": "Hides every amount (handy when sharing your screen). The server sends none.",
             "creation": "Creation",
             "creationHint": "Values offered for a new event. What you type always wins.",

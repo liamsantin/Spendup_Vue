@@ -32,6 +32,9 @@ const props = defineProps<{
     selected: string;
     today: string;
     label: string;
+    /** Solde projeté par jour (`yyyy-MM-dd`) ; absent = non affiché. */
+    forecast?: Map<string, { balance: number; atRisk: boolean }>;
+    currency?: string | null;
 }>();
 
 const emit = defineEmits<{ select: [ymd: string]; create: [ymd: string]; viewAll: [ymd: string] }>();
@@ -118,6 +121,13 @@ const toneStyle = occurrenceToneStyle;
                 <span v-if="cell.total" class="cal-month__total" :class="cell.total.amount < 0 ? 'su-neg' : 'su-pos'">{{
                     formatOccurrenceAmount(cell.total.amount, cell.total.currency)
                 }}</span>
+                <span
+                    v-if="forecast?.get(cell.ymd)"
+                    class="cal-month__balance"
+                    :class="{ 'cal-month__balance--risk': forecast.get(cell.ymd)!.atRisk }"
+                    :title="t('calendarPage.projectedBalance')"
+                    >{{ formatOccurrenceAmount(forecast.get(cell.ymd)!.balance, currency ?? '', false) }}</span
+                >
                 <span v-if="cell.occurrences.length" class="cal-month__dots" aria-hidden="true">
                     <span
                         v-for="occurrence in cell.occurrences.slice(0, 4)"
@@ -261,6 +271,20 @@ const toneStyle = occurrenceToneStyle;
     padding-left: 13px;
     color: var(--gray);
     font-size: 12.5px;
+}
+
+.cal-month__balance {
+    display: block;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-size: 11px;
+    opacity: 0.7;
+}
+
+.cal-month__balance--risk {
+    color: var(--danger, #9b2c2c);
+    opacity: 1;
+    font-weight: 600;
 }
 
 .cal-month__total {

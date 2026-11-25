@@ -4485,6 +4485,7 @@
             "error": "Impossible d’enregistrer ce choix."
         },
         "status": { "paid": "Payé", "upcoming": "À venir", "overdue": "En retard" },
+        "projectedBalance": "Solde projeté en fin de journée",
         "openSource": "Ouvrir dans le module",
         "openNote": "Ouvrir la note",
         "markPaid": "Marquer comme payé",
@@ -4523,6 +4524,8 @@
             "finance": "Finance",
             "financeHint": "Les montants des sources financières dans le calendrier.",
             "discreetMode": "Mode discret",
+            "projectedBalance": "Solde projeté",
+            "projectedBalanceHint": "Affiche, sous chaque jour du mois, le solde estimé de vos comptes (charges, revenus et impôts à venir). Un solde négatif est signalé.",
             "discreetModeHint": "Masque tous les montants (utile en présentant votre écran). Rien n’est envoyé par le serveur.",
             "creation": "Création",
             "creationHint": "Valeurs proposées pour un nouvel événement. Ce qui est saisi l’emporte.",

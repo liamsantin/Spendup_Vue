@@ -85,6 +85,8 @@ export type CalendarPreferences = {
     secondTimezone: string | null;
     /** Mode discret : le serveur n'envoie aucun montant. */
     discreetMode: boolean;
+    /** Affiche le solde projeté sous chaque jour du mois. */
+    showProjectedBalance?: boolean;
 };
 
 /** Modification partielle. Chaîne vide pour `defaultCalendarId` ou `secondTimezone` : effacer. */
@@ -104,6 +106,19 @@ export type UpdateCalendarPreferencesPayload = {
     timezone?: string;
     secondTimezone?: string;
     discreetMode?: boolean;
+    showProjectedBalance?: boolean;
+};
+
+/** Solde projeté à la fin d'un jour (`GET /api/calendar/forecast`). */
+export type CalendarForecastDay = { date: string; balance: number; delta: number; atRisk: boolean };
+
+export type CalendarForecast = {
+    currency: string | null;
+    startBalance: number;
+    minBalance: number | null;
+    firstRiskDate: string | null;
+    discreet: boolean;
+    days: CalendarForecastDay[];
 };
 
 export type CalendarReminder = { beforeMinutes: number; canal: string };

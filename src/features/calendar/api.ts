@@ -1,6 +1,7 @@
 import { fetchWrapper } from '@/utils/helpers/fetch-helpers';
 import type {
     CalendarEvent,
+    CalendarForecast,
     CalendarEventScope,
     CalendarInfo,
     CalendarOccurrencesQuery,
@@ -22,6 +23,10 @@ export const calendarApi = {
         if (query.q?.trim()) params.set('q', query.q.trim());
         if (query.layers) params.set('layers', query.layers);
         return fetchWrapper.get(`/api/calendar/occurrences?${params.toString()}`) as Promise<CalendarOccurrencesResult>;
+    },
+
+    forecast(from: string, to: string) {
+        return fetchWrapper.get(`/api/calendar/forecast?${new URLSearchParams({ from, to }).toString()}`) as Promise<CalendarForecast>;
     },
 
     calendars() {

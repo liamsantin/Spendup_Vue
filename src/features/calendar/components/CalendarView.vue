@@ -48,6 +48,7 @@ import { buildUpdateEventPayload, eventToFormFields, occurrenceStartOf } from '@
 import {
     CALENDAR_VIEWS,
     type CalendarEvent,
+    type CalendarForecast,
     type CalendarEventScope,
     type CalendarOccurrence,
     type CalendarProfile,
@@ -111,6 +112,26 @@ const range = computed(() => {
 const from = computed(() => range.value.from);
 const to = computed(() => range.value.to);
 const { items: allItems, loading, error, reload } = useCalendarOccurrences(from, to);
+
+// ── solde projeté (vue Mois, réglage « Solde projeté ») ──
+const forecast = ref<CalendarForecast | null>(null);
+const showForecast = computed(() => view.value === 'month' && !!preferences.value?.showProjectedBalance);
+const forecastByDay = computed(() =>
+    showForecast.value && forecast.value ? new Map(forecast.value.days.map((d) => [d.date, d])) : undefined
+);
+
+async function loadForecast() {
+    if (!showForecast.value) {
+        forecast.value = null;
+        return;
+    }
+    try {
+        forecast.value = await calendarApi.forecast(from.value, to.value);
+    } catch {
+        forecast.value = null;
+    }
+}
+watch([showForecast, from, to], () => void loadForecast(), { immediate: true });
 
 /** Couches proposées : événements + sources activées (réglages, onglet Sources). Toutes si la lecture échoue. */
 const layerKeys = ref<string[] | undefined>(undefined);
@@ -572,6 +593,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
                     :selected="selected"
                     :today="todayYmd"
                     :label="title"
+                    :forecast="forecastByDay"
+                    :currency="forecast?.currency ?? null"
                     @select="onSelectDay"
                     @view-all="viewDay"
                     @create="createEvent"
