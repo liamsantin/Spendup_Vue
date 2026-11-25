@@ -81,6 +81,8 @@ export type CalendarPreferences = {
     defaultReminderMinutes: number | null;
     timezone: string;
     secondTimezone: string | null;
+    /** Mode discret : le serveur n'envoie aucun montant. */
+    discreetMode: boolean;
 };
 
 /** Modification partielle. Chaîne vide pour `defaultCalendarId` ou `secondTimezone` : effacer. */
@@ -99,6 +101,7 @@ export type UpdateCalendarPreferencesPayload = {
     clearDefaultReminder?: boolean;
     timezone?: string;
     secondTimezone?: string;
+    discreetMode?: boolean;
 };
 
 export type CalendarReminder = { beforeMinutes: number; canal: string };

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+    dayTotal,
     formatOccurrenceAmount,
     groupByDay,
     isEditableOccurrence,
@@ -100,6 +101,22 @@ describe('monthSummary', () => {
 
     it('n’a pas de devise sans montant', () => {
         expect(monthSummary([occurrence('rdv', { startDate: '2026-12-01' })], '2026-12').currency).toBeNull();
+    });
+});
+
+describe('dayTotal', () => {
+    it('somme le net du jour dans la devise dominante, sans les annulés', () => {
+        const total = dayTotal([
+            occurrence('salaire', { startDate: '2026-12-01', amount: 100, currency: 'CHF' }),
+            occurrence('loyer', { startDate: '2026-12-01', amount: -30.5, currency: 'CHF' }),
+            occurrence('annule', { startDate: '2026-12-01', amount: -500, currency: 'CHF', status: 'annule' })
+        ]);
+        expect(total).toEqual({ amount: 69.5, currency: 'CHF' });
+    });
+
+    it('est nul sans montant (jour vide, mode discret)', () => {
+        expect(dayTotal([])).toBeNull();
+        expect(dayTotal([occurrence('rdv', { startDate: '2026-12-01' })])).toBeNull();
     });
 });
 

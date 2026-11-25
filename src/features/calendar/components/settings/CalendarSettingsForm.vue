@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
- * Réglages généraux du calendrier : Affichage, Création, Fuseau.
- * Les groupes Finance, Social et Notifications restent hors de cet écran.
+ * Réglages généraux du calendrier : Affichage, Création, Finance (mode discret), Fuseau.
+ * Les groupes Social et Notifications restent hors de cet écran.
  */
 import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -32,6 +32,7 @@ type Draft = {
     reminder: string;
     timezone: string;
     secondTimezone: string;
+    discreetMode: boolean;
 };
 
 const emit = defineEmits<{ dirty: [value: boolean] }>();
@@ -108,7 +109,8 @@ function toDraft(prefs: CalendarPreferences): Draft {
         defaultVisibilite: prefs.defaultVisibilite,
         reminder: prefs.defaultReminderMinutes == null ? NONE : String(prefs.defaultReminderMinutes),
         timezone: prefs.timezone,
-        secondTimezone: prefs.secondTimezone ?? NONE
+        secondTimezone: prefs.secondTimezone ?? NONE,
+        discreetMode: prefs.discreetMode ?? false
     };
 }
 
@@ -147,7 +149,8 @@ function payloadOf(value: Draft): UpdateCalendarPreferencesPayload {
         defaultVisibilite: value.defaultVisibilite,
         ...(value.reminder === NONE ? { clearDefaultReminder: true } : { defaultReminderMinutes: Number(value.reminder) }),
         timezone: value.timezone,
-        secondTimezone: value.secondTimezone
+        secondTimezone: value.secondTimezone,
+        discreetMode: value.discreetMode
     };
 }
 
@@ -331,6 +334,26 @@ defineExpose({
                         :label="t('calendarPage.settings.reminder')"
                         hide-details
                     />
+                </div>
+            </div>
+        </section>
+
+        <section class="su-settings">
+            <div class="su-settings__lead">
+                <h2>{{ t('calendarPage.settings.finance') }}</h2>
+                <p>{{ t('calendarPage.settings.financeHint') }}</p>
+            </div>
+            <div class="su-settings__fields">
+                <div class="is-full">
+                    <div class="su-switch-row">
+                        <div class="su-switch-row__text">
+                            <label class="su-switch-row__label" for="cal-pref-discreet">{{
+                                t('calendarPage.settings.discreetMode')
+                            }}</label>
+                            <p class="su-switch-row__hint">{{ t('calendarPage.settings.discreetModeHint') }}</p>
+                        </div>
+                        <AppSwitch id="cal-pref-discreet" v-model="draft.discreetMode" />
+                    </div>
                 </div>
             </div>
         </section>

@@ -180,7 +180,9 @@ export function demoOccurrences(from: string, to: string): CalendarOccurrencesRe
     const agenda = demoDb().calendarEvents.flatMap((evt) => expandDemoEvent(evt, from, to));
     const hidden = demoExclusions();
     const visible = sources.filter((o) => !hidden.some((x) => x.sourceKey === o.sourceKey && x.entityPublicId === o.entityPublicId));
-    return { from, to, items: [...agenda, ...visible] };
+    const all = [...agenda, ...visible];
+    // Mode discret : comme l'API, aucun montant n'est renvoyé.
+    return { from, to, items: demoPreferences().discreetMode ? all.map((o) => ({ ...o, amount: null })) : all };
 }
 
 type DemoPreferences = {
@@ -201,6 +203,7 @@ type DemoPreferences = {
     eventInvitesFrom: string;
     autoAcceptFamilyInvites: boolean;
     showDeclinedEvents: boolean;
+    discreetMode: boolean;
 };
 
 const DEFAULT_PREFERENCES: DemoPreferences = {
@@ -219,7 +222,8 @@ const DEFAULT_PREFERENCES: DemoPreferences = {
     secondTimezone: null,
     eventInvitesFrom: 'friends',
     autoAcceptFamilyInvites: false,
-    showDeclinedEvents: false
+    showDeclinedEvents: false,
+    discreetMode: false
 };
 
 /** Une copie par base démo : réinitialiser la démo repart des valeurs d'origine. */
@@ -255,6 +259,7 @@ function applyDemoPreferences(prefs: DemoPreferences, patch: UpdateCalendarPrefe
     if (patch.timezone) prefs.timezone = patch.timezone;
     if (patch.secondTimezone === '') prefs.secondTimezone = null;
     else if (patch.secondTimezone) prefs.secondTimezone = patch.secondTimezone;
+    if (patch.discreetMode != null) prefs.discreetMode = patch.discreetMode;
 }
 
 const DEMO_SOURCE_LABELS: Record<string, string> = {

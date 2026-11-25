@@ -49,6 +49,16 @@ describe('demoOccurrences', () => {
         expect(swims.map((o) => new Date(o.startUtc!).getDate())).toEqual([2, 9, 16, 23, 30]);
         expect(swims.every((o) => o.isRecurring && new Date(o.startUtc!).getHours() === 18)).toBe(true);
     });
+
+    it('ne renvoie aucun montant en mode discret', () => {
+        expect(demoOccurrences('2026-12-01', '2026-12-31').items.some((o) => o.amount != null)).toBe(true);
+        routeCalendar('PATCH', '/api/calendar/preferences', new URLSearchParams(), { discreetMode: true });
+        const hidden = demoOccurrences('2026-12-01', '2026-12-31').items;
+        expect(hidden.length).toBeGreaterThan(0);
+        expect(hidden.every((o) => o.amount == null)).toBe(true);
+        const prefs = routeCalendar('GET', '/api/calendar/preferences', new URLSearchParams())!.body as { discreetMode: boolean };
+        expect(prefs.discreetMode).toBe(true);
+    });
 });
 
 describe('routeCalendar', () => {

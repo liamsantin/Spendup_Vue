@@ -94,6 +94,16 @@ export function monthSummary(items: readonly CalendarOccurrence[], monthPrefix: 
     };
 }
 
+/**
+ * Total net d'un jour dans la devise dominante (annulées exclues) ; null sans montant
+ * (journée vide, mode discret, source en marqueur seul).
+ */
+export function dayTotal(items: readonly CalendarOccurrence[]): { amount: number; currency: string } | null {
+    const summary = monthSummary(items, '');
+    if (!summary.currency) return null;
+    return { amount: summary.balance, currency: summary.currency };
+}
+
 /** Prochaines sorties issues des sources, de `fromYmd` inclus à `beforeYmd` exclu. */
 export function upcomingOutflows(
     items: readonly CalendarOccurrence[],

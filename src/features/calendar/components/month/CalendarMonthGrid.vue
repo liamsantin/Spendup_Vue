@@ -7,7 +7,7 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { isoWeek, parseYmd } from '@/features/calendar/dates';
-import { isCanceled, occurrenceTone, occurrenceToneStyle } from '@/features/calendar/occurrences';
+import { dayTotal, formatOccurrenceAmount, isCanceled, occurrenceTone, occurrenceToneStyle } from '@/features/calendar/occurrences';
 import type { CalendarOccurrence } from '@/features/calendar/types';
 
 const MAX_PILLS = 3;
@@ -42,7 +42,8 @@ const cells = computed(() =>
         ymd,
         day: Number(ymd.slice(8, 10)),
         inMonth: ymd.startsWith(props.monthPrefix),
-        occurrences: props.byDay.get(ymd) ?? []
+        occurrences: props.byDay.get(ymd) ?? [],
+        total: dayTotal(props.byDay.get(ymd) ?? [])
     }))
 );
 
@@ -101,6 +102,9 @@ const toneStyle = occurrenceToneStyle;
                         {{ t('calendarPage.more', { count: cell.occurrences.length - MAX_PILLS }) }}
                     </span>
                 </span>
+                <span v-if="cell.total" class="cal-month__total" :class="cell.total.amount < 0 ? 'su-neg' : 'su-pos'">{{
+                    formatOccurrenceAmount(cell.total.amount, cell.total.currency)
+                }}</span>
                 <span v-if="cell.occurrences.length" class="cal-month__dots" aria-hidden="true">
                     <span
                         v-for="occurrence in cell.occurrences.slice(0, 4)"
@@ -245,6 +249,13 @@ const toneStyle = occurrenceToneStyle;
     font-size: 12.5px;
 }
 
+.cal-month__total {
+    margin-top: auto;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
 .cal-month__dots {
     display: none;
     gap: 3px;
@@ -267,7 +278,8 @@ const toneStyle = occurrenceToneStyle;
         padding: 6px 2px;
     }
 
-    .cal-month__events {
+    .cal-month__events,
+    .cal-month__total {
         display: none;
     }
 
