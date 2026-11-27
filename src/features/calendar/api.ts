@@ -7,6 +7,10 @@ import type {
     CalendarForecast,
     CalendarEventScope,
     CalendarInfo,
+    CalendarInvitation,
+    CalendarParticipantList,
+    CalendarRsvpStatus,
+    CalendarShare,
     CalendarOccurrencesQuery,
     CalendarOccurrencesResult,
     CalendarPreferences,
@@ -129,6 +133,64 @@ export const calendarApi = {
         return fetchWrapper.delete(
             `/api/calendar-events/${encodeURIComponent(eventPublicId)}/budget/transactions/${encodeURIComponent(transactionPublicId)}`
         ) as Promise<CalendarEventBudget>;
+    },
+
+    participants(eventPublicId: string) {
+        return fetchWrapper.get(
+            `/api/calendar-events/${encodeURIComponent(eventPublicId)}/participants`
+        ) as Promise<CalendarParticipantList>;
+    },
+
+    invite(eventPublicId: string, userPublicId: string, message?: string) {
+        return fetchWrapper.post(`/api/calendar-events/${encodeURIComponent(eventPublicId)}/participants`, {
+            userPublicId,
+            ...(message?.trim() ? { message: message.trim() } : {})
+        }) as Promise<CalendarParticipantList>;
+    },
+
+    removeParticipant(eventPublicId: string, userPublicId: string) {
+        return fetchWrapper.delete(
+            `/api/calendar-events/${encodeURIComponent(eventPublicId)}/participants/${encodeURIComponent(userPublicId)}`
+        ) as Promise<void>;
+    },
+
+    respond(eventPublicId: string, status: CalendarRsvpStatus, commentaire?: string) {
+        return fetchWrapper.put(`/api/calendar-events/${encodeURIComponent(eventPublicId)}/response`, {
+            status,
+            ...(commentaire?.trim() ? { commentaire: commentaire.trim() } : {})
+        }) as Promise<CalendarParticipantList>;
+    },
+
+    /** Invitations reçues ; par défaut celles en attente de réponse. */
+    invitations(pendingOnly = true) {
+        return fetchWrapper.get(`/api/calendar/invitations?pendingOnly=${pendingOnly}`) as Promise<{ items: CalendarInvitation[] }>;
+    },
+
+    shares(calendarPublicId: string) {
+        return fetchWrapper.get(`/api/calendars/${encodeURIComponent(calendarPublicId)}/shares`) as Promise<{ items: CalendarShare[] }>;
+    },
+
+    /** Partage à un ami, ou change le niveau d'un partage existant. */
+    share(calendarPublicId: string, userPublicId: string, permission: string) {
+        return fetchWrapper.put(`/api/calendars/${encodeURIComponent(calendarPublicId)}/shares/${encodeURIComponent(userPublicId)}`, {
+            permission
+        }) as Promise<CalendarShare>;
+    },
+
+    unshare(calendarPublicId: string, userPublicId: string) {
+        return fetchWrapper.delete(
+            `/api/calendars/${encodeURIComponent(calendarPublicId)}/shares/${encodeURIComponent(userPublicId)}`
+        ) as Promise<void>;
+    },
+
+    /** Le destinataire quitte un calendrier partagé. */
+    leaveShare(calendarPublicId: string) {
+        return fetchWrapper.post(`/api/calendars/${encodeURIComponent(calendarPublicId)}/shares/leave`, {}) as Promise<void>;
+    },
+
+    /** Réglages du destinataire : couleur (vide = celle du propriétaire), masquage. */
+    updateMyShare(calendarPublicId: string, payload: { color?: string; isHidden?: boolean }) {
+        return fetchWrapper.patch(`/api/calendars/${encodeURIComponent(calendarPublicId)}/shares/me`, payload) as Promise<CalendarInfo>;
     },
 
     budgetSuggestions(eventPublicId: string) {

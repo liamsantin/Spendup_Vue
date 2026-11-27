@@ -89,6 +89,22 @@ describe('routeCalendar', () => {
         expect(again.defaultView).toBe('week');
     });
 
+    it('enregistre le groupe Social et sert un agenda sans invité ni partage', () => {
+        const saved = routeCalendar('PATCH', '/api/calendar/preferences', new URLSearchParams(), {
+            eventInvitesFrom: 'nobody',
+            autoAcceptFamilyInvites: true,
+            showDeclinedEvents: true
+        })!.body;
+        expect(saved).toMatchObject({ eventInvitesFrom: 'nobody', autoAcceptFamilyInvites: true, showDeclinedEvents: true });
+        const query = new URLSearchParams();
+        expect(routeCalendar('GET', '/api/calendar/invitations', query)!.body).toEqual({ items: [] });
+        expect(routeCalendar('GET', '/api/calendar-events/DEMOEVTDENT/participants', query)!.body).toMatchObject({ items: [], pending: 0 });
+        expect(routeCalendar('GET', '/api/calendars/x/shares', query)!.body).toEqual({ items: [] });
+        expect(() => routeCalendar('PUT', '/api/calendar-events/DEMOEVTDENT/response', query, { status: 'accepte' })).toThrow(
+            'Disponible avec un compte.'
+        );
+    });
+
     it('ne répond qu’aux chemins du calendrier', () => {
         expect(routeCalendar('GET', '/api/accounts', new URLSearchParams())).toBeNull();
     });

@@ -4410,6 +4410,53 @@
         }
     },
     "calendarPage": {
+        "guests": {
+            "title": "Invités",
+            "summary": "{accepted} oui · {maybe} peut-être · {pending} en attente",
+            "respond": "Votre réponse",
+            "empty": "Aucun invité.",
+            "unknown": "Invité",
+            "remove": "Retirer",
+            "pick": "Inviter un ami ou un proche",
+            "noFriends": "Aucun ami disponible.",
+            "addFriends": "Ajouter des amis",
+            "message": "Message (facultatif)",
+            "invite": "Inviter",
+            "status": {
+                "invite": "En attente",
+                "accepte": "Accepté",
+                "peutEtre": "Peut-être",
+                "refuse": "Refusé"
+            },
+            "answer": {
+                "accepte": "Accepter",
+                "peutEtre": "Peut-être",
+                "refuse": "Refuser"
+            }
+        },
+        "invitations": {
+            "title": "Vous avez une invitation | Vous avez {count} invitations",
+            "from": "de {name}",
+            "open": "Voir"
+        },
+        "sharing": {
+            "title": "Partage",
+            "hint": "Partagez un calendrier avec un ami et gérez les calendriers qu'on vous partage. Les calendriers Famille sont visibles de tous les membres.",
+            "none": "Partagé avec personne.",
+            "friend": "Ami",
+            "level": "Niveau",
+            "share": "Partager",
+            "revoke": "Retirer",
+            "received": "Partagés avec moi",
+            "visible": "Afficher",
+            "leave": "Quitter",
+            "permissions": {
+                "freeBusy": "Libre / occupé",
+                "read": "Lecture",
+                "write": "Écriture",
+                "manage": "Gestion"
+            }
+        },
         "title": "Calendrier",
         "previous": "Période précédente",
         "next": "Période suivante",
@@ -4554,7 +4601,7 @@
             "sourceSaveError": "Impossible d’enregistrer ce réglage.",
             "open": "Réglages du calendrier",
             "title": "Calendrier",
-            "subtitle": "Affichage, création et fuseau horaire.",
+            "subtitle": "Affichage, création, finance, invitations, partage et notifications.",
             "display": "Affichage",
             "displayHint": "La vue à l’ouverture, la semaine et la plage horaire de la grille.",
             "defaultView": "Vue par défaut",
@@ -4567,6 +4614,19 @@
             "finance": "Finance",
             "notifications": "Notifications",
             "notificationsHint": "Résumé de vos journées ou de vos semaines.",
+            "social": "Social",
+            "socialHint": "Qui peut vous inviter et comment s'affichent les invitations.",
+            "invitesFromLabel": "Qui peut m'inviter",
+            "invitesFromHint": "Les membres de votre famille peuvent toujours vous inviter, sauf « Personne ».",
+            "invitesFrom": {
+                "nobody": "Personne",
+                "friends": "Mes amis",
+                "everyone": "Tout le monde"
+            },
+            "autoAcceptFamily": "Accepter d'office les invitations de la famille",
+            "autoAcceptFamilyHint": "L'événement s'ajoute directement à votre agenda.",
+            "showDeclined": "Garder les invitations refusées",
+            "showDeclinedHint": "Elles restent visibles dans l'agenda.",
             "digestLabel": "Résumé du calendrier",
             "digestHint": "Envoyé à 7 h : événements et échéances à payer de la journée, ou des 7 jours le premier jour de la semaine.",
             "digest": {

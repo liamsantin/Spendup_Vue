@@ -5,6 +5,7 @@ import { CalendarIcon } from 'vue-tabler-icons';
 import CalendarSettingsForm from '@/features/calendar/components/settings/CalendarSettingsForm.vue';
 import CalendarSourcesSettings from '@/features/calendar/components/settings/CalendarSourcesSettings.vue';
 import CalendarHiddenSettings from '@/features/calendar/components/settings/CalendarHiddenSettings.vue';
+import CalendarSharingSettings from '@/features/calendar/components/settings/CalendarSharingSettings.vue';
 import AppSettingsFormPage from '@/views/app/parametres/AppSettingsFormPage.vue';
 
 const { t } = useI18n();
@@ -37,6 +38,7 @@ function onCancel() {
     >
         <CalendarSettingsForm ref="formRef" @dirty="dirty = $event" />
         <CalendarSourcesSettings />
+        <CalendarSharingSettings />
         <CalendarHiddenSettings />
     </AppSettingsFormPage>
 </template>

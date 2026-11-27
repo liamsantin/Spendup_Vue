@@ -29,6 +29,7 @@ import CalendarProfileModal from '@/features/calendar/components/modals/Calendar
 import CalendarEventScopeDialog from '@/features/calendar/components/modals/CalendarEventScopeDialog.vue';
 import CalendarLayersPanel from '@/features/calendar/components/side/CalendarLayersPanel.vue';
 import CalendarDayPanel from '@/features/calendar/components/side/CalendarDayPanel.vue';
+import CalendarInvitations from '@/features/calendar/components/side/CalendarInvitations.vue';
 import CalendarTimeGrid from '@/features/calendar/components/week/CalendarTimeGrid.vue';
 import { useCalendarOccurrences } from '@/features/calendar/composables/useCalendarOccurrences';
 import { useCalendarPreferences } from '@/features/calendar/composables/useCalendarPreferences';
@@ -345,6 +346,7 @@ const draft = ref<{ date: string; time: string | null; endTime: string | null; t
 function createEvent(ymd = selected.value, time: string | null = null, eventTitle = '', endTime: string | null = null) {
     if (view.value === 'month') select(ymd);
     editing.value = null;
+    openedEventId.value = null;
     draft.value = { date: ymd, time, endTime, title: eventTitle };
     formOpen.value = true;
 }
@@ -385,8 +387,25 @@ async function startPay(occurrence: CalendarOccurrence) {
 provide(CALENDAR_PAY_KEY, (occurrence) => void startPay(occurrence));
 
 function openEvent(occurrence: CalendarOccurrence) {
+    openedEventId.value = null;
     editing.value = occurrence;
     formOpen.value = true;
+}
+
+// ── invitations reçues : bandeau au-dessus du calendrier, rechargé après chaque modification ──
+const invitationsVersion = ref(0);
+/** Événement ouvert depuis une invitation (sans occurrence affichée). */
+const openedEventId = ref<string | null>(null);
+
+function openInvitation(eventPublicId: string) {
+    editing.value = null;
+    openedEventId.value = eventPublicId;
+    formOpen.value = true;
+}
+
+function onEventChanged() {
+    invitationsVersion.value++;
+    reload();
 }
 
 // Un ancrage ouvert puis refermé sans rien saisir est supprimé côté serveur (jamais s'il porte une note, un invité ou un rappel).
@@ -522,6 +541,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
         <AppAlert v-if="dragError" type="error" class="cal-alert">
             {{ dragError }}
         </AppAlert>
+        <CalendarInvitations :version="invitationsVersion" @open="openInvitation" @responded="reload" />
         <AppAlert v-if="newSources.length" type="info" class="cal-alert">
             <span>{{ t('calendarPage.newSources.text', { names: newSources.map((s) => s.label).join(', ') }, newSources.length) }}</span>
             <button type="button" class="su-btn su-btn--ink cal-alert__btn" :disabled="newSourcesBusy" @click="showNewSources">
@@ -685,13 +705,13 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
 
         <CalendarEventFormModal
             v-model="formOpen"
-            :event-public-id="editing?.eventPublicId ?? null"
+            :event-public-id="editing?.eventPublicId ?? openedEventId"
             :occurrence="editing"
             :date="draft.date"
             :time="draft.time"
             :end-time="draft.endTime"
             :title="draft.title"
-            @changed="reload"
+            @changed="onEventChanged"
         />
 
         <CalendarEventScopeDialog

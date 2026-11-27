@@ -4410,6 +4410,53 @@
         }
     },
     "calendarPage": {
+        "guests": {
+            "title": "Guests",
+            "summary": "{accepted} yes · {maybe} maybe · {pending} pending",
+            "respond": "Your answer",
+            "empty": "No guests.",
+            "unknown": "Guest",
+            "remove": "Remove",
+            "pick": "Invite a friend or relative",
+            "noFriends": "No friends available.",
+            "addFriends": "Add friends",
+            "message": "Message (optional)",
+            "invite": "Invite",
+            "status": {
+                "invite": "Pending",
+                "accepte": "Accepted",
+                "peutEtre": "Maybe",
+                "refuse": "Declined"
+            },
+            "answer": {
+                "accepte": "Accept",
+                "peutEtre": "Maybe",
+                "refuse": "Decline"
+            }
+        },
+        "invitations": {
+            "title": "You have an invitation | You have {count} invitations",
+            "from": "from {name}",
+            "open": "View"
+        },
+        "sharing": {
+            "title": "Sharing",
+            "hint": "Share a calendar with a friend and manage calendars shared with you. Family calendars are visible to every member.",
+            "none": "Not shared.",
+            "friend": "Friend",
+            "level": "Level",
+            "share": "Share",
+            "revoke": "Remove",
+            "received": "Shared with me",
+            "visible": "Show",
+            "leave": "Leave",
+            "permissions": {
+                "freeBusy": "Free / busy",
+                "read": "Read",
+                "write": "Write",
+                "manage": "Manage"
+            }
+        },
         "title": "Calendar",
         "previous": "Previous period",
         "next": "Next period",
@@ -4554,7 +4601,7 @@
             "sourceSaveError": "Could not save this setting.",
             "open": "Calendar settings",
             "title": "Calendar",
-            "subtitle": "Display, creation and time zone.",
+            "subtitle": "Display, creation, finance, invitations, sharing and notifications.",
             "display": "Display",
             "displayHint": "The view on open, the week and the hours shown on the grid.",
             "defaultView": "Default view",
@@ -4567,6 +4614,19 @@
             "finance": "Finance",
             "notifications": "Notifications",
             "notificationsHint": "A summary of your days or weeks.",
+            "social": "Social",
+            "socialHint": "Who can invite you and how invitations are shown.",
+            "invitesFromLabel": "Who can invite me",
+            "invitesFromHint": "Family members can always invite you, unless set to “Nobody”.",
+            "invitesFrom": {
+                "nobody": "Nobody",
+                "friends": "My friends",
+                "everyone": "Everyone"
+            },
+            "autoAcceptFamily": "Auto-accept family invitations",
+            "autoAcceptFamilyHint": "The event goes straight into your calendar.",
+            "showDeclined": "Keep declined invitations",
+            "showDeclinedHint": "They stay visible in the calendar.",
             "digestLabel": "Calendar summary",
             "digestHint": "Sent at 7 am: events and payments due today, or for the next 7 days on the first day of the week.",
             "digest": {

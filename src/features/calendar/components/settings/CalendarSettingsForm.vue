@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
- * Réglages généraux du calendrier : Affichage, Création, Finance (mode discret), Notifications (résumé), Fuseau.
- * Le groupe Social reste hors de cet écran ; les canaux renvoient à Paramètres > Notifications.
+ * Réglages généraux du calendrier : Affichage, Création, Finance (mode discret), Social (invitations), Notifications
+ * (résumé), Fuseau. Les canaux renvoient à Paramètres > Notifications.
  */
 import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -12,8 +12,10 @@ import { calendarApi } from '@/features/calendar/api';
 import { useCalendarPreferences } from '@/features/calendar/composables/useCalendarPreferences';
 import {
     CALENDAR_DIGEST_FREQUENCIES,
+    CALENDAR_INVITES_FROM,
     CALENDAR_VIEWS,
     type CalendarDigestFrequency,
+    type CalendarInvitesFrom,
     type CalendarPreferences,
     type UpdateCalendarPreferencesPayload
 } from '@/features/calendar/types';
@@ -44,6 +46,9 @@ type Draft = {
     /** Chaîne vide : tous les comptes. */
     referenceAccountId: string;
     digestFrequency: CalendarDigestFrequency;
+    eventInvitesFrom: CalendarInvitesFrom;
+    autoAcceptFamilyInvites: boolean;
+    showDeclinedEvents: boolean;
 };
 
 const emit = defineEmits<{ dirty: [value: boolean] }>();
@@ -101,6 +106,9 @@ const secondTimezoneItems = computed(() => [
 const digestItems = computed(() =>
     CALENDAR_DIGEST_FREQUENCIES.map((value) => ({ title: t(`calendarPage.settings.digest.${value}`), value }))
 );
+const invitesFromItems = computed(() =>
+    CALENDAR_INVITES_FROM.map((value) => ({ title: t(`calendarPage.settings.invitesFrom.${value}`), value }))
+);
 const accountItems = computed(() => [{ title: t('calendarPage.settings.allAccounts'), value: NONE }, ...accounts.value]);
 const calendarItems = computed(() => [{ title: t('calendarPage.settings.firstCalendar'), value: NONE }, ...calendars.value]);
 
@@ -129,7 +137,10 @@ function toDraft(prefs: CalendarPreferences): Draft {
         discreetMode: prefs.discreetMode ?? false,
         showProjectedBalance: prefs.showProjectedBalance ?? false,
         referenceAccountId: prefs.referenceAccountId ?? NONE,
-        digestFrequency: prefs.digestFrequency ?? 'none'
+        digestFrequency: prefs.digestFrequency ?? 'none',
+        eventInvitesFrom: prefs.eventInvitesFrom ?? 'friends',
+        autoAcceptFamilyInvites: prefs.autoAcceptFamilyInvites ?? false,
+        showDeclinedEvents: prefs.showDeclinedEvents ?? false
     };
 }
 
@@ -173,7 +184,10 @@ function payloadOf(value: Draft): UpdateCalendarPreferencesPayload {
         discreetMode: value.discreetMode,
         showProjectedBalance: value.showProjectedBalance,
         referenceAccountId: value.referenceAccountId,
-        digestFrequency: value.digestFrequency
+        digestFrequency: value.digestFrequency,
+        eventInvitesFrom: value.eventInvitesFrom,
+        autoAcceptFamilyInvites: value.autoAcceptFamilyInvites,
+        showDeclinedEvents: value.showDeclinedEvents
     };
 }
 
@@ -402,6 +416,50 @@ defineExpose({
                         persistent-hint
                         :disabled="!draft.showProjectedBalance"
                     />
+                </div>
+            </div>
+        </section>
+
+        <section class="su-settings">
+            <div class="su-settings__lead">
+                <h2>{{ t('calendarPage.settings.social') }}</h2>
+                <p>{{ t('calendarPage.settings.socialHint') }}</p>
+            </div>
+            <div class="su-settings__fields">
+                <div class="su-field">
+                    <label class="su-field__label" for="cal-pref-invites">{{ t('calendarPage.settings.invitesFromLabel') }}</label>
+                    <AppSelect
+                        id="cal-pref-invites"
+                        v-model="draft.eventInvitesFrom"
+                        :items="invitesFromItems"
+                        item-title="title"
+                        item-value="value"
+                        :label="t('calendarPage.settings.invitesFromLabel')"
+                        :hint="t('calendarPage.settings.invitesFromHint')"
+                        persistent-hint
+                    />
+                </div>
+                <div class="is-full">
+                    <div class="su-switch-row">
+                        <div class="su-switch-row__text">
+                            <label class="su-switch-row__label" for="cal-pref-autoaccept">{{
+                                t('calendarPage.settings.autoAcceptFamily')
+                            }}</label>
+                            <p class="su-switch-row__hint">{{ t('calendarPage.settings.autoAcceptFamilyHint') }}</p>
+                        </div>
+                        <AppSwitch id="cal-pref-autoaccept" v-model="draft.autoAcceptFamilyInvites" />
+                    </div>
+                </div>
+                <div class="is-full">
+                    <div class="su-switch-row">
+                        <div class="su-switch-row__text">
+                            <label class="su-switch-row__label" for="cal-pref-declined">{{
+                                t('calendarPage.settings.showDeclined')
+                            }}</label>
+                            <p class="su-switch-row__hint">{{ t('calendarPage.settings.showDeclinedHint') }}</p>
+                        </div>
+                        <AppSwitch id="cal-pref-declined" v-model="draft.showDeclinedEvents" />
+                    </div>
                 </div>
             </div>
         </section>

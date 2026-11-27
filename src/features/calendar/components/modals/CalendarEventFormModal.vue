@@ -1,7 +1,8 @@
 <script setup lang="ts">
 /**
  * Création et modification d'un événement saisi. Sur un événement récurrent, l'enregistrement et la suppression
- * demandent la portée (cette occurrence, les suivantes, toute la série).
+ * demandent la portée (cette occurrence, les suivantes, toute la série). Un événement d'un calendrier où l'on n'écrit pas
+ * (on y est invité) s'affiche en lecture seule, avec la réponse à l'invitation.
  */
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -10,6 +11,7 @@ import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { calendarApi } from '@/features/calendar/api';
 import CalendarEventBudget from '@/features/calendar/components/forms/CalendarEventBudget.vue';
+import CalendarEventGuests from '@/features/calendar/components/forms/CalendarEventGuests.vue';
 import CalendarEventForm, { type CalendarEventFormFieldErrors } from '@/features/calendar/components/forms/CalendarEventForm.vue';
 import CalendarEventScopeDialog from '@/features/calendar/components/modals/CalendarEventScopeDialog.vue';
 import {
@@ -70,8 +72,13 @@ const calendarItems = computed(() =>
     calendars.value.filter((c) => c.permission === 'write' || c.permission === 'manage').map((c) => ({ title: c.name, value: c.publicId }))
 );
 
+/** Faux pour un invité : l'événement vient d'un calendrier qu'il ne peut pas modifier. */
+const canEdit = computed(
+    () => !isEdit.value || (!!event.value && calendarItems.value.some((c) => c.value === event.value!.calendarPublicId))
+);
+
 const canSave = computed(() => {
-    if (loading.value || acting.value) return false;
+    if (loading.value || acting.value || !canEdit.value) return false;
     if (!isEdit.value) return true;
     if (!event.value || !initial.value) return false;
     const built = buildUpdateEventPayload(form, { event: event.value, initial: initial.value, scope: 'series' });
@@ -243,24 +250,33 @@ function onScope(scope: CalendarEventScope) {
         <div v-if="loading" class="cal-modal__loading" aria-busy="true">
             <span class="su-spin" aria-hidden="true" />
         </div>
-        <CalendarEventForm
-            v-else-if="!isEdit || event"
-            :form="form"
-            :is-edit="isEdit"
-            :calendar-items="calendarItems"
-            :field-errors="fieldErrors"
+        <fieldset v-else-if="!isEdit || event" class="cal-modal__fields" :disabled="!canEdit">
+            <CalendarEventForm :form="form" :is-edit="isEdit" :calendar-items="canEdit ? calendarItems : []" :field-errors="fieldErrors" />
+        </fieldset>
+        <CalendarEventGuests
+            v-if="isEdit && event && !loading"
+            :event-public-id="event.publicId"
+            :is-organizer="canEdit"
+            @responded="emit('changed')"
         />
-        <CalendarEventBudget v-if="isEdit && event && !loading" :event-public-id="event.publicId" />
+        <CalendarEventBudget v-if="isEdit && event && !loading && canEdit" :event-public-id="event.publicId" />
 
         <template #footer="{ close }">
-            <button v-if="isEdit && event" type="button" class="su-btn su-btn--danger" :disabled="acting" @click="onDelete">
+            <button v-if="isEdit && event && canEdit" type="button" class="su-btn su-btn--danger" :disabled="acting" @click="onDelete">
                 {{ t('calendarPage.form.delete') }}
             </button>
             <span class="cal-modal__spacer" />
             <button type="button" class="su-btn" :disabled="acting" @click="close">
                 {{ t('common.cancel') }}
             </button>
-            <button type="button" class="su-btn su-btn--ink" :disabled="!canSave" :aria-busy="acting || undefined" @click="onSave">
+            <button
+                v-if="canEdit"
+                type="button"
+                class="su-btn su-btn--ink"
+                :disabled="!canSave"
+                :aria-busy="acting || undefined"
+                @click="onSave"
+            >
                 {{ t('common.save') }}
             </button>
         </template>
@@ -290,6 +306,13 @@ function onScope(scope: CalendarEventScope) {
     display: flex;
     justify-content: center;
     padding: 48px 0;
+}
+
+.cal-modal__fields {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
 }
 
 .cal-modal__spacer {

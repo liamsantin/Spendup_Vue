@@ -264,6 +264,9 @@ function applyDemoPreferences(prefs: DemoPreferences, patch: UpdateCalendarPrefe
     else if (patch.secondTimezone) prefs.secondTimezone = patch.secondTimezone;
     if (patch.discreetMode != null) prefs.discreetMode = patch.discreetMode;
     if (patch.digestFrequency) prefs.digestFrequency = patch.digestFrequency;
+    if (patch.eventInvitesFrom) prefs.eventInvitesFrom = patch.eventInvitesFrom;
+    if (patch.autoAcceptFamilyInvites != null) prefs.autoAcceptFamilyInvites = patch.autoAcceptFamilyInvites;
+    if (patch.showDeclinedEvents != null) prefs.showDeclinedEvents = patch.showDeclinedEvents;
 }
 
 const DEMO_SOURCE_LABELS: Record<string, string> = {
@@ -397,6 +400,12 @@ export function routeCalendar(method: string, path: string, query: URLSearchPara
         const reminders = payload.reminders ?? (reminder == null ? [] : [{ beforeMinutes: reminder, canal: 'app' }]);
         return { status: 200, body: createDemoEvent(events, { ...payload, reminders }, createPublicId()) };
     }
+    // Social : la démo n'a ni invité ni partage ; inviter, répondre ou partager demande un compte.
+    if (path === '/api/calendar/invitations' && method === 'GET') return { status: 200, body: { items: [] } };
+    if (/^\/api\/calendar-events\/[^/]+\/participants$/.test(path) && method === 'GET') {
+        return { status: 200, body: { items: [], accepted: 0, declined: 0, maybe: 0, pending: 0 } };
+    }
+    if (/^\/api\/calendars\/[^/]+\/shares$/.test(path) && method === 'GET') return { status: 200, body: { items: [] } };
     const id = /^\/api\/calendar-events\/([^/]+)$/.exec(path)?.[1];
     if (id && method === 'GET') return { status: 200, body: toEventResponse(findDemoEvent(events, decodeURIComponent(id))) };
     if (id && method === 'PATCH') {

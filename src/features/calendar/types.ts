@@ -97,7 +97,16 @@ export type CalendarPreferences = {
     referenceAccountId?: string | null;
     /** Résumé du calendrier : aucun, chaque jour ou chaque semaine (premier jour de la semaine, 07:00). */
     digestFrequency?: CalendarDigestFrequency;
+    /** Social : qui peut m'inviter (`nobody`, `friends`, `everyone`). */
+    eventInvitesFrom?: CalendarInvitesFrom;
+    /** Social : invitation d'un membre de la famille acceptée d'office. */
+    autoAcceptFamilyInvites?: boolean;
+    /** Social : invitations refusées gardées dans l'agenda. */
+    showDeclinedEvents?: boolean;
 };
+
+export const CALENDAR_INVITES_FROM = ['nobody', 'friends', 'everyone'] as const;
+export type CalendarInvitesFrom = (typeof CALENDAR_INVITES_FROM)[number];
 
 export const CALENDAR_DIGEST_FREQUENCIES = ['none', 'daily', 'weekly'] as const;
 export type CalendarDigestFrequency = (typeof CALENDAR_DIGEST_FREQUENCIES)[number];
@@ -123,6 +132,9 @@ export type UpdateCalendarPreferencesPayload = {
     /** Chaîne vide : tous les comptes. */
     referenceAccountId?: string;
     digestFrequency?: CalendarDigestFrequency;
+    eventInvitesFrom?: CalendarInvitesFrom;
+    autoAcceptFamilyInvites?: boolean;
+    showDeclinedEvents?: boolean;
 };
 
 /** Solde projeté à la fin d'un jour (`GET /api/calendar/forecast`). */
@@ -159,8 +171,52 @@ export type CalendarEvent = {
     visibilite: string;
     status: string;
     reminders: CalendarReminder[];
+    /** Invités (organisateur compris s'il figure dans la table) ; absent en mode démo ancien. */
+    participants?: CalendarParticipant[];
     rowVersion: number;
 };
+
+/** Réponse d'un participant : `invite` (en attente), `accepte`, `refuse`, `peutEtre`. */
+export const CALENDAR_RSVP_STATUSES = ['accepte', 'peutEtre', 'refuse'] as const;
+export type CalendarRsvpStatus = (typeof CALENDAR_RSVP_STATUSES)[number];
+
+/** Participant d'un événement. `role` : organisateur, participant, payeur, beneficiaire, observateur. */
+export type CalendarParticipant = {
+    userPublicId: string | null;
+    displayName: string | null;
+    role: string;
+    status: string;
+    message: string | null;
+    respondedAt: string | null;
+};
+
+/** Participants + décompte (`GET /api/calendar-events/{id}/participants`). */
+export type CalendarParticipantList = {
+    items: CalendarParticipant[];
+    accepted: number;
+    declined: number;
+    maybe: number;
+    pending: number;
+};
+
+/** Invitation reçue (`GET /api/calendar/invitations`). */
+export type CalendarInvitation = {
+    eventPublicId: string;
+    title: string;
+    organizerName: string | null;
+    isFullDay: boolean;
+    startUtc: string | null;
+    startDate: string | null;
+    message: string | null;
+    status: string;
+};
+
+/** Niveaux de partage d'un calendrier à un ami, du plus restreint au plus large. */
+export const CALENDAR_SHARE_PERMISSIONS = ['freeBusy', 'read', 'write', 'manage'] as const;
+export type CalendarSharePermission = (typeof CALENDAR_SHARE_PERMISSIONS)[number];
+
+/** Partage d'un calendrier (`GET /api/calendars/{id}/shares`). */
+export type CalendarShare = { userPublicId: string; displayName: string; permission: string };
 
 export type CreateCalendarEventPayload = {
     calendarPublicId: string | null;
