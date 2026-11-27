@@ -8,7 +8,8 @@ export {
     isAccountShareNotificationType,
     isBudgetAlertNotificationType,
     isSavingsGoalReachedNotificationType,
-    isSharedDebtNotificationType
+    isSharedDebtNotificationType,
+    isPriorityNotificationType
 } from '@/features/notifications/link';
 export { friendLiveChipColor, isAccountShareLiveChipType, isFriendLiveChipType, isLiveChipType } from '@/features/notifications/friendChip';
 export {

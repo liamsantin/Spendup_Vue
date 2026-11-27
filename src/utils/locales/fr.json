@@ -645,6 +645,7 @@
             "inbox": "Boîte de réception"
         },
         "unread": "Non lu",
+        "priority": "Prioritaire",
         "unreadCount": "{count} non lues",
         "loadMore": "Charger plus",
         "clearAllModal": {

@@ -125,6 +125,11 @@ export function isFriendNotificationType(type: string): boolean {
     return type === 'friendRequest' || type === 'friendAccepted';
 }
 
+/** Types prioritaires, marqués à part dans l’inbox (rappel « Solde insuffisant » du calendrier). */
+export function isPriorityNotificationType(type: string): boolean {
+    return type === 'eventBalanceWarning';
+}
+
 /** Types alerte budget produits en inbox. */
 export function isBudgetAlertNotificationType(type: string): boolean {
     return type === 'budgetAlert';

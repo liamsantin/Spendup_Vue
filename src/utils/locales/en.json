@@ -645,6 +645,7 @@
             "inbox": "Inbox"
         },
         "unread": "Unread",
+        "priority": "Priority",
         "unreadCount": "{count} unread",
         "loadMore": "Load more",
         "clearAllModal": {

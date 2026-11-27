@@ -5,7 +5,7 @@ import { useRouter } from 'vue-router';
 import { BellIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import { UserPhotoAvatar } from '@/features/friends';
-import { resolveNotificationLink, useNotificationsStore } from '@/features/notifications';
+import { isPriorityNotificationType, resolveNotificationLink, useNotificationsStore } from '@/features/notifications';
 import type { AppNotification } from '@/features/notifications';
 
 const { t, locale } = useI18n();
@@ -78,13 +78,16 @@ async function onLoadMore() {
             :key="item.id"
             type="button"
             class="su-person inbox-item"
-            :class="{ 'is-unread': !item.isRead }"
+            :class="{ 'is-unread': !item.isRead, 'is-priority': isPriorityNotificationType(String(item.type)) }"
             :style="{ '--i': i }"
             @click="onItemClick(item)"
         >
             <UserPhotoAvatar :photo-url="item.photoUrl" :fallback-label="item.title" :size="36" />
             <div class="su-person__meta">
                 <p class="su-person__name inbox-item__title">
+                    <span v-if="isPriorityNotificationType(String(item.type))" class="inbox-item__priority">{{
+                        t('notificationsPage.priority')
+                    }}</span>
                     {{ item.title }}
                     <span v-if="!item.isRead" class="inbox-item__dot" aria-hidden="true" />
                 </p>
@@ -127,6 +130,22 @@ async function onLoadMore() {
     width: 6px;
     height: 6px;
     background: var(--blue);
+}
+
+/* rappel prioritaire (solde insuffisant) : filet et étiquette rouges, lu ou non */
+.inbox-item.is-priority {
+    box-shadow: inset 3px 0 0 var(--danger);
+}
+
+.inbox-item__priority {
+    flex: none;
+    padding: 1px 6px;
+    color: var(--danger);
+    border: 1px solid var(--danger);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 
 .inbox-item__date {

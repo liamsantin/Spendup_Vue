@@ -4,6 +4,7 @@ import {
     isAccountShareNotificationType,
     isBudgetAlertNotificationType,
     isFriendNotificationType,
+    isPriorityNotificationType,
     isSafeAppNotificationPath,
     isSavingsGoalReachedNotificationType,
     isSecurityNotificationType,
@@ -366,5 +367,7 @@ describe('notification type helpers', () => {
         expect(isBudgetAlertNotificationType('accountShareInvite')).toBe(false);
         expect(isSavingsGoalReachedNotificationType('savingsGoalReached')).toBe(true);
         expect(isSavingsGoalReachedNotificationType('budgetAlert')).toBe(false);
+        expect(isPriorityNotificationType('eventBalanceWarning')).toBe(true);
+        expect(isPriorityNotificationType('eventReminder')).toBe(false);
     });
 });
