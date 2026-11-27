@@ -95,7 +95,12 @@ export type CalendarPreferences = {
     showProjectedBalance?: boolean;
     /** Compte (publicId) sur lequel porte le solde projeté ; null : tous les comptes. */
     referenceAccountId?: string | null;
+    /** Résumé du calendrier : aucun, chaque jour ou chaque semaine (premier jour de la semaine, 07:00). */
+    digestFrequency?: CalendarDigestFrequency;
 };
+
+export const CALENDAR_DIGEST_FREQUENCIES = ['none', 'daily', 'weekly'] as const;
+export type CalendarDigestFrequency = (typeof CALENDAR_DIGEST_FREQUENCIES)[number];
 
 /** Modification partielle. Chaîne vide pour `defaultCalendarId` ou `secondTimezone` : effacer. */
 export type UpdateCalendarPreferencesPayload = {
@@ -117,6 +122,7 @@ export type UpdateCalendarPreferencesPayload = {
     showProjectedBalance?: boolean;
     /** Chaîne vide : tous les comptes. */
     referenceAccountId?: string;
+    digestFrequency?: CalendarDigestFrequency;
 };
 
 /** Solde projeté à la fin d'un jour (`GET /api/calendar/forecast`). */

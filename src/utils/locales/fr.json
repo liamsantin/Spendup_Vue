@@ -4564,6 +4564,17 @@
             "showWeekNumbers": "Numéros de semaine",
             "use24HourClock": "Format 24 heures",
             "finance": "Finance",
+            "notifications": "Notifications",
+            "notificationsHint": "Résumé de vos journées ou de vos semaines.",
+            "digestLabel": "Résumé du calendrier",
+            "digestHint": "Envoyé à 7 h : événements et échéances à payer de la journée, ou des 7 jours le premier jour de la semaine.",
+            "digest": {
+                "none": "Aucun",
+                "daily": "Chaque jour",
+                "weekly": "Chaque semaine"
+            },
+            "channelsHint": "Les rappels et le résumé arrivent dans l’application et par e-mail selon vos réglages de notifications.",
+            "channelsLink": "Gérer les canaux",
             "financeHint": "Les montants des sources financières dans le calendrier.",
             "discreetMode": "Mode discret",
             "projectedBalance": "Solde projeté",

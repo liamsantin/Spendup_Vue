@@ -4564,6 +4564,17 @@
             "showWeekNumbers": "Week numbers",
             "use24HourClock": "24-hour clock",
             "finance": "Finance",
+            "notifications": "Notifications",
+            "notificationsHint": "A summary of your days or weeks.",
+            "digestLabel": "Calendar summary",
+            "digestHint": "Sent at 7 am: events and payments due today, or for the next 7 days on the first day of the week.",
+            "digest": {
+                "none": "None",
+                "daily": "Every day",
+                "weekly": "Every week"
+            },
+            "channelsHint": "Reminders and the summary arrive in the app and by email according to your notification settings.",
+            "channelsLink": "Manage channels",
             "financeHint": "Amounts from the financial sources in the calendar.",
             "discreetMode": "Discreet mode",
             "projectedBalance": "Projected balance",

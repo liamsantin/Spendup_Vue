@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
- * Réglages généraux du calendrier : Affichage, Création, Finance (mode discret), Fuseau.
- * Les groupes Social et Notifications restent hors de cet écran.
+ * Réglages généraux du calendrier : Affichage, Création, Finance (mode discret), Notifications (résumé), Fuseau.
+ * Le groupe Social reste hors de cet écran ; les canaux renvoient à Paramètres > Notifications.
  */
 import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -10,7 +10,13 @@ import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
 import { accountsApi } from '@/features/accounts/api';
 import { calendarApi } from '@/features/calendar/api';
 import { useCalendarPreferences } from '@/features/calendar/composables/useCalendarPreferences';
-import { CALENDAR_VIEWS, type CalendarPreferences, type UpdateCalendarPreferencesPayload } from '@/features/calendar/types';
+import {
+    CALENDAR_DIGEST_FREQUENCIES,
+    CALENDAR_VIEWS,
+    type CalendarDigestFrequency,
+    type CalendarPreferences,
+    type UpdateCalendarPreferencesPayload
+} from '@/features/calendar/types';
 import { TIMEZONE_OPTIONS } from '@/features/user-settings/types';
 import { getErrorMessage } from '@/utils/errors/app-error';
 
@@ -37,6 +43,7 @@ type Draft = {
     showProjectedBalance: boolean;
     /** Chaîne vide : tous les comptes. */
     referenceAccountId: string;
+    digestFrequency: CalendarDigestFrequency;
 };
 
 const emit = defineEmits<{ dirty: [value: boolean] }>();
@@ -91,6 +98,9 @@ const secondTimezoneItems = computed(() => [
     { title: t('calendarPage.settings.noSecondTimezone'), value: NONE },
     ...timezoneItems.value.map((value) => ({ title: value, value }))
 ]);
+const digestItems = computed(() =>
+    CALENDAR_DIGEST_FREQUENCIES.map((value) => ({ title: t(`calendarPage.settings.digest.${value}`), value }))
+);
 const accountItems = computed(() => [{ title: t('calendarPage.settings.allAccounts'), value: NONE }, ...accounts.value]);
 const calendarItems = computed(() => [{ title: t('calendarPage.settings.firstCalendar'), value: NONE }, ...calendars.value]);
 
@@ -118,7 +128,8 @@ function toDraft(prefs: CalendarPreferences): Draft {
         secondTimezone: prefs.secondTimezone ?? NONE,
         discreetMode: prefs.discreetMode ?? false,
         showProjectedBalance: prefs.showProjectedBalance ?? false,
-        referenceAccountId: prefs.referenceAccountId ?? NONE
+        referenceAccountId: prefs.referenceAccountId ?? NONE,
+        digestFrequency: prefs.digestFrequency ?? 'none'
     };
 }
 
@@ -161,7 +172,8 @@ function payloadOf(value: Draft): UpdateCalendarPreferencesPayload {
         secondTimezone: value.secondTimezone,
         discreetMode: value.discreetMode,
         showProjectedBalance: value.showProjectedBalance,
-        referenceAccountId: value.referenceAccountId
+        referenceAccountId: value.referenceAccountId,
+        digestFrequency: value.digestFrequency
     };
 }
 
@@ -396,6 +408,32 @@ defineExpose({
 
         <section class="su-settings">
             <div class="su-settings__lead">
+                <h2>{{ t('calendarPage.settings.notifications') }}</h2>
+                <p>{{ t('calendarPage.settings.notificationsHint') }}</p>
+            </div>
+            <div class="su-settings__fields">
+                <div class="su-field">
+                    <label class="su-field__label" for="cal-pref-digest">{{ t('calendarPage.settings.digestLabel') }}</label>
+                    <AppSelect
+                        id="cal-pref-digest"
+                        v-model="draft.digestFrequency"
+                        :items="digestItems"
+                        item-title="title"
+                        item-value="value"
+                        :label="t('calendarPage.settings.digestLabel')"
+                        :hint="t('calendarPage.settings.digestHint')"
+                        persistent-hint
+                    />
+                </div>
+                <p class="is-full cal-settings__note">
+                    {{ t('calendarPage.settings.channelsHint') }}
+                    <RouterLink to="/app/parametres/notifications">{{ t('calendarPage.settings.channelsLink') }}</RouterLink>
+                </p>
+            </div>
+        </section>
+
+        <section class="su-settings">
+            <div class="su-settings__lead">
                 <h2>{{ t('calendarPage.settings.timezone') }}</h2>
                 <p>{{ t('calendarPage.settings.timezoneHint') }}</p>
             </div>
@@ -439,6 +477,12 @@ defineExpose({
     display: flex;
     justify-content: center;
     padding: 48px 0;
+}
+
+.cal-settings__note {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-muted, #6b7280);
 }
 
 .cal-settings__error {

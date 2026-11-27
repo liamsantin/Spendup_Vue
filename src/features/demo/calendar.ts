@@ -8,7 +8,8 @@ import type {
     CalendarOccurrencesResult,
     CreateCalendarEventPayload,
     UpdateCalendarEventPayload,
-    UpdateCalendarPreferencesPayload
+    UpdateCalendarPreferencesPayload,
+    CalendarDigestFrequency
 } from '@/features/calendar/types';
 import {
     DEMO_CALENDAR,
@@ -204,6 +205,7 @@ type DemoPreferences = {
     autoAcceptFamilyInvites: boolean;
     showDeclinedEvents: boolean;
     discreetMode: boolean;
+    digestFrequency: CalendarDigestFrequency;
 };
 
 const DEFAULT_PREFERENCES: DemoPreferences = {
@@ -223,7 +225,8 @@ const DEFAULT_PREFERENCES: DemoPreferences = {
     eventInvitesFrom: 'friends',
     autoAcceptFamilyInvites: false,
     showDeclinedEvents: false,
-    discreetMode: false
+    discreetMode: false,
+    digestFrequency: 'none'
 };
 
 /** Une copie par base démo : réinitialiser la démo repart des valeurs d'origine. */
@@ -260,6 +263,7 @@ function applyDemoPreferences(prefs: DemoPreferences, patch: UpdateCalendarPrefe
     if (patch.secondTimezone === '') prefs.secondTimezone = null;
     else if (patch.secondTimezone) prefs.secondTimezone = patch.secondTimezone;
     if (patch.discreetMode != null) prefs.discreetMode = patch.discreetMode;
+    if (patch.digestFrequency) prefs.digestFrequency = patch.digestFrequency;
 }
 
 const DEMO_SOURCE_LABELS: Record<string, string> = {

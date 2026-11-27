@@ -59,6 +59,14 @@ describe('demoOccurrences', () => {
         const prefs = routeCalendar('GET', '/api/calendar/preferences', new URLSearchParams())!.body as { discreetMode: boolean };
         expect(prefs.discreetMode).toBe(true);
     });
+
+    it('enregistre la fréquence du résumé (aucun par défaut)', () => {
+        const read = () =>
+            (routeCalendar('GET', '/api/calendar/preferences', new URLSearchParams())!.body as { digestFrequency: string }).digestFrequency;
+        expect(read()).toBe('none');
+        routeCalendar('PATCH', '/api/calendar/preferences', new URLSearchParams(), { digestFrequency: 'weekly' });
+        expect(read()).toBe('weekly');
+    });
 });
 
 describe('routeCalendar', () => {
